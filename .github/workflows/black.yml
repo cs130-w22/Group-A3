@@ -1,3 +1,0 @@
-uses: jpetrucciani/black-check@master
-with:
-  path: '.'
