@@ -7,6 +7,8 @@ from flask import Flask
 app = Flask(__name__)
 
 
+# Lever Flask's automatic JSON response functionality:
+# https://flask.palletsprojects.com/en/2.0.x/quickstart/#apis-with-json
 @app.route("/login", methods=["POST"])
 def login():
     return {"token": "example"}
