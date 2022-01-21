@@ -14,6 +14,7 @@ app = Flask(__name__)
 def login():
     return {"token": "example"}
 
+
 if __name__ == "__main__":
     parser = ArgumentParser("code_grader")
     parser.add_argument(

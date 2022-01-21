@@ -4,19 +4,25 @@
 
 -- Enable the pgcrypto extension for PGSQL.
 CREATE EXTENSION pgcrypto;
+
+-- Use plpgsql for our triggers.
 $$ LANGUAGE plpgsql;
 
-CREATE TABLE IF NOT EXISTS Account (
-	username VARCHAR(255) UNIQUE NOT NULL,
+-- Set the timezone of the database.
+SET timezone = 'America/Los_Angeles';
 
-   -- Hash of the user's password.
+CREATE TABLE IF NOT EXISTS Accounts (
+	-- Preferred email for contact.
+	email VARCHAR(255) UNIQUE NOT NULL,
+
+  -- Hash of the user's password.
 	password TEXT NOT NULL,
 
-   -- Classes that the user has faculty rights over.
-	admin BOOL NOT NULL,
+  -- Classes that the user has faculty rights over.
+	admin BOOL NOT NULL DEFAULT false,
 
-   -- If this user was deleted.
-	deleted TIMESTAMP DEFAULT NULL,
+  -- If this user was deleted.
+	deleted TIMESTAMPTZ DEFAULT NULL,
 	
   PRIMARY KEY (username)
 );
@@ -34,28 +40,50 @@ CREATE TRIGGER hash_password_on_change
 	FOR EACH ROW
 	EXECUTE PROCEDURE hash_new_password();
 
-CREATE TABLE IF NOT EXISTS Assignment (
+CREATE TABLE IF NOT EXISTS Classes (
+	id INT GENERATED ALWAYS AS IDENTITY,
+
+	-- Name of the class, presented to users.
+	name VARCHAR(255) NOT NULL,
+
+	-- Owner of the class, by default the one who created it.
+	owner VARCHAR(255) NOT NULL,
+
+	-- If this class has been deleted by its owner, then
+	-- its deletion time is noted here.
+	deleted TIMESTAMPTZ DEFAULT NULL,
+	
+	PRIMARY KEY (id),
+	FOREIGN KEY (owner) REFERENCES Accounts (email)
+);
+
+CREATE TABLE IF NOT EXISTS Assignments (
 	-- Unique name of the assignment (to be used in submissions)
 	name VARCHAR(255) UNIQUE NOT NULL,
 
-	-- Points possible for the assignment
-	points DOUBLE(5, 2),
+	-- Due date.
+	due_date TIMESTAMPTZ NOT NULL,
+
+	-- Points possible for the assignment.
+	points NUMERIC(11, 8),
 	
   PRIMARY KEY (name)
 );
 
-CREATE TABLE IF NOT EXISTS Submission (
+CREATE TABLE IF NOT EXISTS Submissions (
 	-- Unique submission ID
-	id CHAR(10),
+	id uuid DEFAULT uuid_generate_v4(),
 	
-	-- ID for assignment
+	-- ID for the assignment it was submitted to
 	assignment VARCHAR(50) NOT NULL,
 
-	-- UID of submitter
+	-- UID of submitting user.
 	owner VARCHAR(255) NOT NULL,
 
-	-- Total points earned in this submission
-	points_earned DOUBLE(5, 2),
+	-- Total points earned in this submission.
+	points_earned DOUBLE(11, 8),
 
-	PRIMARY KEY (id)
+	PRIMARY KEY (id),
+	FOREIGN KEY (owner) REFERENCES Accounts (email),
+	FOREIGN KEY (assignment) REFERENCES Assignments (id),
 );
