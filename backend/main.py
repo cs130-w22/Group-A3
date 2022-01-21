@@ -3,6 +3,7 @@
 from argparse import ArgumentParser
 
 from flask import Flask
+import psycopg as pg
 
 app = Flask(__name__)
 
@@ -12,7 +13,6 @@ app = Flask(__name__)
 @app.route("/login", methods=["POST"])
 def login():
     return {"token": "example"}
-
 
 if __name__ == "__main__":
     parser = ArgumentParser("code_grader")
