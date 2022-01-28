@@ -5,6 +5,7 @@ import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
 import Alert from "react-bootstrap/Alert";
 import Stack from "react-bootstrap/Stack";
+ 
 
 const Login = () => {
   const [error, setError] = useState("");
@@ -13,27 +14,31 @@ const Login = () => {
 
   const submit: React.FormEventHandler<HTMLFormElement> = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    //send assignment data to database 
     setError(err => err ? "" : `Username is invalid.`);
-    nav('/student/class');
+    nav('/professor/class/');
   };
 
   return (
     <Container>
       <Stack direction="vertical" gap={3}>
-        {error && <Alert variant={"danger"}>Failed to login: {error}</Alert>}
-        <h1>Your class name</h1>
-        <p>Log in to the [YOUR CLASS] grading system.</p>
+        {error && <Alert variant={"danger"}>Failed to create assignment{error}</Alert>}
+        <h1>Add Assignment</h1>
         <Form onSubmit={submit}>
-          <Form.Group className="mb-3" controlId="formUsername">
-            <Form.Label>Username</Form.Label>
-            <Form.Control type="text" name="username" placeholder="Josie Bruin" />
+          <Form.Group className="mb-3" controlId="formAssignmentName">
+            <Form.Label>Assignment name</Form.Label>
+            <Form.Control type="text" name="name" placeholder="Josie Bruin" />
           </Form.Group>
-          <Form.Group className="mb-3" controlId="formPassword">
-            <Form.Label>Password</Form.Label>
-            <Form.Control type="password" name="password" />
+          <Form.Group className="mb-3" controlId="formDueDate">
+            <Form.Label>Due Date</Form.Label>
+            <Form.Control type="date" name="due date" />
+          </Form.Group>
+          <Form.Group className="mb-3" controlId="formGradingScript">
+            <Form.Label>Grading Script</Form.Label>
+            <Form.Control type="file" name="script" />
           </Form.Group>
           <Button variant="primary" type="submit">
-            Login
+            Create
           </Button>
         </Form>
       </Stack>
