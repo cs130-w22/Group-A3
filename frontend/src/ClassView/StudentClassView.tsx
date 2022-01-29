@@ -6,6 +6,7 @@ import StudentAssignmentCard from "./StudentAssignmentCard";
 
 const Assignments = ["Assignment 1", "Assignment 2", "Assignment 3"]; //should be reading assignments from a database 
 
+//This view is a overview of a student's assignments for a class  
 const StudentClassView = () => {
   return (
     <Container>

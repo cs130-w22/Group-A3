@@ -8,6 +8,7 @@ import ProgressBar from "react-bootstrap/ProgressBar";
 
 import { Link } from "react-router-dom";
 
+//A card representing a single assignment overview 
 const StudentAssignmentCard = (props:{name:string}) => {
   const grade = 50; ////should be server calls sometime 
 

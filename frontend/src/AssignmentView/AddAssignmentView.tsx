@@ -6,8 +6,8 @@ import Button from "react-bootstrap/Button";
 import Alert from "react-bootstrap/Alert";
 import Stack from "react-bootstrap/Stack";
  
-
-const Login = () => {
+//This view is a form for professors to add a assignment 
+const AddAssignmentView = () => {
   const [error, setError] = useState("");
   const nav = useNavigate();
 
@@ -15,7 +15,8 @@ const Login = () => {
   const submit: React.FormEventHandler<HTMLFormElement> = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     //send assignment data to database 
-    setError(err => err ? "" : `Username is invalid.`);
+    //set up autograding (?)
+    setError(err => err ? "" : `File type is not supported`);
     nav('/professor/class/');
   };
 
@@ -46,4 +47,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default AddAssignmentView;

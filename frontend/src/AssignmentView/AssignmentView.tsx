@@ -5,6 +5,7 @@ import Stack from "react-bootstrap/Stack";
 
 const Assignments = ["Assignment 1", "Assignment 2", "Assignment 3"];
 
+//Student view of the assignment 
 const AssignmentView = () => {
   return (
     <Container>
