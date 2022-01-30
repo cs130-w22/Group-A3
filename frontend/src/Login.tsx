@@ -18,8 +18,7 @@ const Login = () => {
     <Container>
       <Stack direction="vertical" gap={3}>
         {error && <Alert variant={"danger"}>Failed to login: {error}</Alert>}
-        <h1>Your class name</h1>
-        <p>Log in to the [YOUR CLASS] grading system.</p>
+        <h1 style={{textAlign: "center", color: "#1273de", font:"Hammersmith One", fontSize:80}} >Gradebetter</h1>
         <Form onSubmit={submit}>
           <Form.Group className="mb-3" controlId="formUsername">
             <Form.Label>Username</Form.Label>
@@ -31,6 +30,9 @@ const Login = () => {
           </Form.Group>
           <Button variant="primary" type="submit">
             Login
+          </Button>
+          <Button variant="secondary" type="button">
+            Register
           </Button>
         </Form>
       </Stack>
