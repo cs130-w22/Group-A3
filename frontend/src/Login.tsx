@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-
+import React, { useState} from "react";
+import { useNavigate } from "react-router-dom";
 import Container from "react-bootstrap/Container";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
@@ -8,10 +8,12 @@ import Stack from "react-bootstrap/Stack";
 
 const Login = () => {
   const [error, setError] = useState("");
+  const nav = useNavigate();
 
   const submit: React.FormEventHandler<HTMLFormElement> = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(err => err ? "" : `Username is invalid.`);
+    nav('/class');
   };
 
   return (
