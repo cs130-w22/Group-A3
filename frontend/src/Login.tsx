@@ -10,11 +10,10 @@ const Login = () => {
   const [error, setError] = useState("");
   const nav = useNavigate();
 
-
   const submit: React.FormEventHandler<HTMLFormElement> = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(err => err ? "" : `Username is invalid.`);
-    nav('/student/class');
+    nav('/class');
   };
 
   return (
