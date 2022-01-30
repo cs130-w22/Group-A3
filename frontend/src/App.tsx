@@ -3,7 +3,6 @@ import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import Login from "./Login";
 import ClassView from "./ClassView/ClassView";
 import AssignmentView from "./AssignmentView/AssignmentView";
-import AddAssignmentView from "./AssignmentView/AddAssignmentView";
 import ClassStatsView from "./ClassStatsView/ClassStatsView";
 import ClassListView from "./ClassListView/ClassListView";
 
@@ -24,9 +23,6 @@ const App = () => (
       </Route>
       <Route path="/class/classlist">
         <Route index element={<ClassListView />} />
-      </Route>
-      <Route path="/class/assignment/add">
-        <Route index element={<AddAssignmentView />} />
       </Route>
     </Routes>
   </Router>

@@ -7,6 +7,7 @@ import Button from "react-bootstrap/Button"
 
 import StudentAssignmentCard from "./StudentAssignmentCard";
 import ProfessorAssignmentCard from "./ProfessorAssignmentCard";
+import AddAssignmentModal from "../AssignmentView/AddAssignmentModal";
 
 const Assignments = ["Assignment 1", "Assignment 2", "Assignment 3"]; //should be reading assignments from a database 
 
@@ -14,9 +15,7 @@ const Assignments = ["Assignment 1", "Assignment 2", "Assignment 3"]; //should b
 const ClassView = () => {
   const nav = useNavigate();
   const mode : "student" | "faculty" = "student";  //should be taken from some app state / login info 
-  const handleClick = () => {
-    nav('/class/assignment/add');
-  };
+
   const navToClassStats = () => {
     nav('/class/classstats');
   };
@@ -46,7 +45,7 @@ const ClassView = () => {
         }
         {(mode === "student")?
         null:
-        <Button onClick={handleClick}>Add new assignment</Button>}
+       <AddAssignmentModal/>}
       </Stack>
     </Container>
   );
