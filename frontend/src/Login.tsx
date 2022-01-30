@@ -16,6 +16,10 @@ const Login = () => {
     nav('/class');
   };
 
+  const createAccount = () => {
+    nav('/create');
+  };
+
   return (
     <Container>
       <Stack direction="vertical" gap={3}>
@@ -35,7 +39,7 @@ const Login = () => {
           </Button>
           <br/>
           <br/>
-          <Button variant="secondary" type="button" style={{borderRadius:20}}>
+          <Button onClick={createAccount} variant="secondary" type="button" style={{borderRadius:20}}>
             Register
           </Button>
         </Form>

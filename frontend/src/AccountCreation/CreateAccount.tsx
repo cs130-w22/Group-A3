@@ -3,16 +3,17 @@ import { useNavigate } from "react-router-dom";
 import Container from "react-bootstrap/Container";
 import Alert from "react-bootstrap/Alert";
 import Stack from "react-bootstrap/Stack";
+import { Button } from "react-bootstrap";
 
 const CreateAccount = () => {
     const [error, setError] = useState("");
     const nav = useNavigate();
 
     const professsorClicked = () => {
-        nav('/class');
+        nav('/');
     };
     const studentClicked = () => {
-        nav('/class');
+        nav('/');
     };
 
     return (
@@ -20,9 +21,9 @@ const CreateAccount = () => {
             <Stack direction="vertical" gap={3}>
                 {error && <Alert variant={"danger"}>Failed to login: {error}</Alert>}
                 <h1 style={{textAlign: "center", justifyContent: "center", color: "black", font:"Hammersmith One", fontSize:50}} >Who are you?</h1>
-                <button onClick={studentClicked}>Student</button>
+                <Button onClick={studentClicked}>Student</Button>
                 <br/>
-                <button onClick={professsorClicked}>Teacher</button>
+                <Button onClick={professsorClicked}>Professor</Button>
             </Stack>
         </Container>
     );
