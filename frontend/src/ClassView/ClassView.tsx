@@ -25,7 +25,7 @@ const ClassView = () => {
   return (
     <Container>
     <Stack direction="vertical" gap={3}>
-      {(mode !== "student")?
+      {(mode === "student")?
         null:
         <div>          
           <h1>My Students</h1>
@@ -38,12 +38,12 @@ const ClassView = () => {
       <h1>My Assignments</h1>
           {
             Assignments.map(x => 
-              (mode !== "student")?
+              (mode === "student")?
               <StudentAssignmentCard name={x}/> 
               :<ProfessorAssignmentCard name={x}/>
             )
         }
-        {(mode !== "student")?
+        {(mode === "student")?
         null:
        <AddAssignmentView/>}
       </Stack>
