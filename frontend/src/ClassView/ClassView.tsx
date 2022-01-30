@@ -17,10 +17,26 @@ const ClassView = () => {
   const handleClick = () => {
     nav('/class/assignment/add');
   };
+  const navToClassStats = () => {
+    nav('/class/classstats');
+  };
+  const navToClassList = () => {
+    nav('/class/classlist');
+  };
   return (
     <Container>
-      <h1>Assignments</h1>
-      <Stack direction="vertical" gap={3}>
+    <Stack direction="vertical" gap={3}>
+      {(mode === "student")?
+        null:
+        <div>          
+          <h1>My Students</h1>
+        <Stack direction="horizontal" gap={3}>
+          <Button onClick={navToClassStats}>See Class Stats</Button>
+          <Button onClick={navToClassList}>View Student List</Button>
+        </Stack>
+        </div>
+      }
+      <h1>My Assignments</h1>
           {
             Assignments.map(x => 
               (mode === "student")?
