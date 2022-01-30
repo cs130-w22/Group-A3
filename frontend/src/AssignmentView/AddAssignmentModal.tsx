@@ -8,7 +8,7 @@ import Stack from "react-bootstrap/Stack";
 import Modal from "react-bootstrap/Modal"
  
 //This view is a form for professors to add a assignment 
-const AddAssignmentView = () => {
+const AddAssignmentModal = () => {
   const [error, setError] = useState("");
   const nav = useNavigate();
 
@@ -68,4 +68,4 @@ const AddAssignmentView = () => {
   );
 };
 
-export default AddAssignmentView;
+export default AddAssignmentModal;

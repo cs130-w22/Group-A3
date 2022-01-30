@@ -7,7 +7,7 @@ import Button from "react-bootstrap/Button"
 
 import StudentAssignmentCard from "./StudentAssignmentCard";
 import ProfessorAssignmentCard from "./ProfessorAssignmentCard";
-import AddAssignmentView from "../AssignmentView/AddAssignmentView";
+import AddAssignmentModal from "../AssignmentView/AddAssignmentModal";
 
 const Assignments = ["Assignment 1", "Assignment 2", "Assignment 3"]; //should be reading assignments from a database 
 
@@ -45,7 +45,7 @@ const ClassView = () => {
         }
         {(mode === "student")?
         null:
-       <AddAssignmentView/>}
+       <AddAssignmentModal/>}
       </Stack>
     </Container>
   );

@@ -3,7 +3,6 @@ import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import Login from "./Login";
 import ClassView from "./ClassView/ClassView";
 import AssignmentView from "./AssignmentView/AssignmentView";
-import AddAssignmentView from "./AssignmentView/AddAssignmentView";
 import ClassStatsView from "./ClassStatsView/ClassStatsView";
 import ClassListView from "./ClassListView/ClassListView";
 
