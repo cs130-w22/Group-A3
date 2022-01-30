@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 
 import Container from "react-bootstrap/Container";
-import Col from 'react-bootstrap/Col'
+import Col from 'react-bootstrap/Col';
 import Row from "react-bootstrap/Row";
 import Card from "react-bootstrap/Card";
 import ProgressBar from "react-bootstrap/ProgressBar";
@@ -10,7 +10,7 @@ import { Link } from "react-router-dom";
 
 //A card representing a single assignment overview
 const StudentAssignmentCard = (props:{name:string}) => {
-  const grade = 50; ////should be server calls sometime 
+  const grade = 50; //should be server calls sometime 
 
   const duedate:string  = "3/22/2022"; //should be server calls sometime 
   return (
