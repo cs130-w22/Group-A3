@@ -25,9 +25,6 @@ const App = () => (
       <Route path="/class/classlist">
         <Route index element={<ClassListView />} />
       </Route>
-      <Route path="/class/assignment/add">
-        <Route index element={<AddAssignmentView />} />
-      </Route>
     </Routes>
   </Router>
 );
