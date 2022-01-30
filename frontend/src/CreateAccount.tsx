@@ -18,22 +18,14 @@ const CreateAccount = () => {
         <Container>
             <Stack direction="vertical" gap={3}>
                 {error && <Alert variant={"danger"}>Failed to login: {error}</Alert>}
-                <Form onSubmit={submit}>
-                    <Form.Group className="mb-3" controlId="formUsername">
-                        <Form.Label>Username</Form.Label>
-                        <Form.Control type="text" name="username" placeholder="Josie Bruin" />
-                    </Form.Group>
-                    <Form.Group className="mb-3" controlId="formPassword">
-                        <Form.Label>Password</Form.Label>
-                        <Form.Control type="password" name="password" />
-                    </Form.Group>
-                    <Button variant="primary" type="submit">
-                        Login
-                    </Button>
-                    <Button variant="secondary" type="button">
-                        Register
-                    </Button>
-                </Form>
+                <h1 style={{textAlign: "center", justifyContent: "center", color: "black", font:"Hammersmith One", fontSize:50}} >Who are you?</h1>
+                <Button variant="primary" type="button">
+                    Student
+                </Button>
+                <br/>
+                <Button variant="secondary" type="button">
+                    Professor
+                </Button>
             </Stack>
         </Container>
     );
