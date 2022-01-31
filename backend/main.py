@@ -31,7 +31,7 @@ def teardown_db(exception):
 # Create a user in the database, then return a valid JWT for their session.
 @app.route("/user", methods=["POST"])
 def create():
-    return { "token": "example" }
+    return {"token": "example"}
     form = request.form
     account_type, username, password = form["type"], form["username"], form["password"]
     invite_key = None if account_type == "student" else form["inviteKey"]
@@ -74,6 +74,7 @@ def create():
 def login():
     return {"token": "example"}
 
+
 @app.route("/class", methods=["POST"])
 def create_class():
     body = request.json
@@ -97,5 +98,5 @@ if __name__ == "__main__":
         help="connection string for a postgresql database",
     )
     args = parser.parse_args()
-    
+
     app.run(port=args.port)
