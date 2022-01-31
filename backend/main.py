@@ -5,7 +5,12 @@ from argparse import ArgumentParser
 from flask import Flask, g, request
 import psycopg as pg
 
+from argparse import ArgumentParser
+
 CONN_STR = ""
+
+app = Flask(__name__)
+
 
 # Retrieve the global database connection object.
 # Pulled from https://flask.palletsprojects.com/en/2.0.x/appcontext/
@@ -24,8 +29,9 @@ def teardown_db(exception):
 
 
 # Create a user in the database, then return a valid JWT for their session.
-@app.route("/create", methods=["POST"])
+@app.route("/user", methods=["POST"])
 def create():
+    return { "token": "example" }
     form = request.form
     account_type, username, password = form["type"], form["username"], form["password"]
     invite_key = None if account_type == "student" else form["inviteKey"]
@@ -68,6 +74,12 @@ def create():
 def login():
     return {"token": "example"}
 
+@app.route("/class", methods=["POST"])
+def create_class():
+    body = request.json
+    print(body)
+    return {}, 200
+
 
 if __name__ == "__main__":
     parser = ArgumentParser("code_grader")
@@ -85,6 +97,5 @@ if __name__ == "__main__":
         help="connection string for a postgresql database",
     )
     args = parser.parse_args()
-
-    app = Flask(__name__)
+    
     app.run(port=args.port)
