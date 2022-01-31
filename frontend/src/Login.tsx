@@ -12,6 +12,14 @@ const Login = () => {
 
   const submit: React.FormEventHandler<HTMLFormElement> = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    fetch('localhost:8080/class', {
+      method: 'post',
+      body: JSON.stringify({}),
+    })
+    .then(r => r.json())
+    .then(r => console.info(r))
+    .catch(console.error);
+
     setError(err => err ? "" : `Username is invalid.`);
     nav('/class');
   };

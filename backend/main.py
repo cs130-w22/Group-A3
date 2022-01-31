@@ -1,15 +1,26 @@
 #!/bin/python3
 
 from argparse import ArgumentParser
+from dataclasses import dataclass
+from datetime import datetime
 
 from flask import Flask, g, request
 import psycopg as pg
+from psycopg.rows import class_row
 
 from argparse import ArgumentParser
 
 CONN_STR = ""
 
 app = Flask(__name__)
+
+@dataclass
+class Account:
+    id: int
+    username: str
+    password: str
+    professor: bool
+    deleted: datetime
 
 # Retrieve the global database connection object.
 # Pulled from https://flask.palletsprojects.com/en/2.0.x/appcontext/
@@ -48,23 +59,23 @@ def create():
     # course.
     conn = get_db()
     with conn.cursor() as cur:
+        cur.row_factory = class_row(Account)
         cur.execute(
-            "INSERT INTO Accounts (username, password, professor) VALUES (%s, %s, %s)",
-            username,
-            password,
-            account_type == "professor",
+            "INSERT INTO Accounts (username, password, professor) VALUES (%s, %s, %s) RETURNING *",
+            [username, password, account_type == "professor"],
         )
+        row = cur.fetchone()
+        print(row)
 
         # If the account is for a student, then join them to their class.
         if account_type == "student":
             cur.execute(
                 """
-                INSERT INTO ClassMembers (id, class_id) VALUES (id, class_id) \
-                WHERE id = (SELECT id FROM Accounts WHERE username = %s) AND \
+                INSERT INTO ClassMembers (id, class_id) VALUES (id, class_id)
+                HAVING id = (SELECT id FROM Accounts WHERE username = %s) AND
                 class_id = (SELECT invites_to FROM Invites WHERE id = %s)
                 """,
-                username,
-                invite_key,
+                [username, invite_key],
             )
         conn.commit()
 
@@ -84,6 +95,22 @@ def view_class(class_id):
         "assignments": [],
         "members": [{"name": "Svetly"}, {"name": "Preetha"}, {"name": "Leo"}],
     }, 200
+
+
+@app.route("/<class_id>/invite", methods=["POST"])
+def create_invite(class_id):
+    """
+    Create an invite code for the class with ID `class_id`.
+    """
+    return {"inviteCode": "my-new-invite-code"}
+
+
+@app.route("/<class_id>/join", methods=["POST"])
+def join_class(class_id):
+    """
+    Join the currently logged-in user to the class with ID `class_id`.
+    """
+    return {}, 204
 
 
 @app.route("/<class_id>/<assignment_id>", methods=["GET"])
@@ -136,9 +163,10 @@ if __name__ == "__main__":
     parser.add_argument(
         "--db-conn",
         type=str,
-        default="port=5432 user=dev password=dev",
+        default="host=localhost port=5432 dbname=gradebetter user=admin password=admin",
         help="connection string for a postgresql database",
     )
     args = parser.parse_args()
 
+    CONN_STR = args.db_conn
     app.run(port=args.port)
