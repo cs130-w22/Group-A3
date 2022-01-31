@@ -99,6 +99,22 @@ def get_assignment(class_id, assignment_id):
     }, 200
 
 
+@app.route("/<class_id>/<assignment_id>/script", methods=["GET", "POST"])
+def upload_grading_script(class_id, assignment_id):
+    """
+    Upload the grading script for a specific assignment.
+    """
+    return {}, 204
+
+
+@app.route("/<class_id>/<assignment_id>/upload", methods=["GET", "POST"])
+def upload_submission(class_id, assignment_id):
+    """
+    Upload the a submission for a specific assignment.
+    """
+    return {}, 204
+
+
 @app.route("/class", methods=["POST"])
 def create_class():
     """
