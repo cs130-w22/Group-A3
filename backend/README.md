@@ -2,7 +2,11 @@
 
 The backend for our grading solution supports operations on user-sensitive data.
 
-## Get Started
+## Get Started (as a user)
+
+Configure the server through `config.env`.
+
+## Get Started (as a dev)
 
 You will need
 * Docker

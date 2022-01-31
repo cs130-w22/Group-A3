@@ -36,7 +36,6 @@ def login():
 # Create a user in the database, then return a valid JWT for their session.
 @app.route("/user", methods=["POST"])
 def create():
-    return {"token": "example"}
     form = request.form
     account_type, username, password = form["type"], form["username"], form["password"]
     invite_key = None if account_type == "student" else form["inviteKey"]
