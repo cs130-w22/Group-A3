@@ -9,7 +9,7 @@ CONN_STR = ""
 
 # Retrieve the global database connection object.
 # Pulled from https://flask.palletsprojects.com/en/2.0.x/appcontext/
-def get_db():
+def get_db() -> pg.Connection:
     global CONN_STR
     if "conn" not in g:
         g.conn = pg.connect(CONN_STR)
@@ -21,6 +21,45 @@ def teardown_db(exception):
     conn = g.pop("conn", None)
     if conn is not None:
         conn.close()
+
+
+# Create a user in the database, then return a valid JWT for their session.
+@app.route("/create", methods=["POST"])
+def create():
+    form = request.form
+    account_type, username, password = form["type"], form["username"], form["password"]
+    invite_key = None if account_type == "student" else form["inviteKey"]
+
+    # Bad request
+    if account_type not in ["student", "professor"]:
+        return {"message": "Invalid account type!"}, 400
+
+    # Create a database transaction to insert our accout into the associated
+    # course.
+    conn = get_db()
+    with conn.cursor() as cur:
+        cur.execute(
+            "INSERT INTO Accounts (username, password, professor) VALUES (%s, %s, %s)",
+            username,
+            password,
+            account_type == "professor",
+        )
+
+        # If the account is for a student, then join them to their class.
+        if account_type == "student":
+            cur.execute(
+                """
+                INSERT INTO ClassMembers (id, class_id) VALUES (id, class_id) \
+                WHERE id = (SELECT id FROM Accounts WHERE username = %s) AND \
+                class_id = (SELECT invites_to FROM Invites WHERE id = %s)
+                """,
+                username,
+                invite_key,
+            )
+        conn.commit()
+
+    # TODO: create and return a JWT for the new session
+    return {}, 201
 
 
 # Lever Flask's automatic JSON response functionality:
