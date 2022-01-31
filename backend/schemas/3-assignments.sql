@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS Assignments (
   due_date TIMESTAMPTZ NOT NULL,
 
   -- Points possible for the assignment.
-  points NUMERIC(11, 8),
+  points DOUBLE PRECISION,
   
   PRIMARY KEY (id),
   FOREIGN KEY (class) REFERENCES Classes (id)
