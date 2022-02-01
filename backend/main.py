@@ -4,6 +4,7 @@ from argparse import ArgumentParser
 from dataclasses import dataclass
 from datetime import datetime
 
+import jwt
 from flask import Flask, g, request
 import psycopg as pg
 from psycopg.rows import class_row
@@ -11,8 +12,26 @@ from psycopg.rows import class_row
 from argparse import ArgumentParser
 
 CONN_STR = ""
+SECRET = ""
 
 app = Flask(__name__)
+
+
+def get_auth() -> dict:
+    """
+    Get the JSON map encoded in the request's "Authorization" header.
+    """
+    return jwt.decode(
+        request.headers.get("Authorization"), SECRET, algorithms=["HS256"]
+    )
+
+
+def to_auth(map: dict):
+    """
+    Convert the provided map into a Base64-encoded JWT.
+    """
+    return jwt.encode(map, SECRET, algorithm="HS256")
+
 
 @dataclass
 class Account:
@@ -21,6 +40,7 @@ class Account:
     password: str
     professor: bool
     deleted: datetime
+
 
 # Retrieve the global database connection object.
 # Pulled from https://flask.palletsprojects.com/en/2.0.x/appcontext/
@@ -169,7 +189,15 @@ if __name__ == "__main__":
         default="host=localhost port=5432 dbname=gradebetter user=admin password=admin",
         help="connection string for a postgresql database",
     )
+    parser.add_argument(
+        "-s",
+        "--secret",
+        type=str,
+        default="gradbetter",
+        help="secret key to use in JWT generation",
+    )
     args = parser.parse_args()
 
     CONN_STR = args.db_conn
+    SECRET = args.secret
     app.run(port=args.port)
