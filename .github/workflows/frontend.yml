@@ -6,8 +6,11 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Install modules
+      working-directory: ./frontend
       run: yarn
     - name: ESLint
-      run: eslint frontend/src --ext .ts,.tsx
+      working-directory: ./frontend
+      run: yarn run eslint src --ext .ts,.tsx
     - name: Formatting
-      run: prettier -c frontend/src
+      working-directory: ./frontend
+      run: yarn run prettier -c src
