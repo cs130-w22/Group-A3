@@ -7,6 +7,7 @@ from datetime import datetime
 import jwt
 from flask import Flask, g, request
 import psycopg as pg
+import psycopg.errors as errors
 from psycopg.rows import class_row
 
 from argparse import ArgumentParser
@@ -20,17 +21,21 @@ app = Flask(__name__)
 def get_auth() -> dict:
     """
     Get the JSON map encoded in the request's "Authorization" header.
+    Expiration is automatically checked by PyJWT. If the signature is
+    expired, an ExpiredSignatureError is thrown.
     """
     return jwt.decode(
         request.headers.get("Authorization"), SECRET, algorithms=["HS256"]
     )
 
 
-def to_auth(map: dict):
+def to_auth(map: dict) -> str:
     """
     Convert the provided map into a Base64-encoded JWT.
+
+    TODO: expiry renewal
     """
-    return jwt.encode(map, SECRET, algorithm="HS256")
+    return jwt.encode(map, SECRET, algorithm="HS256").decode("utf-8")
 
 
 @dataclass
@@ -61,15 +66,17 @@ def teardown_db(exception):
 # Log an user into the database, then return a valid JWT for their session.
 @app.route("/login", methods=["POST"])
 def login():
+    form = request.form
+
     return {"token": "example"}
 
 
 # Create a user in the database, then return a valid JWT for their session.
 @app.route("/user", methods=["POST"])
 def create():
-    form = request.form
+    form = request.json
     account_type, username, password = form["type"], form["username"], form["password"]
-    invite_key = None if account_type == "student" else form["inviteKey"]
+    # invite_key = None if account_type == "student" else form["inviteKey"]
 
     # Bad request
     if account_type not in ["student", "professor"]:
@@ -80,27 +87,18 @@ def create():
     conn = get_db()
     with conn.cursor() as cur:
         cur.row_factory = class_row(Account)
-        cur.execute(
-            "INSERT INTO Accounts (username, password, professor) VALUES (%s, %s, %s) RETURNING *",
-            [username, password, account_type == "professor"],
-        )
-        row = cur.fetchone()
-        print(row)
-
-        # If the account is for a student, then join them to their class.
-        if account_type == "student":
+        try:
             cur.execute(
-                """
-                INSERT INTO ClassMembers (id, class_id) VALUES (id, class_id)
-                HAVING id = (SELECT id FROM Accounts WHERE username = %s) AND
-                class_id = (SELECT invites_to FROM Invites WHERE id = %s)
-                """,
-                [username, invite_key],
+                "INSERT INTO Accounts (username, password, professor) VALUES (%s, %s, %s)",
+                [username, password, account_type == "professor"],
             )
-        conn.commit()
+            conn.commit()
+        except errors.UniqueViolation:
+            # User already exists.
+            return {}, 409
 
-    # TODO: create and return a JWT for the new session
-    return {}, 201
+    # Create and return a JWT for the new session.
+    return {"token": to_auth({"username": username})}, 201
 
 
 @app.route("/class/<class_id>/info", methods=["GET"])
