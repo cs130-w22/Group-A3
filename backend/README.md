@@ -207,6 +207,49 @@ Status Code | Semantic
 401 | Unauthorized
 500 | Server error
 
+### `POST /<class_id>/<assignment_id>/script`
+
+Upload a grading script for the assignment with the specified ID.
+
+#### Request Body
+
+```formData
+<input type="file" name="file">
+```
+
+#### Response Format
+
+As of right now, no data is returned by this endpoint.
+
+Status Code | Semantic
+:-|:-
+204 | OK. Grading script has been uploaded successfully.
+400 | Bad request (see format)
+401 | Unauthorized
+500 | Server error
+
+### `POST /<class_id>/<assignment_id>/upload`
+
+Upload a submission for the assignment with the specified ID.
+
+#### Request Body
+
+```formData
+<input type="file" name="file">
+```
+
+#### Response Format
+
+As of right now, no data is returned by this endpoint.
+
+Status Code | Semantic
+:-|:-
+204 | OK. Assignment has been uploaded successfully.
+400 | Bad request (see format)
+401 | Unauthorized
+500 | Server error
+
+
 ## Get Started Developing
 
 You will need
