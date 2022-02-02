@@ -67,7 +67,7 @@ def create():
                 username,
                 invite_key,
             )
-        conn.commit()
+        conn.commit()0
 
     # TODO: create and return a JWT for the new session
     return {}, 201
