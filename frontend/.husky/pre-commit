@@ -1,4 +1,9 @@
 #!/bin/sh
-. "$(dirname "$0")/_/husky.sh"
 
-cd frontend && npx lint-staged
+# Only run if host computer has Node installed.
+if command -v node &>/dev/null
+then
+  . "$(dirname "$0")/_/husky.sh"
+  cd frontend
+  node run lint-staged
+fi
