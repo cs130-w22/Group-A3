@@ -5,11 +5,16 @@ from argparse import ArgumentParser
 from flask import Flask, g, request
 import psycopg as pg
 
+from argparse import ArgumentParser
+
 CONN_STR = ""
+
+app = Flask(__name__)
+
 
 # Retrieve the global database connection object.
 # Pulled from https://flask.palletsprojects.com/en/2.0.x/appcontext/
-def get_db():
+def get_db() -> pg.Connection:
     global CONN_STR
     if "conn" not in g:
         g.conn = pg.connect(CONN_STR)
@@ -23,11 +28,58 @@ def teardown_db(exception):
         conn.close()
 
 
+# Create a user in the database, then return a valid JWT for their session.
+@app.route("/user", methods=["POST"])
+def create():
+    return {"token": "example"}
+    form = request.form
+    account_type, username, password = form["type"], form["username"], form["password"]
+    invite_key = None if account_type == "student" else form["inviteKey"]
+
+    # Bad request
+    if account_type not in ["student", "professor"]:
+        return {"message": "Invalid account type!"}, 400
+
+    # Create a database transaction to insert our accout into the associated
+    # course.
+    conn = get_db()
+    with conn.cursor() as cur:
+        cur.execute(
+            "INSERT INTO Accounts (username, password, professor) VALUES (%s, %s, %s)",
+            username,
+            password,
+            account_type == "professor",
+        )
+
+        # If the account is for a student, then join them to their class.
+        if account_type == "student":
+            cur.execute(
+                """
+                INSERT INTO ClassMembers (id, class_id) VALUES (id, class_id) \
+                WHERE id = (SELECT id FROM Accounts WHERE username = %s) AND \
+                class_id = (SELECT invites_to FROM Invites WHERE id = %s)
+                """,
+                username,
+                invite_key,
+            )
+        conn.commit()
+
+    # TODO: create and return a JWT for the new session
+    return {}, 201
+
+
 # Lever Flask's automatic JSON response functionality:
 # https://flask.palletsprojects.com/en/2.0.x/quickstart/#apis-with-json
 @app.route("/login", methods=["POST"])
 def login():
     return {"token": "example"}
+
+
+@app.route("/class", methods=["POST"])
+def create_class():
+    body = request.json
+    print(body)
+    return {}, 200
 
 
 if __name__ == "__main__":
@@ -47,5 +99,4 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    app = Flask(__name__)
     app.run(port=args.port)

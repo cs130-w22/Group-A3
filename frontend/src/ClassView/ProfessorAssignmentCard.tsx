@@ -14,7 +14,7 @@ const ProfessorAssignmentCard = (props:{name:string}) => {
 
   const duedate:string  = "3/22/2022"; //should be server calls sometime 
   return (
-      <Link to={"/professor/class/assignment"} style={{ textDecoration: 'none' , color: 'inherit'}}>
+      <Link to={"/class/assignment"} style={{ textDecoration: 'none' , color: 'inherit'}}>
         <Card /*style={{ width: '18rem' }}*/>
             <Card.Body>
                 <Card.Title>{props.name}</Card.Title>
