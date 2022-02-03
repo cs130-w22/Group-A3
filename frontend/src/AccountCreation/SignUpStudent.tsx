@@ -1,12 +1,12 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Container from "react-bootstrap/Container";
-import Alert from "react-bootstrap/Alert";
 import Stack from "react-bootstrap/Stack";
 import { Button } from "react-bootstrap";
 
-const CreateAccount = () => {
+const SignUpStudent = () => {
     const nav = useNavigate();
+
     const professsorClicked = () => {
         nav('/create/professor');
     };
@@ -17,7 +17,7 @@ const CreateAccount = () => {
     return (
         <Container>
             <Stack direction="vertical" gap={3}>
-                <h1 style={{textAlign: "center", justifyContent: "center", color: "black", font:"Hammersmith One", fontSize:50}} >Who are you?</h1>
+                <h1 style={{textAlign: "center", justifyContent: "center", color: "black", font:"Hammersmith One", fontSize:50}} >Student Sign up</h1>
                 <Button onClick={studentClicked}>Student</Button>
                 <br/>
                 <Button onClick={professsorClicked}>Professor</Button>
@@ -26,4 +26,4 @@ const CreateAccount = () => {
     );
 };
 
-export default CreateAccount;
+export default SignUpStudent;
