@@ -2,9 +2,7 @@
 
 from argparse import ArgumentParser
 from dataclasses import dataclass
-from datetime import datetime, timedelta, timezone
 
-import jwt
 from flask import Flask, g, request
 import psycopg as pg
 import psycopg.errors as errors
@@ -12,51 +10,20 @@ from psycopg.rows import class_row
 
 from argparse import ArgumentParser
 
+from auth import *
+
 CONN_STR = ""
 SECRET = ""
 
 app = Flask(__name__)
 
 
-def get_auth() -> dict:
-    """
-    Get the JSON map encoded in the request's "Authorization" header.
-    Expiration is automatically checked by PyJWT. If the signature is
-    expired, an ExpiredSignatureError is thrown.
-
-    The "nbf" and "exp" claims are required for each token. If they are
-    missing, then this function will throw an error.
-    """
-    return jwt.decode(
-        request.headers.get("Authorization"),
-        SECRET,
-        algorithms=["HS256"],
-        options={"require": ["exp", "nbf"]},
-    )
-
-
-def to_auth(payload: dict) -> str:
-    """
-    Convert the provided dictionary payload into a Base64-encoded JWT.
-
-    Tokens expire in 31 days, and cannot be used before the time they
-    were issued at.
-    """
-    return jwt.encode(
-        {
-            **payload,
-            # Tokens are valid for 31 days.
-            "exp": datetime.now(tz=timezone.utc) + timedelta(days=31),
-            # Tokens should not be accepted before the present day.
-            "nbf": datetime.now(tz=timezone.utc),
-        },
-        SECRET,
-        algorithm="HS256",
-    ).decode("utf-8")
-
-
 @dataclass
 class Account:
+    """
+    Helper dataclass for psycopg row factory use.
+    """
+
     id: int
     username: str
     password: str
@@ -87,29 +54,37 @@ def login():
     username, password = json["username"], json["password"]
 
     conn = get_db()
-    with conn.cursor() as cur:
+    with conn.cursor(row_factory=class_row(Account)) as cur:
         cur.execute(
-            "SELECT * FROM Accounts WHERE username = %s AND password = crypt(%s, password)",
+            """
+            SELECT * FROM Accounts
+            WHERE username = %s
+            AND password = crypt(%s, password)
+            """,
             [username, password],
         )
         records = cur.fetchall()
-        if len(records) != 1:
+
+        length = len(records)
+        if length == 0:
+            # The login failed.
             return {}, 400
+        elif len(records) > 1:
+            # There is a problem with the database.
+            return {}, 500
         account = records[0]
 
     return {
-        "token": to_auth(
-            # Right now, we just store the user's ID in the token.
-            {
-                "userid": account[0],
-            }
+        "token": Token(
+            SECRET,
+            account.id,
         ),
     }, 200
 
 
 # Create a user in the database, then return a valid JWT for their session.
 @app.route("/user", methods=["POST"])
-def create():
+def create_user():
     json = request.json
     account_type, username, password = json["type"], json["username"], json["password"]
 
@@ -123,16 +98,21 @@ def create():
     with conn.cursor(row_factory=class_row(Account)) as cur:
         try:
             cur.execute(
-                "INSERT INTO Accounts (username, password, professor) VALUES (%s, %s, %s)",
+                """
+                INSERT INTO Accounts (username, password, professor)
+                VALUES (%s, %s, %s)
+                RETURNING *
+                """,
                 [username, password, account_type == "professor"],
             )
             conn.commit()
+            result = cur.fetchone()
         except errors.UniqueViolation:
             # User already exists.
             return {}, 409
 
-    # Create and return a JWT for the new session.
-    return {"token": to_auth({"username": username})}, 201
+    # Create and return a JWT for the new session containing the user's ID.
+    return {"token": Token(SECRET, result.id).to_jwt()}, 201
 
 
 @app.route("/class/<class_id>/info", methods=["GET"])
