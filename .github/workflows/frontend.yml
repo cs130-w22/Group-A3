@@ -1,0 +1,16 @@
+name: Frontend QA
+on: [push]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install modules
+      working-directory: ./frontend
+      run: yarn
+    - name: ESLint
+      working-directory: ./frontend
+      run: yarn run eslint src --ext .ts,.tsx
+    - name: Formatting
+      working-directory: ./frontend
+      run: yarn run prettier -c src
