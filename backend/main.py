@@ -148,6 +148,69 @@ def upload_submission(class_id, assignment_id):
     return {}, 204
 
 
+@app.route("/class/<class_id>/info", methods=["GET"])
+def view_class(class_id):
+    """
+    Get all relevant information about a class, including its assignments, member list
+    (if allowed), and owner.
+    """
+
+    is_professor = True
+
+    return {
+        "name": "mycoolclass",
+        "ownerName": "Prof. Eggert",
+        "assignments": [],
+        "members": [{"name": "Svetly"}, {"name": "Preetha"}, {"name": "Leo"}]
+        if is_professor
+        else None,
+    }, 200
+
+
+@app.route("/class/<class_id>/<assignment_id>", methods=["GET"])
+def get_assignment(class_id, assignment_id):
+    """
+    Get information about an assignment for a specific user.
+    """
+    return {
+        "name": "Cool assignment one",
+        "dueDate": "1647205512354",
+        "submissions": [{"date": "1643663222161", "pointsEarned": 100.0}],
+    }, 200
+
+
+@app.route("/<class_id>/<assignment_id>/script", methods=["POST"])
+def upload_grading_script(class_id, assignment_id):
+    """
+    Upload the grading script for a specific assignment.
+    """
+    return {}, 204
+
+
+@app.route("/<class_id>/<assignment_id>/upload", methods=["POST"])
+def upload_submission(class_id, assignment_id):
+    """
+    Upload a submission for a specific assignment.
+    """
+    return {}, 204
+
+
+@app.route("/class/<class_id>/invite", methods=["POST"])
+def create_invite(class_id):
+    """
+    Create an invite code for the class with ID `class_id`.
+    """
+    return {"inviteCode": "my-new-invite-code"}, 201
+
+
+@app.route("/class/join", methods=["POST"])
+def join_class(class_id):
+    """
+    Join the currently logged-in user to the class with ID `class-id`.
+    """
+    return {}, 204
+
+
 @app.route("/class", methods=["POST"])
 def create_class():
     """

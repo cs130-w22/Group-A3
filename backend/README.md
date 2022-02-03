@@ -10,9 +10,6 @@ Responses are formatted with JSON. Variable names passed in the request are docu
 using `snake_case`, but responses will provide variable names that **are actually** in
 `camelCase`.
 
-When `POST`ing to an endpoint, please specify `Content-Type: application/json`
-in your headers.
-
 All endpoints except for `POST /login` and `POST /user` expect an `Authorization` header
 in the HTTP request bearing a JWT returned by either of these endpoints.
 
@@ -25,17 +22,11 @@ send this on TLS.
 
 #### Request Body
 
-Field | Possible Values
-:-|:-
-type | professor, student
-username | *
-password | *
-
 ```json
 {
-  "type": "professor",
   "username": "Smallberg",
-  "password": "MYSECRETPASSWORD DONT TELL ANYONE LOL"
+  "password": "MYSECRETPASSWORD DONT TELL ANYONE LOL",
+  "professor": "true",
 }
 ```
 
@@ -52,7 +43,6 @@ Status Code | Semantic
 201 | CREATED
 400 | Bad request (see format)
 401 | Unauthorized
-409 | Username already exists
 500 | Server error
 
 ### `POST /login`
@@ -216,6 +206,49 @@ Status Code | Semantic
 400 | Bad request (see format)
 401 | Unauthorized
 500 | Server error
+
+### `POST /<class_id>/<assignment_id>/script`
+
+Upload a grading script for the assignment with the specified ID.
+
+#### Request Body
+
+```formData
+<input type="file" name="file">
+```
+
+#### Response Format
+
+As of right now, no data is returned by this endpoint.
+
+Status Code | Semantic
+:-|:-
+204 | OK. Grading script has been uploaded successfully.
+400 | Bad request (see format)
+401 | Unauthorized
+500 | Server error
+
+### `POST /<class_id>/<assignment_id>/upload`
+
+Upload a submission for the assignment with the specified ID.
+
+#### Request Body
+
+```formData
+<input type="file" name="file">
+```
+
+#### Response Format
+
+As of right now, no data is returned by this endpoint.
+
+Status Code | Semantic
+:-|:-
+204 | OK. Assignment has been uploaded successfully.
+400 | Bad request (see format)
+401 | Unauthorized
+500 | Server error
+
 
 ## Get Started Developing
 
