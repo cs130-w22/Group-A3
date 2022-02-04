@@ -17,6 +17,7 @@ function App() {
         <Route path="/">
           <Route index element={<Login />} />
         </Route>
+        <Route path="/create">
           <Route index element={<CreateAccount />} />
         </Route>
         <Route path="/create/professor">

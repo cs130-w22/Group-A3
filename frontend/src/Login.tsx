@@ -19,14 +19,29 @@ function Login() {
   };
 
   const createAccount = () => {
-    nav('/create');
+    nav("/create");
+  };
+
+  const forgotPassword = () => {
+    nav("/forgot");
   };
 
   return (
     <Container>
       <Stack direction="vertical" gap={3}>
         {error && <Alert variant={"danger"}>Failed to login: {error}</Alert>}
-        <h1 style={{textAlign: "center", justifyContent: "center", color: "#1273de", font:"Hammersmith One", fontSize:80}} >Gradebetter</h1>
+        <br />
+        <h1
+          style={{
+            textAlign: "center",
+            justifyContent: "center",
+            color: "#1273de",
+            font: "Hammersmith One",
+            fontSize: 80,
+          }}
+        >
+          Gradebetter
+        </h1>
         <Form onSubmit={submit}>
           <Form.Group className="mb-3" controlId="formUsername">
             <Form.Label>Username</Form.Label>
@@ -40,12 +55,27 @@ function Login() {
             <Form.Label>Password</Form.Label>
             <Form.Control type="password" name="password" />
           </Form.Group>
-          <Button variant="primary" type="submit" style={{borderRadius:20}}>
+          <Button variant="primary" type="submit" style={{ borderRadius: 20 }}>
             Login
           </Button>
-          <br/>
-          <br/>
-          <Button onClick={createAccount} variant="secondary" type="button" style={{borderRadius:20}}>
+          <br />
+          <br />
+          <Button
+            onClick={forgotPassword}
+            variant="secondary"
+            type="button"
+            style={{ borderRadius: 20 }}
+          >
+            Forgot Password
+          </Button>
+          <br />
+          <br />
+          <Button
+            onClick={createAccount}
+            variant="secondary"
+            type="button"
+            style={{ borderRadius: 20 }}
+          >
             Register
           </Button>
         </Form>
