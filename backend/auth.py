@@ -10,7 +10,7 @@ class Token:
     Python-representation of a JWT session token.
 
     Example:
-    
+
     ```json
     { "id": 0 }
     ```
