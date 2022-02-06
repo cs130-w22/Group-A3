@@ -4,14 +4,24 @@ import Container from "react-bootstrap/Container";
 import Alert from "react-bootstrap/Alert";
 import Stack from "react-bootstrap/Stack";
 import { Button } from "react-bootstrap";
+import "./CreateAccount.css";
+import SignUpProfessor from "./SignUpProfessor";
+import SignUpStudent from "./SignUpStudent";
+
+enum Mode {
+  CHOOSING = 0,
+  STUDENT = 1,
+  PROFESSOR = 2,
+}
 
 const CreateAccount = () => {
+  const [mode, setMode] = useState(Mode.CHOOSING);
   const nav = useNavigate();
   const professsorClicked = () => {
-    nav("/create/professor");
+    setMode(Mode.PROFESSOR);
   };
   const studentClicked = () => {
-    nav("/create/student");
+    setMode(Mode.STUDENT);
   };
 
   return (
@@ -38,12 +48,14 @@ const CreateAccount = () => {
             fontSize: 30,
           }}
         >
-          Who are you?
+          I am a
         </h2>
         <Button onClick={studentClicked}>Student</Button>
         <br />
+        {mode === Mode.STUDENT && <SignUpStudent />}
         <Button onClick={professsorClicked}>Professor</Button>
         <br />
+        {mode === Mode.PROFESSOR && <SignUpProfessor />}
         <Button
           variant="outline-primary"
           onClick={() => nav("/")}

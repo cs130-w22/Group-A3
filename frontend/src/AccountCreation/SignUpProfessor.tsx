@@ -19,17 +19,6 @@ const SignUpProfessor = () => {
     <Container>
       <Stack direction="vertical" gap={3}>
         <br />
-        <h1
-          style={{
-            textAlign: "center",
-            justifyContent: "center",
-            color: "#1273de",
-            font: "Hammersmith One",
-            fontSize: 80,
-          }}
-        >
-          Gradebetter
-        </h1>
         <Form onSubmit={submit}>
           <Form.Group className="mb-3" controlId="formCourseCode">
             <Form.Label>Your Course Code:</Form.Label>
@@ -82,13 +71,6 @@ const SignUpProfessor = () => {
           <br />
         </Form>
         <br />
-        <Button
-          variant="outline-primary"
-          onClick={() => nav("/create")}
-          style={{ marginBottom: "1rem" }}
-        >
-          Back
-        </Button>
       </Stack>
     </Container>
   );
