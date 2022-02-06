@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Container from "react-bootstrap/Container";
-import Alert from "react-bootstrap/Alert";
 import Stack from "react-bootstrap/Stack";
 import { Button } from "react-bootstrap";
 import "./CreateAccount.css";
@@ -17,6 +16,7 @@ enum Mode {
 const CreateAccount = () => {
   const [mode, setMode] = useState(Mode.CHOOSING);
   const nav = useNavigate();
+
   const professsorClicked = () => {
     setMode(Mode.PROFESSOR);
   };

@@ -4,20 +4,24 @@ import Container from "react-bootstrap/Container";
 import Stack from "react-bootstrap/Stack";
 import { Button } from "react-bootstrap";
 import Form from "react-bootstrap/Form";
+import Alert from "react-bootstrap/Alert";
 
 const SignUpStudent = () => {
   const nav = useNavigate();
+  const [error, setError] = useState("");
 
   const submit: React.FormEventHandler<HTMLFormElement> = (
     e: React.FormEvent<HTMLFormElement>
   ) => {
     e.preventDefault();
+    setError((err) => (err ? "" : "Make Sure All Fields Are Filled"));
     nav("/class");
   };
 
   return (
     <Container>
       <Stack direction="vertical" gap={3}>
+        {error && <Alert variant={"danger"}>Failed to login: {error}</Alert>}
         <br />
         <Form onSubmit={submit}>
           <Form.Group className="mb-3" controlId="formCourseCode">
