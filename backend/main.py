@@ -7,9 +7,12 @@ import psycopg as pg
 
 from argparse import ArgumentParser
 
+from blueprint import react
+
 CONN_STR = ""
 
 app = Flask(__name__)
+app.register_blueprint(react)
 
 # Retrieve the global database connection object.
 # Pulled from https://flask.palletsprojects.com/en/2.0.x/appcontext/
@@ -28,13 +31,13 @@ def teardown_db(exception):
 
 
 # Log an user into the database, then return a valid JWT for their session.
-@app.route("/login", methods=["POST"])
+@app.route("/api/login", methods=["POST"])
 def login():
     return {"token": "example"}
 
 
 # Create a user in the database, then return a valid JWT for their session.
-@app.route("/user", methods=["POST"])
+@app.route("/api/user", methods=["POST"])
 def create():
     return {"token": "example"}
     form = request.form
@@ -73,7 +76,7 @@ def create():
     return {}, 201
 
 
-@app.route("/class/<class_id>/info", methods=["GET"])
+@app.route("/api/class/<class_id>/info", methods=["GET"])
 def view_class(class_id):
     """
     Get all relevant information about a class, including its assignments, member list
@@ -92,7 +95,7 @@ def view_class(class_id):
     }, 200
 
 
-@app.route("/class/<class_id>/<assignment_id>", methods=["GET"])
+@app.route("/api/class/<class_id>/<assignment_id>", methods=["GET"])
 def get_assignment(class_id, assignment_id):
     """
     Get information about an assignment for a specific user.
@@ -104,7 +107,7 @@ def get_assignment(class_id, assignment_id):
     }, 200
 
 
-@app.route("/<class_id>/<assignment_id>/script", methods=["POST"])
+@app.route("/api/<class_id>/<assignment_id>/script", methods=["POST"])
 def upload_grading_script(class_id, assignment_id):
     """
     Upload the grading script for a specific assignment.
@@ -112,7 +115,7 @@ def upload_grading_script(class_id, assignment_id):
     return {}, 204
 
 
-@app.route("/<class_id>/<assignment_id>/upload", methods=["POST"])
+@app.route("/api/<class_id>/<assignment_id>/upload", methods=["POST"])
 def upload_submission(class_id, assignment_id):
     """
     Upload a submission for a specific assignment.
@@ -120,7 +123,7 @@ def upload_submission(class_id, assignment_id):
     return {}, 204
 
 
-@app.route("/class", methods=["POST"])
+@app.route("/api/class", methods=["POST"])
 def create_class():
     """
     Create a class in the database.
@@ -128,7 +131,7 @@ def create_class():
     return {"id": "new_class_id"}, 201
 
 
-@app.route("/class/<class_id>/invite", methods=["POST"])
+@app.route("/api/class/<class_id>/invite", methods=["POST"])
 def create_invite(class_id):
     """
     Create an invite code for the class with ID `class_id`.
@@ -136,7 +139,7 @@ def create_invite(class_id):
     return {"inviteCode": "my-new-invite-code"}, 201
 
 
-@app.route("/class/join", methods=["POST"])
+@app.route("/api/class/join", methods=["POST"])
 def join_class(class_id):
     """
     Join the currently logged-in user to the class with ID `class-id`.
