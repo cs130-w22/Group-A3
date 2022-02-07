@@ -205,7 +205,7 @@ if __name__ == "__main__":
         "-s",
         "--secret",
         type=str,
-        default="gradbetter",
+        default="gradebetter",
         help="secret key to use in JWT generation",
     )
     args = parser.parse_args()
