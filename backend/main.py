@@ -2,17 +2,14 @@
 
 from argparse import ArgumentParser
 
-from flask import Flask, g, request
+from flask import Flask, g, request, send_file
 import psycopg as pg
 
 from argparse import ArgumentParser
 
-from blueprint import react
-
 CONN_STR = ""
 
-app = Flask(__name__)
-app.register_blueprint(react)
+app = Flask(__name__, static_folder="../frontend/build", static_url_path="/")
 
 # Retrieve the global database connection object.
 # Pulled from https://flask.palletsprojects.com/en/2.0.x/appcontext/
@@ -28,6 +25,13 @@ def teardown_db(exception):
     conn = g.pop("conn", None)
     if conn is not None:
         conn.close()
+
+# @app.route('/', defaults={'path': ''})
+# @app.route("/<path:route>")
+# def get_file(route):
+#     if route.starts_with("/static"):
+#         return app.send_static_file(route)
+#     return app.send_static_file("index.html")
 
 
 # Log an user into the database, then return a valid JWT for their session.
@@ -145,7 +149,6 @@ def join_class(class_id):
     Join the currently logged-in user to the class with ID `class-id`.
     """
     return {}, 204
-
 
 if __name__ == "__main__":
     parser = ArgumentParser("code_grader")
