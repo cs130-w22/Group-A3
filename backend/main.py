@@ -26,13 +26,6 @@ def teardown_db(exception):
     if conn is not None:
         conn.close()
 
-# @app.route('/', defaults={'path': ''})
-# @app.route("/<path:route>")
-# def get_file(route):
-#     if route.starts_with("/static"):
-#         return app.send_static_file(route)
-#     return app.send_static_file("index.html")
-
 
 # Log an user into the database, then return a valid JWT for their session.
 @app.route("/api/login", methods=["POST"])
@@ -149,6 +142,7 @@ def join_class(class_id):
     Join the currently logged-in user to the class with ID `class-id`.
     """
     return {}, 204
+
 
 if __name__ == "__main__":
     parser = ArgumentParser("code_grader")

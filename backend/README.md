@@ -6,6 +6,10 @@ The backend for our grading solution supports operations on user-sensitive data.
 
 ### Conventions
 
+All API endpoints are prefixed by the provided API version string. In our case, there
+is only one version -- `/api`. So for example, `POST /user` is actually a `POST` request
+to the path `/api/user`.
+
 Responses are formatted with JSON. Variable names passed in the request are documented
 using `snake_case`, but responses will provide variable names that **are actually** in
 `camelCase`.

@@ -9,3 +9,5 @@ ENV POSTGRES_PASSWORD="admin"
 
 # Expose port to serve on.
 EXPOSE 5432
+
+# TODO: gunicorn for the web server
