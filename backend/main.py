@@ -9,7 +9,7 @@ from argparse import ArgumentParser
 
 CONN_STR = ""
 
-app = Flask(__name__, static_folder="../frontend/build", static_url_path="/")
+app = Flask(__name__, static_folder="build/static", template_folder="build")
 
 # Retrieve the global database connection object.
 # Pulled from https://flask.palletsprojects.com/en/2.0.x/appcontext/
@@ -143,6 +143,10 @@ def join_class(class_id):
     """
     return {}, 204
 
+@app.route("/", defaults={'user_path': ''})
+@app.route("/<path:user_path>")
+def index(user_path):
+    return send_file("build/index.html")
 
 if __name__ == "__main__":
     parser = ArgumentParser("code_grader")

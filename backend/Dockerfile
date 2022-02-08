@@ -1,3 +1,9 @@
+#
+# dev
+#
+# Spins up a postgresql server locally.
+#
+
 FROM postgres:alpine
 COPY schemas/*.sql /docker-entrypoint-initdb.d
 RUN chmod a+r /docker-entrypoint-initdb.d/*
@@ -10,4 +16,5 @@ ENV POSTGRES_PASSWORD="admin"
 # Expose port to serve on.
 EXPOSE 5432
 
+# Add python3, gunicorn
 # TODO: gunicorn for the web server
