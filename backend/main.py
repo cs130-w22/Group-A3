@@ -1,15 +1,35 @@
 #!/bin/python3
 
 from argparse import ArgumentParser
+from dataclasses import dataclass
 
 from flask import Flask, g, request
 import psycopg as pg
+import psycopg.errors as errors
+from psycopg.rows import class_row
 
 from argparse import ArgumentParser
 
+from auth import *
+
 CONN_STR = ""
+SECRET = ""
 
 app = Flask(__name__)
+
+
+@dataclass
+class Account:
+    """
+    Helper dataclass for psycopg row factory use.
+    """
+
+    id: int
+    username: str
+    password: str
+    professor: bool
+    deleted: datetime
+
 
 # Retrieve the global database connection object.
 # Pulled from https://flask.palletsprojects.com/en/2.0.x/appcontext/
@@ -30,16 +50,43 @@ def teardown_db(exception):
 # Log an user into the database, then return a valid JWT for their session.
 @app.route("/login", methods=["POST"])
 def login():
-    return {"token": "example"}
+    json = request.json
+    username, password = json["username"], json["password"]
+
+    conn = get_db()
+    with conn.cursor(row_factory=class_row(Account)) as cur:
+        cur.execute(
+            """
+            SELECT * FROM Accounts
+            WHERE username = %s
+            AND password = crypt(%s, password)
+            """,
+            [username, password],
+        )
+        records = cur.fetchall()
+
+        length = len(records)
+        if length == 0:
+            # The login failed.
+            return {}, 400
+        elif len(records) > 1:
+            # There is a problem with the database.
+            return {}, 500
+        account = records[0]
+
+    return {
+        "token": Token(
+            SECRET,
+            account.id,
+        ),
+    }, 200
 
 
 # Create a user in the database, then return a valid JWT for their session.
 @app.route("/user", methods=["POST"])
-def create():
-    return {"token": "example"}
-    form = request.form
-    account_type, username, password = form["type"], form["username"], form["password"]
-    invite_key = None if account_type == "student" else form["inviteKey"]
+def create_user():
+    json = request.json
+    account_type, username, password = json["type"], json["username"], json["password"]
 
     # Bad request
     if account_type not in ["student", "professor"]:
@@ -48,29 +95,24 @@ def create():
     # Create a database transaction to insert our accout into the associated
     # course.
     conn = get_db()
-    with conn.cursor() as cur:
-        cur.execute(
-            "INSERT INTO Accounts (username, password, professor) VALUES (%s, %s, %s)",
-            username,
-            password,
-            account_type == "professor",
-        )
-
-        # If the account is for a student, then join them to their class.
-        if account_type == "student":
+    with conn.cursor(row_factory=class_row(Account)) as cur:
+        try:
             cur.execute(
                 """
-                INSERT INTO ClassMembers (id, class_id) VALUES (id, class_id) \
-                WHERE id = (SELECT id FROM Accounts WHERE username = %s) AND \
-                class_id = (SELECT invites_to FROM Invites WHERE id = %s)
+                INSERT INTO Accounts (username, password, professor)
+                VALUES (%s, %s, %s)
+                RETURNING *
                 """,
-                username,
-                invite_key,
+                [username, password, account_type == "professor"],
             )
-        conn.commit()
+            conn.commit()
+            result = cur.fetchone()
+        except errors.UniqueViolation:
+            # User already exists.
+            return {}, 409
 
-    # TODO: create and return a JWT for the new session
-    return {}, 201
+    # Create and return a JWT for the new session containing the user's ID.
+    return {"token": Token(SECRET, result.id).to_jwt()}, 201
 
 
 @app.route("/class/<class_id>/info", methods=["GET"])
@@ -156,9 +198,18 @@ if __name__ == "__main__":
     parser.add_argument(
         "--db-conn",
         type=str,
-        default="port=5432 user=dev password=dev",
+        default="host=localhost port=5432 dbname=gradebetter user=admin password=admin",
         help="connection string for a postgresql database",
+    )
+    parser.add_argument(
+        "-s",
+        "--secret",
+        type=str,
+        default="gradebetter",
+        help="secret key to use in JWT generation",
     )
     args = parser.parse_args()
 
+    CONN_STR = args.db_conn
+    SECRET = args.secret
     app.run(port=args.port)
