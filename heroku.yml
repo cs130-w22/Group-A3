@@ -6,6 +6,6 @@ setup:
     S3_BUCKET: my-example-bucket
 build:
   docker:
-    web: backend/Dockerfile
+    web: Dockerfile
   config:
     ENV: prod
