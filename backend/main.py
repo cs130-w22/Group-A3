@@ -1,6 +1,7 @@
 #!/bin/python3
 
 from argparse import ArgumentParser
+from os import environ
 
 from flask import Flask, g, request, send_file
 import psycopg as pg
@@ -146,13 +147,6 @@ def join_class(class_id):
 if __name__ == "__main__":
     parser = ArgumentParser("code_grader")
     parser.add_argument(
-        "-p",
-        "--port",
-        type=int,
-        default=8080,
-        help="port to serve the backend on",
-    )
-    parser.add_argument(
         "--db-conn",
         type=str,
         default="port=5432 user=dev password=dev",
@@ -160,4 +154,4 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    app.run(port=args.port)
+    app.run(port=(int(environ.get("PORT")) or 8080))
