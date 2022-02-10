@@ -5,7 +5,7 @@ The backend for our grading solution supports operations on user-sensitive data.
 ## Get Started Developing
 
 You will need
-* `go` >= go1.16.3
+* [`go` >= go1.16.3](https://go.dev/doc/install)
 
 ```sh
 # make sure you're in the backend directory
@@ -54,7 +54,7 @@ send this on TLS.
 {
   "username": "Smallberg",
   "password": "MYSECRETPASSWORD DONT TELL ANYONE LOL",
-  "professor": "true",
+  "type":     "professor",
 }
 ```
 
