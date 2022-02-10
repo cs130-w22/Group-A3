@@ -6,7 +6,6 @@ on:
   pull_request:
 permissions:
   contents: read
-  pull-requests: read
 jobs:
   golangci:
     name: lint
@@ -18,4 +17,3 @@ jobs:
         with:
           version: latest
           working-directory: backend
-          only-new-issues: true
