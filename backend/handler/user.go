@@ -10,21 +10,21 @@ import (
 
 // Create token with provided claims.
 func createToken(userId uint) (string, error) {
-		claims := &JWT{
-			UserID: userId,
-			RegisteredClaims: jwt.RegisteredClaims{
-				ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 24 * 30)),
-				NotBefore: jwt.NewNumericDate(time.Now()),
-			},
-		}
-		token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	
-		// Generate encoded token and send it as response.
-		t, err := token.SignedString([]byte("secret"))
-		if err != nil {
-			return "", err
-		}
-		return t, nil
+	claims := &JWT{
+		UserID: userId,
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 24 * 30)),
+			NotBefore: jwt.NewNumericDate(time.Now()),
+		},
+	}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+
+	// Generate encoded token and send it as response.
+	t, err := token.SignedString([]byte("secret"))
+	if err != nil {
+		return "", err
+	}
+	return t, nil
 }
 
 // Log in an user to the backend, returning a JWT token.
@@ -63,7 +63,7 @@ func LoginUser(cc echo.Context) error {
 func CreateUser(cc echo.Context) error {
 	c := cc.(*Context)
 	var body struct {
-		Type string `json:"type"`
+		Type     string `json:"type"`
 		Username string `json:"username"`
 		Password string `json:"password"`
 	}
@@ -76,7 +76,7 @@ func CreateUser(cc echo.Context) error {
 	err := c.Conn.QueryRowContext(c.Request().Context(), `
 	INSERT INTO Accounts (username, password, professor)
 	VALUES ($1, $2, $3)
-	RETURNING *
+	RETURNING id
 	`, body.Username, body.Password, body.Type == "professor").Scan(&userId)
 	if err != nil {
 		c.Logger().Error(err)
