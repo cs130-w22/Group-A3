@@ -2,6 +2,34 @@
 
 The backend for our grading solution supports operations on user-sensitive data.
 
+## Get Started Developing
+
+You will need
+* `go` >= go1.16.3
+
+```sh
+# make sure you're in the backend directory
+go build
+./backend
+```
+
+The `handler` folder is where code for our endpoints goes. All endpoints can expect
+to be passed a `Context` of type [`handler.Context`](./handler/context.go). Please
+consult the provided type and below code sample for information.
+
+```go
+// The below handler shows how to acquire a `handler.Context` object
+// from the wrapping `echo.Context`.
+//
+// The contained Context type supplies a database connection and JWT
+// authorization claims, if a user has supplied a token in the
+// "Authorization" header of their request.
+func MyHandler(cc echo.Context) error {
+  c := cc.(*Context)
+  return nil
+}
+```
+
 ## Exposed Endpoints
 
 ### Conventions
@@ -248,16 +276,6 @@ Status Code | Semantic
 400 | Bad request (see format)
 401 | Unauthorized
 500 | Server error
-
-
-## Get Started Developing
-
-You will need
-* `go` >= go1.16.3
-
-```sh
-go build
-```
 
 ## Appendix
 
