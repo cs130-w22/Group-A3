@@ -33,6 +33,8 @@ CREATE TABLE IF NOT EXISTS Submissions (
   -- UID of submitting user.
   owner VARCHAR(255) NOT NULL,
 
+  uploaded TIMESTAMPTZ NOT NULL,
+
   -- Total points earned in this submission.
   points_earned DOUBLE PRECISION,
 

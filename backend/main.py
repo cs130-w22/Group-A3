@@ -12,11 +12,14 @@ from argparse import ArgumentParser
 
 from auth import *
 
+import datetime
+
 CONN_STR = ""
 SECRET = ""
+SUBMISSIONS_FOLDER = 'submissions'
 
 app = Flask(__name__)
-
+app.config['SUBMISSIONS_FOLDER'] = SUBMISSIONS_FOLDER
 
 @dataclass
 class Account:
@@ -30,7 +33,18 @@ class Account:
     professor: bool
     deleted: datetime
 
+@dataclass
+class Submission:
+    """
+    Helper dataclass for psycopg; this one tracks the submission schema.
+    """
+    id: str
+    assignment: int
+    owner: str
+    uploaded: timestamp
+    points_earned: float
 
+    
 # Retrieve the global database connection object.
 # Pulled from https://flask.palletsprojects.com/en/2.0.x/appcontext/
 def get_db() -> pg.Connection:
@@ -46,6 +60,26 @@ def teardown_db(exception):
     if conn is not None:
         conn.close()
 
+# Helper function for querying the Accounts table.
+def query_accounts(query: str, params):
+    account = None
+    conn = get_db()
+    with conn.cursor(row_factory=class_row(Account)) as cur:
+        cur.execute(
+            query,
+            params,
+        )
+        records = cur.fetchall()
+
+        length = len(records)
+        if length == 0:
+            # The login failed.
+            return (None, 400)
+        elif len(records) > 1:
+            # There is a problem with the database.
+            return (None, 500)
+        account = records[0]
+    return (account, 200)
 
 # Log an user into the database, then return a valid JWT for their session.
 @app.route("/login", methods=["POST"])
@@ -53,27 +87,18 @@ def login():
     json = request.json
     username, password = json["username"], json["password"]
 
-    conn = get_db()
-    with conn.cursor(row_factory=class_row(Account)) as cur:
-        cur.execute(
-            """
-            SELECT * FROM Accounts
-            WHERE username = %s
-            AND password = crypt(%s, password)
-            """,
-            [username, password],
-        )
-        records = cur.fetchall()
-
-        length = len(records)
-        if length == 0:
-            # The login failed.
-            return {}, 400
-        elif len(records) > 1:
-            # There is a problem with the database.
-            return {}, 500
-        account = records[0]
-
+    query = query_accounts(
+        """
+        SELECT * FROM Accounts
+        WHERE username = %s
+        AND password = crypt(%s, password)
+        """,
+        [username, password],
+    )
+    if not query[0]:
+        return {}, query[1]
+    account = query[0]
+    
     return {
         "token": Token(
             SECRET,
@@ -159,6 +184,56 @@ def upload_submission(class_id, assignment_id):
     """
     Upload a submission for a specific assignment.
     """
+    if 'file' not in request.files:
+        # No 'file' entry; return 400 for bad request.
+        return {}, 400
+    if 'assignment_id' not in request.files:
+        # No 'assignment_id' entry; return 400 for bad request.
+        return {}, 400
+    file = request.files['file']
+    assignment_id = request.files['assignment_id']
+
+    # Need to get this user's UID, which is a string.
+    # Same deal as login endpoint.
+    token = get_token(SECRET)
+    user_id = token.payload['id']
+    query = query_accounts(
+        """
+        SELECT * FROM Accounts
+        WHERE id = %s
+        """,
+        [user_id],
+    )
+    if not query[0]:
+        return {}, query[1]
+    account = query[0]
+
+    uid = account.username
+
+    dt = datetime.datetime.now()
+    
+    if file:
+        # Have to create a new entry in Submissions table.
+        conn = get_db()
+        with conn.cursor(row_factory=class_row(Submission)) as cur:
+            try:
+                cur.execute(
+                    """
+                    INSERT INTO Submissions (assignment_id, owner, uploaded)
+                    VALUES (%s, %s, %s)
+                    RETURNING *
+                    """,
+                    [assignment_id, uid, dt],
+                )
+                conn.commit()
+                result = cur.fetchone()
+            except errors.UniqueViolation:
+                # Submission already exists.
+                return {}, 409
+
+        # Probably very ugly, but use the database-given id as the filename + datetime, for simplicity.
+        filename = secure_filename(result.id + '_' + result.dt.replace(" ", "")) 
+        file.save(os.path.join(os.path.join(app.config['SUBMISSIONS_FOLDER'], filename))
     return {}, 204
 
 
