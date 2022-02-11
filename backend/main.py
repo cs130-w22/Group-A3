@@ -41,7 +41,7 @@ class Submission:
     id: str
     assignment: int
     owner: str
-    uploaded: timestamp
+    uploaded: str
     points_earned: float
 
     
@@ -233,7 +233,8 @@ def upload_submission(class_id, assignment_id):
 
         # Probably very ugly, but use the database-given id as the filename + datetime, for simplicity.
         filename = secure_filename(result.id + '_' + result.dt.replace(" ", "")) 
-        file.save(os.path.join(os.path.join(app.config['SUBMISSIONS_FOLDER'], filename))
+        file.save(os.path.join(app.config['SUBMISSIONS_FOLDER'], filename))
+                  
     return {}, 204
 
 
