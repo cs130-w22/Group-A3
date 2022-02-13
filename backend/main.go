@@ -4,12 +4,12 @@ import (
 	"database/sql"
 	"net/http"
 
-	"github.com/golang-jwt/jwt/v4"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	_ "github.com/lib/pq"
 
 	"github.com/cs130-w22/Group-A3/backend/handler"
+	"github.com/cs130-w22/Group-A3/backend/jwt"
 )
 
 var connString string
@@ -24,6 +24,9 @@ func main() {
 	e.HideBanner = true
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
+
+	// TODO: this sets the application's secret key. CHANGE THIS!
+	jwt.UseKey([]byte("secret"))
 
 	// Open a database connection for each request of concern.
 	db, err := sql.Open("postgres", connString)
@@ -56,25 +59,26 @@ func main() {
 
 	// Things that require the user to be logged in.
 	classApi := e.Group("/class")
+
+	// Automatically capture the authentication token from a request
+	// and apply it to the context of downstream request handlers.
 	classApi.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(cc echo.Context) error {
 			c := cc.(*handler.Context)
-
-			token, err := jwt.Parse(c.Request().Header.Get(echo.HeaderAuthorization), func(token *jwt.Token) (interface{}, error) {
-				return []byte("secret"), nil
-			})
+			claims, err := jwt.ParseClaims(c.Request().Header.Get(echo.HeaderAuthorization))
 			if err != nil {
 				return c.NoContent(http.StatusUnauthorized)
 			}
-			c.Token = token.Claims.(*handler.JWT)
+			c.Token = claims
 			return next(c)
 		}
 	})
+	e.POST("/class", Unimplemented)
+	e.POST("/class/", Unimplemented)
 	e.GET("/class/:classId/info", Unimplemented)
 	e.GET("/class/:classId/:assignmentId", Unimplemented)
 	e.POST("/:classId/:assignmentId/script", Unimplemented)
 	e.POST("/:classId/:assignmentId/upload", Unimplemented)
-	e.POST("/class", Unimplemented)
 	e.POST("/class/:classId/invite", Unimplemented)
 	e.POST("/class/:classId/join", Unimplemented)
 

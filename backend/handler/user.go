@@ -2,30 +2,11 @@ package handler
 
 import (
 	"net/http"
-	"time"
 
-	"github.com/golang-jwt/jwt/v4"
 	"github.com/labstack/echo/v4"
+
+	"github.com/cs130-w22/Group-A3/backend/jwt"
 )
-
-// Create token with provided claims.
-func createToken(userId uint) (string, error) {
-	claims := &JWT{
-		UserID: userId,
-		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 24 * 30)),
-			NotBefore: jwt.NewNumericDate(time.Now()),
-		},
-	}
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-
-	// Generate encoded token and send it as response.
-	t, err := token.SignedString([]byte("secret"))
-	if err != nil {
-		return "", err
-	}
-	return t, nil
-}
 
 // Log in an user to the backend, returning a JWT token.
 func LoginUser(cc echo.Context) error {
@@ -49,7 +30,7 @@ func LoginUser(cc echo.Context) error {
 		return echo.ErrUnauthorized
 	}
 
-	token, err := createToken(userId)
+	token, err := jwt.EncodeClaims(userId)
 	if err != nil {
 		c.Logger().Error(err)
 		return c.NoContent(http.StatusInternalServerError)
@@ -83,7 +64,7 @@ func CreateUser(cc echo.Context) error {
 		return c.NoContent(http.StatusInternalServerError)
 	}
 
-	token, err := createToken(userId)
+	token, err := jwt.EncodeClaims(userId)
 	if err != nil {
 		c.Logger().Error(err)
 		return c.NoContent(http.StatusInternalServerError)

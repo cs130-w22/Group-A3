@@ -3,8 +3,9 @@ package handler
 import (
 	"database/sql"
 
-	"github.com/golang-jwt/jwt/v4"
 	"github.com/labstack/echo/v4"
+
+	"github.com/cs130-w22/Group-A3/backend/jwt"
 )
 
 // Context for all requests against the backend.
@@ -15,11 +16,5 @@ import (
 type Context struct {
 	echo.Context
 	Conn  *sql.Conn
-	Token *JWT
-}
-
-// Description of claims made by our JWT.
-type JWT struct {
-	UserID uint `json:"id"`
-	jwt.RegisteredClaims
+	Token *jwt.Claims
 }
