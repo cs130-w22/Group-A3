@@ -2,6 +2,34 @@
 
 The backend for our grading solution supports operations on user-sensitive data.
 
+## Get Started Developing
+
+You will need
+* [`go` >= go1.16.3](https://go.dev/doc/install)
+
+```sh
+# make sure you're in the backend directory
+go build
+./backend
+```
+
+The `handler` folder is where code for our endpoints goes. All endpoints can expect
+to be passed a `Context` of type [`handler.Context`](./handler/context.go). Please
+consult the provided type and below code sample for information.
+
+```go
+// The below handler shows how to acquire a `handler.Context` object
+// from the wrapping `echo.Context`.
+//
+// The contained Context type supplies a database connection and JWT
+// authorization claims, if a user has supplied a token in the
+// "Authorization" header of their request.
+func MyHandler(cc echo.Context) error {
+  c := cc.(*Context)
+  return nil
+}
+```
+
 ## Exposed Endpoints
 
 ### Conventions
@@ -26,7 +54,7 @@ send this on TLS.
 {
   "username": "Smallberg",
   "password": "MYSECRETPASSWORD DONT TELL ANYONE LOL",
-  "professor": "true",
+  "type":     "professor",
 }
 ```
 
@@ -249,48 +277,34 @@ Status Code | Semantic
 401 | Unauthorized
 500 | Server error
 
-
-## Get Started Developing
-
-You will need
-* Docker
-* Python 3.x.x
-* `virtualenv`
-
-```sh
-# Set up our database container and run it. The following commands
-# will redirect your image output to /dev/null. If you want to see the
-# output, you should write to a file.
-docker image build . -t gradebetter
-docker run -p "5432:5432" gradebetter 2>&1 1>&/dev/null &
-# In the future, you can run: docker start MY_CONTAINER_ID
-
-# Set up our Python virtual environment.
-virtualenv env
-source env/bin/activate
-pip install -r requirements.txt
-python main.py # starts the backend
-```
-
-You're all set! Remember to run `black` in this directory before
-committing.
-
 ## Appendix
 
 ### Testing the Backend
 
-To test the endpoint you've created with some dummy data, you can use [curl](https://curl.se/).
+There's a few ways to test the backend.
+
+#### Testing it the Go way
+
+If we have any Go test files (e.g., `myfile_test.go`), then
+they are automatically discoverable and runnable with the
+`go` binary that builds the backend.
+
+```
+go test -v
+```
+
+#### Testing it Live
+
+To test the endpoint you've created with some dummy data, you can use [curl](https://curl.se/) or some other simple
+HTTP program (even devtools work).
 The below example `POST`s some data to the endpoint `/class`.
 
 ```sh
-curl -d '{ "hi": "" }' -H "Content-Type: application/json" localhost:8080/class
+curl -d '{ "username": "leo", "password": "mypass" }' \
+  -H 'Content-Type: application/json' localhost:8080/login
 ```
 
-We can see this information reflected on the backend's log:
-
-```
-127.0.0.1 - - [31/Jan/2022 11:54:43] "POST /class HTTP/1.1" 200 -
-```
+If you have the backend running on port 8080, this will automatically be reflected.
 
 ### Useful Tools
 
