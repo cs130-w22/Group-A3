@@ -34,16 +34,16 @@ func main() {
 		e.Logger.Error("Failed to open DB")
 	}
 	e.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
-		return func(c echo.Context) error {
-			conn, err := db.Conn(c.Request().Context())
+		return func(cc echo.Context) error {
+			c := &handler.Context{
+				Context: cc,
+			}
+			conn, err := db.Conn(c)
 			if err != nil {
 				e.Logger.Errorf("Failed to open connection: %v", err)
 				return c.NoContent(http.StatusInternalServerError)
 			}
-			cc := &handler.Context{
-				Context: c,
-				Conn:    conn,
-			}
+			c.Conn = conn
 			return next(cc)
 		}
 	})

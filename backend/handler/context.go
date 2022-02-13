@@ -2,6 +2,7 @@ package handler
 
 import (
 	"database/sql"
+	"time"
 
 	"github.com/labstack/echo/v4"
 
@@ -17,4 +18,20 @@ type Context struct {
 	echo.Context
 	Conn  *sql.Conn
 	Token *jwt.Claims
+}
+
+func (c Context) Deadline() (time.Time, bool) {
+	return c.Deadline()
+}
+
+func (c Context) Done() <-chan struct{} {
+	return c.Done()
+}
+
+func (c Context) Err() error {
+	return c.Err()
+}
+
+func (c Context) Value(key interface{}) interface{} {
+	return c.Value(key)
 }

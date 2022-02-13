@@ -21,7 +21,7 @@ func LoginUser(cc echo.Context) error {
 
 	// Validate credentials.
 	userId := uint(0)
-	err := c.Conn.QueryRowContext(c.Request().Context(),
+	err := c.Conn.QueryRowContext(c,
 		`SELECT id
 	FROM Accounts
 	WHERE username = $1
@@ -54,7 +54,7 @@ func CreateUser(cc echo.Context) error {
 	}
 
 	userId := uint(0)
-	err := c.Conn.QueryRowContext(c.Request().Context(), `
+	err := c.Conn.QueryRowContext(c, `
 	INSERT INTO Accounts (username, password, professor)
 	VALUES ($1, $2, $3)
 	RETURNING id
