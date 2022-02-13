@@ -16,8 +16,8 @@ import (
 // are logged in.
 type Context struct {
 	echo.Context
-	Conn  *sql.Conn
-	Token *jwt.Claims
+	Conn   *sql.Conn
+	Claims *jwt.Claims
 }
 
 func (c Context) Deadline() (time.Time, bool) {

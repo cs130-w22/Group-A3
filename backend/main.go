@@ -69,7 +69,7 @@ func main() {
 			if err != nil {
 				return c.NoContent(http.StatusUnauthorized)
 			}
-			c.Token = claims
+			c.Claims = claims
 			return next(c)
 		}
 	})
