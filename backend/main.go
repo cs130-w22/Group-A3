@@ -44,7 +44,7 @@ func main() {
 				return c.NoContent(http.StatusInternalServerError)
 			}
 			c.Conn = conn
-			return next(cc)
+			return next(c)
 		}
 	})
 
