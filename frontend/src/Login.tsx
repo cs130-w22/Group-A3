@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { FormEvent, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Container from "react-bootstrap/Container";
 import Form from "react-bootstrap/Form";
@@ -7,21 +7,27 @@ import Alert from "react-bootstrap/Alert";
 import Stack from "react-bootstrap/Stack";
 
 function Login() {
+  // TODO: add state vars for username + password information, update on form change.
   const [error, setError] = useState("");
   const nav = useNavigate();
 
-  async function handleLogin() {
-    return fetch("http://localhost:8080/login", {
+  function handleLogin(e: FormEvent) {
+    e.preventDefault();
+    fetch("http://localhost:8080/login", {
       method: "POST",
       mode: 'cors',
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        username: "Smallberg",
-        password: "bigberg",
+        // TODO: change these out for the state variables.
+        username: "leo",
+        password: "leo",
       }),
-    }).then((response) => response.json());
+    })
+    // TODO: redirect here.
+    .then((response) => response.json())
+    .catch(setError);
   }
 
   const createAccount = () => {
@@ -48,6 +54,11 @@ function Login() {
         >
           Gradebetter
         </h1>
+        { /*
+        Every onSubmit handler takes a parameter e, being the *EVENT* that triggered it.
+        We can prevent the default behavior by calling e.preventDefault(), which we do
+        in our handleLogin function declared above.
+        */ }
         <Form onSubmit={handleLogin}>
           <Form.Group className="mb-3" controlId="formUsername">
             <Form.Label>Username</Form.Label>
