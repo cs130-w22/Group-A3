@@ -13,13 +13,9 @@ function Login() {
   async function handleLogin() {
     return fetch("http://localhost:8080/login", {
       method: "POST",
+      mode: 'cors',
       headers: {
         "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "*",
-        "Access-Control-Allow-Credentials": "true",
-        "Access-Control-Allow-Headers":
-          "Origin, X-Requested-With, Content-Type, Accept",
       },
       body: JSON.stringify({
         username: "Smallberg",
