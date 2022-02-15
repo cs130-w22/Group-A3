@@ -10,13 +10,23 @@ function Login() {
   const [error, setError] = useState("");
   const nav = useNavigate();
 
-  const submit: React.FormEventHandler<HTMLFormElement> = (
-    e: React.FormEvent<HTMLFormElement>
-  ) => {
-    e.preventDefault();
-    setError((err) => (err ? "" : `Username is invalid.`));
-    nav("/class");
-  };
+  async function handleLogin() {
+    return fetch("http://localhost:8080/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "*",
+        "Access-Control-Allow-Credentials": "true",
+        "Access-Control-Allow-Headers":
+          "Origin, X-Requested-With, Content-Type, Accept",
+      },
+      body: JSON.stringify({
+        username: "Smallberg",
+        password: "bigberg",
+      }),
+    }).then((response) => response.json());
+  }
 
   const createAccount = () => {
     nav("/create");
@@ -42,7 +52,7 @@ function Login() {
         >
           Gradebetter
         </h1>
-        <Form onSubmit={submit}>
+        <Form onSubmit={handleLogin}>
           <Form.Group className="mb-3" controlId="formUsername">
             <Form.Label>Username</Form.Label>
             <Form.Control
