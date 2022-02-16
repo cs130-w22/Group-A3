@@ -5,37 +5,42 @@ import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
 import Alert from "react-bootstrap/Alert";
 import Stack from "react-bootstrap/Stack";
+import Row from "react-bootstrap/Row";
+import Col from "react-bootstrap/Col";
 import { userContext } from "./Context/UserContext";
 function Login() {
   const [error, setError] = useState("");
-  const [user, setUser] = useState({ user: { token: "" } });
+  //const [user, setUser] = useState({ user: { token: "" } });
   const [token, setToken] = useState("");
   const nav = useNavigate();
 
   async function handleLogin(username: string, password: string) {
-    return fetch("http://localhost:8080/login", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "*",
-        "Access-Control-Allow-Headers": "Content-Type",
-      },
-      body: JSON.stringify({
-        username: username,
-        password: password,
-      }),
-    }).then((data) => data.json());
+    return (
+      fetch("http://localhost:8080/login", {
+        method: "POST",
+        mode: "cors",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          // TODO: change these out for the state variables.
+          username: "leo",
+          password: "mypass",
+        }),
+      })
+        // TODO: redirect here.
+        .then((response) => response.json())
+    );
   }
 
   async function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     //setError((err) => (err ? "" : `Username is invalid.`));
     const token = await handleLogin("Smallberg", "bigberg");
-    setToken(token);
-    sessionStorage.setItem("token", token);
-    setUser({ user: { token: token } });
-    //nav("/class");
+    setToken(token.token);
+    console.log(token);
+    sessionStorage.setItem("token", token.token);
+    //setUser({ user: { token: token } });
   }
 
   const createAccount = () => {
@@ -47,7 +52,6 @@ function Login() {
   };
 
   return (
-    //<userContext.Provider value ={user}>
     <Container>
       <Stack direction="vertical" gap={3}>
         {error && <Alert variant={"danger"}>Failed to login: {error}</Alert>}
@@ -76,33 +80,46 @@ function Login() {
             <Form.Label>Password</Form.Label>
             <Form.Control type="password" name="password" />
           </Form.Group>
-          <Button variant="primary" type="submit" style={{ borderRadius: 20 }}>
-            Login
-          </Button>
-          <br />
-          <br />
-          <Button
-            onClick={forgotPassword}
-            variant="secondary"
-            type="button"
-            style={{ borderRadius: 20 }}
-          >
-            Forgot Password
-          </Button>
-          <br />
-          <br />
-          <Button
-            onClick={createAccount}
-            variant="secondary"
-            type="button"
-            style={{ borderRadius: 20 }}
-          >
-            Register
-          </Button>
+
+          <Stack direction="vertical" gap={3}>
+            <Row>
+              <Button
+                variant="primary"
+                size="lg"
+                type="submit"
+                style={{ borderRadius: 20 }}
+              >
+                Login
+              </Button>
+            </Row>
+            <Stack direction="horizontal" gap={3}>
+              <div className="me-auto">
+                <Button
+                  onClick={forgotPassword}
+                  variant="secondary"
+                  size="lg"
+                  type="button"
+                  style={{ borderRadius: 20 }}
+                >
+                  Forgot Password
+                </Button>
+              </div>
+              <div className="ms-auto">
+                <Button
+                  onClick={createAccount}
+                  variant="secondary"
+                  size="lg"
+                  type="button"
+                  style={{ borderRadius: 20 }}
+                >
+                  Register
+                </Button>
+              </div>
+            </Stack>
+          </Stack>
         </Form>
       </Stack>
     </Container>
-    //</userContext.Provider>
   );
 }
 
