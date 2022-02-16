@@ -11,35 +11,26 @@ import SignUpProfessor from "./AccountCreation/SignUpProfessor";
 import SignUpStudent from "./AccountCreation/SignUpStudent";
 
 import { userContext } from "./Context/UserContext";
+import { useCookies } from "react-cookie";
 
-function getToken() {
-  const tokenString = sessionStorage.getItem("token");
-  if (tokenString == null) {
-    return "";
-  }
-  const userToken = JSON.parse(tokenString);
-  return userToken?.token;
-}
 const defaultUser = {
   user: {
-    token: "",
-    auth: false,
+    mode: "student",
+    class: {},
   },
 };
 
 function App() {
-  const token = getToken();
+  const [cookies, setCookies] = useCookies(["jwt"]);
   return (
     <userContext.Provider value={defaultUser}>
       <Router>
         <Routes>
           <Route path="/">
-            {!token ? (
+            {!cookies.jwt ? (
               <Route index element={<Login />} />
             ) : (
-              <Route path="/class">
-                <Route index element={<ClassView />} />
-              </Route>
+              <Route index element={<ClassView />} />
             )}
           </Route>
           <Route path="/create">

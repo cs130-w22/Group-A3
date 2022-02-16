@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { FormEvent, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Container from "react-bootstrap/Container";
 import Form from "react-bootstrap/Form";
@@ -6,42 +6,65 @@ import Button from "react-bootstrap/Button";
 import Alert from "react-bootstrap/Alert";
 import Stack from "react-bootstrap/Stack";
 import Row from "react-bootstrap/Row";
-import Col from "react-bootstrap/Col";
+
 import { userContext } from "./Context/UserContext";
+
+import { useCookies } from "react-cookie";
 function Login() {
   const [error, setError] = useState("");
-  //const [user, setUser] = useState({ user: { token: "" } });
+  const [cookies, setCookies] = useCookies(["jwt"]);
+
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+
+  const [user, setUser] = useState({ user: { token: "" } });
   const [token, setToken] = useState("");
+
   const nav = useNavigate();
 
   async function handleLogin(username: string, password: string) {
-    return (
-      fetch("http://localhost:8080/login", {
-        method: "POST",
-        mode: "cors",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          // TODO: change these out for the state variables.
-          username: "leo",
-          password: "mypass",
-        }),
+    return fetch("http://localhost:8080/login", {
+      method: "POST",
+      mode: "cors",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        username: username,
+        password: password,
+      }),
+    })
+      .then((response) => response.json())
+      .then((response) => {
+        //TODO: IDK WHY BUT it doesn't seem to catch 401 unauthorized. pls help
+        setCookies("jwt", response.token);
       })
-        // TODO: redirect here.
-        .then((response) => response.json())
-    );
+      .catch((e) => {
+        setError(
+          `Failed uploading! Server responded with: ${String(e).replace(
+            "TypeError: ",
+            ""
+          )}`
+        );
+      });
   }
 
-  async function submit(e: React.FormEvent<HTMLFormElement>) {
+  async function submit(e: FormEvent) {
     e.preventDefault();
-    //setError((err) => (err ? "" : `Username is invalid.`));
-    const token = await handleLogin("Smallberg", "bigberg");
-    setToken(token.token);
-    console.log(token);
-    sessionStorage.setItem("token", token.token);
-    //setUser({ user: { token: token } });
+    const response = await handleLogin(username, password);
+    setUser({ user: { token: token } });
   }
+
+  const onInputUsername = ({
+    target: { value },
+  }: {
+    target: { value: string };
+  }) => setUsername(value);
+  const onInputPassword = ({
+    target: { value },
+  }: {
+    target: { value: string };
+  }) => setPassword(value);
 
   const createAccount = () => {
     nav("/create");
@@ -74,11 +97,18 @@ function Login() {
               type="text"
               name="username"
               placeholder="Josie Bruin"
+              value={username}
+              onChange={onInputUsername}
             />
           </Form.Group>
           <Form.Group className="mb-3" controlId="formPassword">
             <Form.Label>Password</Form.Label>
-            <Form.Control type="password" name="password" />
+            <Form.Control
+              type="password"
+              name="password"
+              value={password}
+              onChange={onInputPassword}
+            />
           </Form.Group>
 
           <Stack direction="vertical" gap={3}>
