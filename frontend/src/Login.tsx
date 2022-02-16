@@ -11,23 +11,34 @@ function Login() {
   const [error, setError] = useState("");
   const nav = useNavigate();
 
+  const State = {
+    username: "",
+    password: "",
+  };
+
   function handleLogin(e: FormEvent) {
     e.preventDefault();
     fetch("http://localhost:8080/login", {
       method: "POST",
-      mode: 'cors',
+      mode: "cors",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
         // TODO: change these out for the state variables.
-        username: "leo",
-        password: "leo",
+        username: State.username,
+        password: State.password,
       }),
     })
-    // TODO: redirect here.
-    .then((response) => response.json())
-    .catch(setError);
+      //check for errors
+      .then((res) => {
+        if (res.status === 200 || res.status === 204) {
+          nav("/class");
+        } else {
+          setError("Invalid username or password");
+        }
+      })
+      .catch(setError);
   }
 
   const createAccount = () => {
@@ -54,11 +65,11 @@ function Login() {
         >
           Gradebetter
         </h1>
-        { /*
+        {/*
         Every onSubmit handler takes a parameter e, being the *EVENT* that triggered it.
         We can prevent the default behavior by calling e.preventDefault(), which we do
         in our handleLogin function declared above.
-        */ }
+        */}
         <Form onSubmit={handleLogin}>
           <Form.Group className="mb-3" controlId="formUsername">
             <Form.Label>Username</Form.Label>
@@ -66,11 +77,21 @@ function Login() {
               type="text"
               name="username"
               placeholder="Josie Bruin"
+              onChange={(e) => {
+                State.username = e.target.value;
+              }}
             />
           </Form.Group>
           <Form.Group className="mb-3" controlId="formPassword">
             <Form.Label>Password</Form.Label>
-            <Form.Control type="password" name="password" />
+            <Form.Control
+              //Update the state variable on change.
+              onChange={(e) => {
+                State.password = e.target.value;
+              }}
+              type="password"
+              name="password"
+            />
           </Form.Group>
           <Button variant="primary" type="submit" style={{ borderRadius: 20 }}>
             Login
