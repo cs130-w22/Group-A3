@@ -2,10 +2,13 @@ import React from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 
 import Login from "./Login";
+import CreateAccount from "./AccountCreation/CreateAccount";
 import ClassView from "./ClassView/ClassView";
 import AssignmentView from "./AssignmentView/AssignmentView";
 import ClassStatsView from "./ClassStatsView/ClassStatsView";
 import ClassListView from "./ClassListView/ClassListView";
+import SignUpProfessor from "./AccountCreation/SignUpProfessor";
+import SignUpStudent from "./AccountCreation/SignUpStudent";
 
 import { userContext } from "./Context/UserContext";
 
