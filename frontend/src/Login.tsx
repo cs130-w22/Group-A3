@@ -5,20 +5,41 @@ import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
 import Alert from "react-bootstrap/Alert";
 import Stack from "react-bootstrap/Stack";
-
+import { userContext } from "./Context/UserContext";
 function Login() {
   const [error, setError] = useState("");
+  const [user, setUser] = useState({ user: { token: "" } });
+  const [token, setToken] = useState("");
   const nav = useNavigate();
 
-  const submit: React.FormEventHandler<HTMLFormElement> = (
-    e: React.FormEvent<HTMLFormElement>
-  ) => {
+  async function handleLogin(username: string, password: string) {
+    return fetch("http://localhost:8080/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "*",
+        "Access-Control-Allow-Headers": "Content-Type",
+      },
+      body: JSON.stringify({
+        username: username,
+        password: password,
+      }),
+    }).then((data) => data.json());
+  }
+
+  async function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    setError((err) => (err ? "" : `Username is invalid.`));
-    nav("/class");
-  };
+    //setError((err) => (err ? "" : `Username is invalid.`));
+    const token = await handleLogin("Smallberg", "bigberg");
+    setToken(token);
+    sessionStorage.setItem("token", token);
+    setUser({ user: { token: token } });
+    //nav("/class");
+  }
 
   return (
+    //<userContext.Provider value ={user}>
     <Container>
       <Stack direction="vertical" gap={3}>
         {error && <Alert variant="danger">Failed to login: {error}</Alert>}
@@ -43,6 +64,7 @@ function Login() {
         </Form>
       </Stack>
     </Container>
+    //</userContext.Provider>
   );
 }
 

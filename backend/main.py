@@ -2,14 +2,18 @@
 
 from argparse import ArgumentParser
 
-from flask import Flask, g, request
+from flask import Flask, g, request, make_response
 import psycopg as pg
+from flask_cors import CORS, cross_origin
+
 
 from argparse import ArgumentParser
 
 CONN_STR = ""
 
 app = Flask(__name__)
+cors = CORS(app)
+app.config['CORS_HEADERS'] = 'Content-Type'
 
 # Retrieve the global database connection object.
 # Pulled from https://flask.palletsprojects.com/en/2.0.x/appcontext/

@@ -7,27 +7,53 @@ import AssignmentView from "./AssignmentView/AssignmentView";
 import ClassStatsView from "./ClassStatsView/ClassStatsView";
 import ClassListView from "./ClassListView/ClassListView";
 
+import { userContext } from "./Context/UserContext";
+
+function getToken() {
+  const tokenString = sessionStorage.getItem("token");
+  if (tokenString == null) {
+    return "";
+  }
+  const userToken = JSON.parse(tokenString);
+  return userToken?.token;
+}
+const defaultUser = {
+  user: {
+    token: "",
+    auth: false,
+  },
+};
+
 function App() {
+  const token = getToken();
   return (
-    <Router>
-      <Routes>
-        <Route path="/">
-          <Route index element={<Login />} />
-        </Route>
-        <Route path="/class">
-          <Route index element={<ClassView />} />
-        </Route>
-        <Route path="/class/assignment">
-          <Route index element={<AssignmentView />} />
-        </Route>
-        <Route path="/class/classstats">
-          <Route index element={<ClassStatsView />} />
-        </Route>
-        <Route path="/class/classlist">
-          <Route index element={<ClassListView />} />
-        </Route>
-      </Routes>
-    </Router>
+    <userContext.Provider value={defaultUser}>
+      <Router>
+        <Routes>
+          <Route path="/">
+            {!token ? (
+              <Route index element={<Login />} />
+            ) : (
+              <Route path="/class">
+                <Route index element={<ClassView />} />
+              </Route>
+            )}
+          </Route>
+          <Route path="/class">
+            <Route index element={<ClassView />} />
+          </Route>
+          <Route path="/class/assignment">
+            <Route index element={<AssignmentView />} />
+          </Route>
+          <Route path="/class/classstats">
+            <Route index element={<ClassStatsView />} />
+          </Route>
+          <Route path="/class/classlist">
+            <Route index element={<ClassListView />} />
+          </Route>
+        </Routes>
+      </Router>
+    </userContext.Provider>
   );
 }
 
