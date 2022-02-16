@@ -34,9 +34,12 @@ function Login() {
         password: password,
       }),
     })
-      .then((response) => response.json())
       .then((response) => {
-        //TODO: IDK WHY BUT it doesn't seem to catch 401 unauthorized. pls help
+        if (response.status == 401)
+          throw 'Unauthorized';
+        return response.json();
+      })
+      .then((response) => {
         setCookies("jwt", response.token);
       })
       .catch((e) => {
