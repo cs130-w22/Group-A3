@@ -25,7 +25,6 @@ func main() {
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 	e.Use(middleware.CORS())
-
 	// TODO: this sets the application's secret key. CHANGE THIS!
 	jwt.UseKey([]byte("secret"))
 
