@@ -10,10 +10,9 @@ function Login() {
   const [error, setError] = useState("");
   const nav = useNavigate();
 
-  const State = {
-    uid: "",
-    password: "",
-  };
+  //variable
+  const [uid, setUID] = useState("");
+  const [password, setPassword] = useState("");
 
   function handleLogin(e: FormEvent) {
     e.preventDefault();
@@ -25,8 +24,8 @@ function Login() {
       },
       body: JSON.stringify({
         // TODO: change these out for the state variables.
-        uid: State.uid,
-        password: State.password,
+        uid: uid,
+        password: password,
       }),
     })
       //check for errors
@@ -77,7 +76,7 @@ function Login() {
               name="uid"
               placeholder="Josie Bruin"
               onChange={(e) => {
-                State.uid = e.target.value;
+                setUID(e.target.value);
               }}
             />
           </Form.Group>
@@ -86,7 +85,7 @@ function Login() {
             <Form.Control
               //Update the state variable on change.
               onChange={(e) => {
-                State.password = e.target.value;
+                setPassword(e.target.value);
               }}
               type="password"
               name="password"
