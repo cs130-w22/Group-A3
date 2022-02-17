@@ -7,12 +7,11 @@ import Alert from "react-bootstrap/Alert";
 import Stack from "react-bootstrap/Stack";
 
 function Login() {
-  // TODO: add state vars for username + password information, update on form change.
   const [error, setError] = useState("");
   const nav = useNavigate();
 
   const State = {
-    username: "",
+    uid: "",
     password: "",
   };
 
@@ -26,7 +25,7 @@ function Login() {
       },
       body: JSON.stringify({
         // TODO: change these out for the state variables.
-        username: State.username,
+        uid: State.uid,
         password: State.password,
       }),
     })
@@ -35,7 +34,7 @@ function Login() {
         if (res.status === 200 || res.status === 204) {
           nav("/class");
         } else {
-          setError("Invalid username or password");
+          setError("Invalid UID or password");
         }
       })
       .catch(setError);
@@ -72,13 +71,13 @@ function Login() {
         */}
         <Form onSubmit={handleLogin}>
           <Form.Group className="mb-3" controlId="formUsername">
-            <Form.Label>Username</Form.Label>
+            <Form.Label>UID</Form.Label>
             <Form.Control
               type="text"
-              name="username"
+              name="uid"
               placeholder="Josie Bruin"
               onChange={(e) => {
-                State.username = e.target.value;
+                State.uid = e.target.value;
               }}
             />
           </Form.Group>
