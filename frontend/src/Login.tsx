@@ -24,7 +24,7 @@ function Login() {
       },
       body: JSON.stringify({
         // TODO: change these out for the state variables.
-        uid: uid,
+        username: uid,
         password: password,
       }),
     })

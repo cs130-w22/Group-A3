@@ -15,7 +15,6 @@ const SignUpProfessor = () => {
   const [courseName, setCourseName] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const professor = true;
 
   //check if passwords match
   function validateForm(
@@ -56,12 +55,11 @@ const SignUpProfessor = () => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        // TODO: change these out for the state variables.
         name: name,
-        uid: uid,
-        course_name: courseName,
+        username: uid,
+        courseName: courseName,
         password: password,
-        type: professor,
+        type: "professor",
       }),
     })
       //check for errors
