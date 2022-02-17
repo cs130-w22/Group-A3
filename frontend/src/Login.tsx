@@ -5,39 +5,68 @@ import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
 import Alert from "react-bootstrap/Alert";
 import Stack from "react-bootstrap/Stack";
+import Row from "react-bootstrap/Row";
 
+import { userContext } from "./Context/UserContext";
+
+import { useCookies } from "react-cookie";
 function Login() {
   const [error, setError] = useState("");
-  const nav = useNavigate();
+  const [cookies, setCookies] = useCookies(["jwt"]);
 
-  //variable
-  const [uid, setUID] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
-  function handleLogin(e: FormEvent) {
-    e.preventDefault();
-    fetch("http://localhost:8080/login", {
+  const [user, setUser] = useState({ user: { token: "" } });
+  const [token, setToken] = useState("");
+
+  const nav = useNavigate();
+
+  async function handleLogin(username: string, password: string) {
+    return fetch("http://localhost:8080/login", {
       method: "POST",
       mode: "cors",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        // TODO: change these out for the state variables.
-        username: uid,
+        username: username,
         password: password,
       }),
     })
-      //check for errors
-      .then((res) => {
-        if (res.status === 200 || res.status === 204) {
-          nav("/class");
-        } else {
-          setError("Invalid UID or password");
-        }
+      .then((response) => {
+        if (response.status == 401) throw "Unauthorized";
+        return response.json();
       })
-      .catch(setError);
+      .then((response) => {
+        setCookies("jwt", response.token);
+      })
+      .catch((e) => {
+        setError(
+          `Failed uploading! Server responded with: ${String(e).replace(
+            "TypeError: ",
+            ""
+          )}`
+        );
+      });
   }
+
+  async function submit(e: FormEvent) {
+    e.preventDefault();
+    const response = await handleLogin(username, password);
+    setUser({ user: { token: token } });
+  }
+
+  const onInputUsername = ({
+    target: { value },
+  }: {
+    target: { value: string };
+  }) => setUsername(value);
+  const onInputPassword = ({
+    target: { value },
+  }: {
+    target: { value: string };
+  }) => setPassword(value);
 
   const createAccount = () => {
     nav("/create");
@@ -63,57 +92,63 @@ function Login() {
         >
           Gradebetter
         </h1>
-        {/*
-        Every onSubmit handler takes a parameter e, being the *EVENT* that triggered it.
-        We can prevent the default behavior by calling e.preventDefault(), which we do
-        in our handleLogin function declared above.
-        */}
-        <Form onSubmit={handleLogin}>
+        <Form onSubmit={submit}>
           <Form.Group className="mb-3" controlId="formUsername">
-            <Form.Label>UID</Form.Label>
+            <Form.Label>Username</Form.Label>
             <Form.Control
               type="text"
-              name="uid"
+              name="username"
               placeholder="Josie Bruin"
-              onChange={(e) => {
-                setUID(e.target.value);
-              }}
+              value={username}
+              onChange={onInputUsername}
             />
           </Form.Group>
           <Form.Group className="mb-3" controlId="formPassword">
             <Form.Label>Password</Form.Label>
             <Form.Control
-              //Update the state variable on change.
-              onChange={(e) => {
-                setPassword(e.target.value);
-              }}
               type="password"
               name="password"
+              value={password}
+              onChange={onInputPassword}
             />
           </Form.Group>
-          <Button variant="primary" type="submit" style={{ borderRadius: 20 }}>
-            Login
-          </Button>
-          <br />
-          <br />
-          <Button
-            onClick={forgotPassword}
-            variant="secondary"
-            type="button"
-            style={{ borderRadius: 20 }}
-          >
-            Forgot Password
-          </Button>
-          <br />
-          <br />
-          <Button
-            onClick={createAccount}
-            variant="secondary"
-            type="button"
-            style={{ borderRadius: 20 }}
-          >
-            Register
-          </Button>
+
+          <Stack direction="vertical" gap={3}>
+            <Row>
+              <Button
+                variant="primary"
+                size="lg"
+                type="submit"
+                style={{ borderRadius: 20 }}
+              >
+                Login
+              </Button>
+            </Row>
+            <Stack direction="horizontal" gap={3}>
+              <div className="me-auto">
+                <Button
+                  onClick={forgotPassword}
+                  variant="secondary"
+                  size="lg"
+                  type="button"
+                  style={{ borderRadius: 20 }}
+                >
+                  Forgot Password
+                </Button>
+              </div>
+              <div className="ms-auto">
+                <Button
+                  onClick={createAccount}
+                  variant="secondary"
+                  size="lg"
+                  type="button"
+                  style={{ borderRadius: 20 }}
+                >
+                  Register
+                </Button>
+              </div>
+            </Stack>
+          </Stack>
         </Form>
       </Stack>
     </Container>
