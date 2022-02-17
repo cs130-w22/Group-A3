@@ -57,17 +57,38 @@ const SignUpProfessor = () => {
       body: JSON.stringify({
         name: name,
         username: uid,
-        courseName: courseName,
         password: password,
         type: "professor",
       }),
     })
       //check for errors
       .then((res) => {
-        if (res.status === 201 || res.status === 400) {
-          nav("/class");
+        if (res.status === 201) {
+          handleClassCreation(courseName);
         } else {
           setError("Error in Signing Up");
+        }
+      })
+      .catch(setError);
+  }
+
+  function handleClassCreation(courseName: string) {
+    fetch("http://localhost:8080/class", {
+      method: "POST",
+      mode: "cors",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        name: courseName,
+      }),
+    })
+      //check for errors
+      .then((res) => {
+        if (res.status === 201) {
+          nav("/class");
+        } else {
+          setError("Error in Creating Class");
         }
       })
       .catch(setError);

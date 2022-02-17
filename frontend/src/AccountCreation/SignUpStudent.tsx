@@ -64,7 +64,7 @@ const SignUpStudent = () => {
     })
       //check for errors
       .then((res) => {
-        if (res.status === 201 || res.status === 400) {
+        if (res.status === 201) {
           //TODO: change this to direct to professor portal
           nav("/class");
         } else {
