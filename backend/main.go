@@ -34,6 +34,7 @@ func main() {
 	e.HideBanner = true
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
+	e.Use(middleware.CORS())
 
 	// Open a database connection for each request of concern.
 	db, err := sql.Open("postgres", connString)

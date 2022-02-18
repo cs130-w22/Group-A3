@@ -84,7 +84,7 @@ CREATE TABLE IF NOT EXISTS ClassMembers (
 -- Valid invite codes to classes.
 CREATE TABLE IF NOT EXISTS Invites (
   -- ID of the invite (code that is used on user side).
-  id uuid DEFAULT uuid_generate_v4(),
+  id uuid DEFAULT uuid_generate_v4() NOT NULL,
 
   -- Class this invite is associated to.
   invites_to INT NOT NULL,
@@ -96,7 +96,7 @@ CREATE TABLE IF NOT EXISTS Invites (
   expires TIMESTAMPTZ NOT NULL,
 
   -- User that created this invite.
-  created_by INT,
+  created_by INT NOT NULL,
 
   PRIMARY KEY (id),
   FOREIGN KEY (invites_to) REFERENCES Classes (id),
