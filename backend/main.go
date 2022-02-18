@@ -2,7 +2,9 @@ package main
 
 import (
 	"database/sql"
+	"flag"
 	"net/http"
+	"os"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -12,21 +14,27 @@ import (
 	"github.com/cs130-w22/Group-A3/backend/jwt"
 )
 
-var connString string
-
-// Sensible default values for parameters.
-func init() {
-	connString = "host=localhost port=5432 dbname=gradebetter user=admin password=admin sslmode=disable"
-}
+var (
+	connString string
+	secretKey  string
+	port       string
+)
 
 func main() {
+	// Sensible default values for parameters.
+	flag.StringVar(&connString, "c", "host=localhost port=5432 dbname=gradebetter user=admin password=admin sslmode=disable", "postgres connection string")
+	flag.StringVar(&port, "p", os.Getenv("PORT"), "`port` to serve the HTTP server on")
+	flag.StringVar(&secretKey, "k", "", "secret `key` to use in JWT minting")
+	flag.Parse()
+
+	// Set the application's JWT secret key.
+	jwt.UseKey([]byte(secretKey))
+
 	e := echo.New()
 	e.HideBanner = true
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 	e.Use(middleware.CORS())
-	// TODO: this sets the application's secret key. CHANGE THIS!
-	jwt.UseKey([]byte("secret"))
 
 	// Open a database connection for each request of concern.
 	db, err := sql.Open("postgres", connString)
@@ -83,7 +91,7 @@ func main() {
 	e.POST("/class/:classId/join", Unimplemented)
 
 	// Start serving the backend on port 8080.
-	e.Logger.Fatal(e.Start(":8080"))
+	e.Logger.Fatal(e.Start(":" + port))
 }
 
 // This endpoint hasn't been implemented yet!
