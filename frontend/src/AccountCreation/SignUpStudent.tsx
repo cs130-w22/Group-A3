@@ -5,6 +5,7 @@ import Stack from "react-bootstrap/Stack";
 import { Button } from "react-bootstrap";
 import Form from "react-bootstrap/Form";
 import Alert from "react-bootstrap/Alert";
+import Modal from "react-bootstrap/Modal";
 
 const SignUpStudent = () => {
   const nav = useNavigate();
@@ -15,6 +16,13 @@ const SignUpStudent = () => {
   const [courseCode, setCourseCode] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [show, setShow] = useState(false);
+  const handleShowModal = () => setShow(true);
+
+  function handleCloseModal() {
+    setShow(false);
+    nav("/class");
+  }
 
   //check if passwords match
   function validateForm(
@@ -60,8 +68,7 @@ const SignUpStudent = () => {
       //check for errors
       .then((res) => {
         if (res.status === 201) {
-          //TODO: change this to direct to professor portal
-          nav("/class");
+          handleShowModal();
         } else {
           setError("Error in Signing Up");
           throw "Error in Signing Up";
@@ -72,6 +79,20 @@ const SignUpStudent = () => {
 
   return (
     <Container>
+      <Modal show={show} onHide={handleCloseModal}>
+        <Modal.Header>
+          <Modal.Title>Account Created Successfully</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          You will now be directed to the assignment view where you can view,
+          submit, and get feedback for assignments.
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="primary" onClick={handleCloseModal}>
+            Let&apos;s Go!
+          </Button>
+        </Modal.Footer>
+      </Modal>
       <Stack direction="vertical" gap={3}>
         {error && <Alert variant={"danger"}>Failed to login: {error}</Alert>}
         <br />
@@ -137,6 +158,9 @@ const SignUpStudent = () => {
           <br />
           <Button variant="primary" type="submit" style={{ borderRadius: 20 }}>
             Create Account
+          </Button>
+          <Button variant="primary" onClick={handleShowModal}>
+            Launch demo modal
           </Button>
           <br />
         </Form>
