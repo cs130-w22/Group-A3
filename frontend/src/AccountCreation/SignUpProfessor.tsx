@@ -24,16 +24,8 @@ const SignUpProfessor = () => {
     password: string,
     confirm_password: string
   ) {
-    if (name.length === 0) {
-      setError("Please enter your name");
-      return false;
-    }
     if (uid.length !== 9 || isNaN(parseInt(uid))) {
       setError("Please correct your UID");
-      return false;
-    }
-    if (course_name.length === 0) {
-      setError("Please enter a course name");
       return false;
     } else if (password !== confirm_password) {
       setError("Passwords do not match");
@@ -115,12 +107,13 @@ const SignUpProfessor = () => {
                 fontWeight: "bolder",
               }}
             >
-              XXX-XXX-XXX
+              ---------
             </Form.Label>
           </Form.Group>
           <Form.Group className="mb-3" controlId="formCourseCode">
             <Form.Label>First and Last Name</Form.Label>
             <Form.Control
+              required
               type="text"
               name="course code"
               placeholder="Joe Bruin"
@@ -132,9 +125,10 @@ const SignUpProfessor = () => {
           <Form.Group className="mb-3" controlId="formCourseCode">
             <Form.Label>UID</Form.Label>
             <Form.Control
+              required
               type="text"
               name="course code"
-              placeholder="XXXXXXXXX"
+              placeholder="---------"
               onChange={(e) => {
                 setUID(e.target.value);
               }}
@@ -143,6 +137,7 @@ const SignUpProfessor = () => {
           <Form.Group className="mb-3" controlId="formCourseName">
             <Form.Label>Course Name</Form.Label>
             <Form.Control
+              required
               type="text"
               name="course name"
               onChange={(e) => {
@@ -153,6 +148,7 @@ const SignUpProfessor = () => {
           <Form.Group className="mb-3" controlId="formPassword">
             <Form.Label>Password</Form.Label>
             <Form.Control
+              required
               type="password"
               name="password"
               onChange={(e) => {
@@ -163,6 +159,7 @@ const SignUpProfessor = () => {
           <Form.Group className="mb-3" controlId="formPassword">
             <Form.Label>Re-enter Password</Form.Label>
             <Form.Control
+              required
               type="password"
               name="password"
               onChange={(e) => {

@@ -24,15 +24,10 @@ const SignUpStudent = () => {
     password: string,
     confirm_password: string
   ) {
-    if (name.length === 0) {
-      setError("Please enter your name");
-      return false;
-    }
     if (uid.length !== 9 || isNaN(parseInt(uid))) {
-      setError("Please correct your UID");
+      setError("Please enter a correct UID");
       return false;
-    }
-    if (courseCode.length !== 9 || isNaN(parseInt(uid))) {
+    } else if (courseCode.length !== 9 || isNaN(parseInt(uid))) {
       setError("Please enter a course name");
       return false;
     } else if (password !== confirm_password) {
@@ -83,6 +78,7 @@ const SignUpStudent = () => {
           <Form.Group className="mb-3" controlId="formCourseCode">
             <Form.Label>Course Code</Form.Label>
             <Form.Control
+              required
               type="text"
               name="course code"
               placeholder="Enter Code"
@@ -94,6 +90,7 @@ const SignUpStudent = () => {
           <Form.Group className="mb-3" controlId="formCourseCode">
             <Form.Label>First and Last Name</Form.Label>
             <Form.Control
+              required
               type="text"
               name="course code"
               placeholder="Joe Bruin"
@@ -105,9 +102,10 @@ const SignUpStudent = () => {
           <Form.Group className="mb-3" controlId="formCourseCode">
             <Form.Label>UID</Form.Label>
             <Form.Control
+              required
               type="text"
               name="uid"
-              placeholder="XXXXXXXXX"
+              placeholder="---------"
               onChange={(e) => {
                 setUID(e.target.value);
               }}
@@ -116,6 +114,7 @@ const SignUpStudent = () => {
           <Form.Group className="mb-3" controlId="formPassword">
             <Form.Label>Password</Form.Label>
             <Form.Control
+              required
               type="password"
               name="password"
               onChange={(e) => {
@@ -126,6 +125,7 @@ const SignUpStudent = () => {
           <Form.Group className="mb-3" controlId="formPassword">
             <Form.Label>Re-enter Password</Form.Label>
             <Form.Control
+              required
               type="password"
               name="password"
               onChange={(e) => {
