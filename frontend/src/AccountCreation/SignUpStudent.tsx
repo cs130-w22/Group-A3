@@ -64,6 +64,7 @@ const SignUpStudent = () => {
           nav("/class");
         } else {
           setError("Error in Signing Up");
+          throw "Error in Signing Up";
         }
       })
       .catch(setError);

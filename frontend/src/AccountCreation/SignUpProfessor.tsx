@@ -59,6 +59,7 @@ const SignUpProfessor = () => {
           handleClassCreation(courseName);
         } else {
           setError("Error in Signing Up");
+          throw "Error in Signing Up";
         }
       })
       .catch(setError);
@@ -81,6 +82,7 @@ const SignUpProfessor = () => {
           nav("/class");
         } else {
           setError("Error in Creating Class");
+          throw "Error in Creating Class";
         }
       })
       .catch(setError);
