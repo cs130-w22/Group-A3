@@ -7,6 +7,12 @@ import { Form } from "react-bootstrap";
 import Card from "react-bootstrap/Card";
 import CardGroup from "react-bootstrap/CardGroup";
 import ProgressBar from "react-bootstrap/ProgressBar";
+import {
+  buildStyles,
+  CircularProgressbar,
+  CircularProgressbarWithChildren,
+} from "react-circular-progressbar";
+import "react-circular-progressbar/dist/styles.css";
 
 class hint {
   name: string;
@@ -32,23 +38,21 @@ const classMean = 60;
 function StudentAssignmentCard() {
   return (
     <Container>
-      <h2>Current Grade: </h2>
-      <div>
-        <ProgressBar
-          variant="success"
-          now={userGrade}
-          label={`Your Grade: ${userGrade}%`}
-        />
-        <ProgressBar
-          variant="info"
-          now={classMedian}
-          label={`Class Median: ${classMedian}%`}
-        />
-        <ProgressBar
-          variant="warning"
-          now={classMean}
-          label={`Class Mean: ${classMean}%`}
-        />
+      <div style={{ textAlign: "center", justifyContent: "center" }}>
+        <div style={{ width: 300, height: 300, alignItems: "center" }}>
+          <CircularProgressbarWithChildren
+            value={userGrade}
+            styles={buildStyles({ pathColor: "#1273de", strokeLinecap: 1 })}
+          >
+            {/* Put any JSX content in here that you'd like. It'll be vertically and horizonally centered. */}
+            <div style={{ fontSize: 17, marginTop: -5, color: "#808080" }}>
+              <strong>Your Score:</strong>
+            </div>
+            <div style={{ fontSize: 40, marginTop: -5, color: "#1273de" }}>
+              <strong>{userGrade}%</strong>
+            </div>
+          </CircularProgressbarWithChildren>
+        </div>
       </div>
       <br />
       <h2>Test Cases</h2>

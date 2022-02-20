@@ -7,6 +7,8 @@ import { Form } from "react-bootstrap";
 import Card from "react-bootstrap/Card";
 import CardGroup from "react-bootstrap/CardGroup";
 import ProgressBar from "react-bootstrap/ProgressBar";
+import { CircularProgressbar } from "react-circular-progressbar";
+import "react-circular-progressbar/dist/styles.css";
 
 const numSubmissions = 60; // percentage of submitted assignments
 const classMedian = 60; // change dynamically
