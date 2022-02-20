@@ -28,17 +28,7 @@ const CreateAccount = () => {
     <Container>
       <Stack direction="vertical" gap={3}>
         <br />
-        <h1
-          style={{
-            textAlign: "center",
-            justifyContent: "center",
-            color: "#1273de",
-            font: "Hammersmith One",
-            fontSize: 80,
-          }}
-        >
-          Gradebetter
-        </h1>
+        <br />
         <h2
           style={{
             textAlign: "center",
@@ -48,13 +38,44 @@ const CreateAccount = () => {
             fontSize: 30,
           }}
         >
-          I am a
+          <b>I am a</b>
         </h2>
-        <Button onClick={studentClicked}>Student</Button>
-        <br />
+        <Stack
+          direction="horizontal"
+          gap={3}
+          style={{ justifyContent: "center" }}
+        >
+          <Button
+            style={{
+              borderRadius: 100,
+              backgroundColor: mode === Mode.STUDENT ? "#1163F6" : "gray",
+              width: 300,
+              height: 60,
+              alignContent: "center",
+            }}
+            onClick={studentClicked}
+          >
+            <label style={{ fontSize: 25, fontWeight: "bolder" }}>
+              Student
+            </label>
+          </Button>
+          <br />
+          <Button
+            style={{
+              borderRadius: 100,
+              backgroundColor: mode === Mode.PROFESSOR ? "#1163F6" : "gray",
+              width: 300,
+              height: 60,
+              alignContent: "center",
+            }}
+            onClick={professsorClicked}
+          >
+            <label style={{ fontSize: 25, fontWeight: "bolder" }}>
+              Professor
+            </label>
+          </Button>
+        </Stack>
         {mode === Mode.STUDENT && <SignUpStudent />}
-        <Button onClick={professsorClicked}>Professor</Button>
-        <br />
         {mode === Mode.PROFESSOR && <SignUpProfessor />}
         <Button
           variant="outline-primary"
