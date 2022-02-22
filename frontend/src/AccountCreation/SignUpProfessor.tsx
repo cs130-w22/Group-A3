@@ -6,11 +6,12 @@ import Form from "react-bootstrap/Form";
 import Alert from "react-bootstrap/Alert";
 import React, { useState } from "react";
 import "./CreateAccount.css";
+import { Spinner } from "react-bootstrap";
 
 const SignUpProfessor = () => {
   const nav = useNavigate();
   const [error, setError] = useState("");
-  const [courseCode, setCourseCode] = useState("000000000");
+  const [courseCode, setCourseCode] = useState("");
 
   const submit: React.FormEventHandler<HTMLFormElement> = (
     e: React.FormEvent<HTMLFormElement>
@@ -19,6 +20,49 @@ const SignUpProfessor = () => {
     setError((err) => (err ? "" : "Make Sure All Fields Are Filled"));
     nav("/class");
   };
+
+  function getCourseCode() {
+    if (courseCode !== "") {
+      return (
+        <Form.Label
+          style={{
+            textAlign: "center",
+            justifyContent: "center",
+            color: "black",
+            font: "Hammersmith One",
+            fontSize: 30,
+            fontWeight: "bolder",
+            marginRight: 30,
+          }}
+        >
+          {courseCode}
+        </Form.Label>
+      );
+    } else {
+      return (
+        <Spinner animation="border" variant="secondary" role="status">
+          <span className="visually-hidden">Loading...</span>
+        </Spinner>
+      );
+    }
+  }
+
+  function addCopyButton() {
+    if (courseCode !== "") {
+      return (
+        <Button
+          onClick={() => {
+            navigator.clipboard.writeText(courseCode);
+          }}
+          variant="outline-secondary"
+          type="button"
+          style={{ borderRadius: 100, marginTop: -10 }}
+        >
+          <label>Copy</label>
+        </Button>
+      );
+    }
+  }
 
   return (
     <Container>
@@ -30,32 +74,9 @@ const SignUpProfessor = () => {
             <Form.Group className="mb-3" controlId="formCourseCode">
               <Form.Label>Your Course Code:</Form.Label>
               <br />
-              <Form.Label
-                style={{
-                  textAlign: "center",
-                  justifyContent: "center",
-                  color: "black",
-                  font: "Hammersmith One",
-                  fontSize: 30,
-                  fontWeight: "bolder",
-                  marginRight: 20,
-                }}
-              >
-                {courseCode}
-              </Form.Label>
+              {getCourseCode()}
+              {addCopyButton()}
             </Form.Group>
-            <br />
-            <br />
-            <Button
-              onClick={() => {
-                navigator.clipboard.writeText(courseCode);
-              }}
-              variant="outline-secondary"
-              type="button"
-              style={{ borderRadius: 100 }}
-            >
-              <label>Copy</label>
-            </Button>
           </Stack>
           <Form.Group className="mb-3" controlId="formCourseCode">
             <Form.Label className="signUpFormText">
