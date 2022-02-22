@@ -16,12 +16,12 @@ function AssignmentView() {
         <Form.Control type="file" />
       </Form.Group>
       {mode === "student" ? (
-        <Button variant="primary" type="submit">
-          Submit Assignment
+        <Button variant="primary" type="submit" style={{ borderRadius: 20 }}>
+          Upload Assignment
         </Button>
       ) : (
-        <Button variant="primary" type="submit">
-          Submit Grading Script
+        <Button variant="primary" type="submit" style={{ borderRadius: 20 }}>
+          Upload Grading Script
         </Button>
       )}
       <br />
