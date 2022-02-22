@@ -6,6 +6,7 @@ import { Button } from "react-bootstrap";
 import Form from "react-bootstrap/Form";
 import Alert from "react-bootstrap/Alert";
 import Modal from "react-bootstrap/Modal";
+import { useCookies } from "react-cookie";
 
 const SignUpStudent = () => {
   const nav = useNavigate();
@@ -18,6 +19,7 @@ const SignUpStudent = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [show, setShow] = useState(false);
   const handleShowModal = () => setShow(true);
+  const [cookies, setCookies] = useCookies(["jwt"]);
 
   function handleCloseModal() {
     setShow(false);
@@ -68,13 +70,43 @@ const SignUpStudent = () => {
       //check for errors
       .then((res) => {
         if (res.status === 201) {
-          handleShowModal();
+          handleLogin(uid, password);
         } else {
           setError("Error in Signing Up");
           throw "Error in Signing Up";
         }
       })
       .catch(setError);
+  }
+
+  async function handleLogin(username: string, password: string) {
+    return fetch("http://localhost:8080/login", {
+      method: "POST",
+      mode: "cors",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        username: username,
+        password: password,
+      }),
+    })
+      .then((response) => {
+        if (response.status == 401) throw "Unauthorized";
+        return response.json();
+      })
+      .then((response) => {
+        setCookies("jwt", response.token);
+        handleShowModal();
+      })
+      .catch((e) => {
+        setError(
+          `Failed uploading! Server responded with: ${String(e).replace(
+            "TypeError: ",
+            ""
+          )}`
+        );
+      });
   }
 
   return (

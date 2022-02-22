@@ -6,6 +6,7 @@ import Form from "react-bootstrap/Form";
 import Alert from "react-bootstrap/Alert";
 import Modal from "react-bootstrap/Modal";
 import React, { FormEvent, useState } from "react";
+import { useCookies } from "react-cookie";
 
 const SignUpProfessor = () => {
   const nav = useNavigate();
@@ -18,6 +19,7 @@ const SignUpProfessor = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [show, setShow] = useState(false);
   const handleShowModal = () => setShow(true);
+  const [cookies, setCookies] = useCookies(["jwt"]);
 
   function handleCloseModal() {
     setShow(false);
@@ -87,13 +89,43 @@ const SignUpProfessor = () => {
       //check for errors
       .then((res) => {
         if (res.status === 201) {
-          handleShowModal();
+          handleLogin(uid, password);
         } else {
           setError("Error in Creating Class");
           throw "Error in Creating Class";
         }
       })
       .catch(setError);
+  }
+
+  async function handleLogin(username: string, password: string) {
+    return fetch("http://localhost:8080/login", {
+      method: "POST",
+      mode: "cors",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        username: username,
+        password: password,
+      }),
+    })
+      .then((response) => {
+        if (response.status == 401) throw "Unauthorized";
+        return response.json();
+      })
+      .then((response) => {
+        setCookies("jwt", response.token);
+        handleShowModal();
+      })
+      .catch((e) => {
+        setError(
+          `Failed uploading! Server responded with: ${String(e).replace(
+            "TypeError: ",
+            ""
+          )}`
+        );
+      });
   }
 
   return (
