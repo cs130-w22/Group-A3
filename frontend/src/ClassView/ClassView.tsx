@@ -1,6 +1,8 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 
+import { StudentAssignmentContext } from "../Context/StudentAssignmentContext";
+
 import Container from "react-bootstrap/Container";
 import Stack from "react-bootstrap/Stack";
 import Button from "react-bootstrap/Button";
@@ -15,6 +17,17 @@ const Assignments = ["Assignment 1", "Assignment 2", "Assignment 3"]; // should 
 function ClassView() {
   const nav = useNavigate();
   const mode: "student" | "faculty" = "student"; // should be taken from some app state / login info
+
+  const defaultAssignment = (id: string) => {
+    return {
+      assignment: {
+        mode: "student",
+        assignment: {
+          id: id,
+        },
+      },
+    };
+  };
 
   const navToClassStats = () => {
     nav("/class/classstats");
@@ -37,7 +50,9 @@ function ClassView() {
         <h1>My Assignments</h1>
         {Assignments.map((x) =>
           mode === "student" ? (
-            <StudentAssignmentCard name={x} />
+            <StudentAssignmentContext.Provider value={defaultAssignment(x)}>
+              <StudentAssignmentCard name={x} />
+            </StudentAssignmentContext.Provider>
           ) : (
             <ProfessorAssignmentCard name={x} />
           )
