@@ -80,7 +80,12 @@ const CreateAccount = () => {
         <Button
           variant="outline-primary"
           onClick={() => nav("/")}
-          style={{ marginBottom: "1rem" }}
+          style={{
+            marginBottom: "1rem",
+            borderRadius: 100,
+            marginLeft: "32%",
+            marginRight: "32%",
+          }}
         >
           Back
         </Button>
