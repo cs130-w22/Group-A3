@@ -54,7 +54,8 @@ function ClassView() {
         </Stack>
         {Assignments.map((x) =>
           mode === "student" ? (
-            <StudentAssignmentCard name={x} />
+              <StudentAssignmentCard name={x} />
+              
           ) : (
             <ProfessorAssignmentCard name={x} />
           )

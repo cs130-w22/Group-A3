@@ -1,4 +1,4 @@
-import React, { FormEvent, useContext, useState } from "react";
+import React, { FormEvent, useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import Container from "react-bootstrap/Container";
 import Form from "react-bootstrap/Form";
@@ -7,52 +7,52 @@ import Alert from "react-bootstrap/Alert";
 import Stack from "react-bootstrap/Stack";
 import Modal from "react-bootstrap/Modal";
 import { userContext } from "../Context/UserContext";
-//import { StudentAssignmentContext } from "../Context/StudentAssignmentContext";
+import { StudentAssignmentContext } from "../Context/StudentAssignmentContext";
 
 // This view is a form for professors to add a assignment
-function AddAssignmentModal() {
-  //const studentAssignment = useContext(StudentAssignmentContext);
+function UploadSubmissionModal() {
+  const studentAssignment = useContext(StudentAssignmentContext);
   const user = useContext(userContext);
+
   const [error, setError] = useState("");
   const nav = useNavigate();
 
   const [show, setShow] = useState(false);
-  const [gradingScriptName, setGradingScriptName] = useState("");
-  const [gradingScriptFile, setGradingScriptFile] = useState("");
-  const [dueDate, setDueDate] = useState("");
+  const [submissionName, setSubmissionName] = useState("");
+  const [submissionFile, setSubmissionFile] = useState("");
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
 
-  const onInputGradingScriptName = ({
+  const onInputSubmissionName = ({
     target: { value },
   }: {
     target: { value: string };
-  }) => setGradingScriptName(value);
+  }) => setSubmissionName(value);
 
-  const onInputGradingScriptFile = ({
+  const onInputSubmissionFile = ({
     target: { value },
   }: {
     target: { value: string };
-  }) => setGradingScriptFile(value);
+  }) => setSubmissionFile(value);
 
-  const onInputDueDate = ({
-    target: { value },
-  }: {
-    target: { value: string };
-  }) => setDueDate(value);
-
-  async function handleGradingScript() {
-    return fetch("http://localhost:8080/" + user.user.class.id + "/", {
-      method: "POST",
-      mode: "cors",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        GradingScriptName: gradingScriptName,
-        GradingScriptFile: gradingScriptFile,
-      }),
-    })
+  async function handleSubmission() {
+    return fetch(
+      "http://localhost:8080/" +
+        user.user.class.id +
+        "/" +
+        studentAssignment.assignment.assignment.id,
+      {
+        method: "POST",
+        mode: "cors",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          submissionName: submissionName,
+          submissionFile: submissionFile,
+        }),
+      }
+    )
       .then((response) => {
         if (response.status == 401) throw "Unauthorized";
         return response.json();
@@ -69,7 +69,7 @@ function AddAssignmentModal() {
 
   async function submit(e: FormEvent) {
     e.preventDefault();
-    //const response = await handleGradingScript();
+    //const response = await handleSubmission();
     // TODO: The API call to submit a file is still unimplemented. Will fix when implemented
     setError((err) => (err ? "" : `File type is not supported`));
     //nav("/professor/class/");
@@ -83,48 +83,35 @@ function AddAssignmentModal() {
         style={{ borderRadius: 20 }}
         onClick={handleShow}
       >
-        Upload Grading Script
+        Upload Assignment
       </Button>
 
       <Modal show={show} onHide={handleClose}>
         <Modal.Header closeButton>
-          <Modal.Title>Add Assignment</Modal.Title>
+          <Modal.Title>Add Submission</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <Container>
             <Stack direction="vertical" gap={3}>
-              {error && (
-                <Alert variant="danger">
-                  Failed to create assignment{error}
-                </Alert>
-              )}
+              {error && <Alert variant="danger">Failed to submit{error}</Alert>}
               <Form onSubmit={submit}>
-                <Form.Group className="mb-3" controlId="formAssignmentName">
-                  <Form.Label>Assignment name</Form.Label>
+                <Form.Group className="mb-3" controlId="formSubmissionName">
+                  <Form.Label>Submission name</Form.Label>
                   <Form.Control
                     type="text"
                     name="name"
-                    placeholder="Assignment Name"
-                    value={gradingScriptName}
-                    onChange={onInputGradingScriptName}
+                    placeholder="Submission Name"
+                    value={submissionName}
+                    onChange={onInputSubmissionName}
                   />
                 </Form.Group>
-                <Form.Group className="mb-3" controlId="formDueDate">
-                  <Form.Label>Due Date</Form.Label>
-                  <Form.Control
-                    type="date"
-                    name="due date"
-                    value={dueDate}
-                    onChange={onInputDueDate}
-                  />
-                </Form.Group>
-                <Form.Group className="mb-3" controlId="formGradingScript">
-                  <Form.Label>Grading Script</Form.Label>
+                <Form.Group className="mb-3" controlId="formSubmissionFile">
+                  <Form.Label>Submission Upload</Form.Label>
                   <Form.Control
                     type="file"
-                    name="script"
-                    value={gradingScriptFile}
-                    onChange={onInputGradingScriptFile}
+                    name="submission"
+                    value={submissionFile}
+                    onChange={onInputSubmissionFile}
                   />
                 </Form.Group>
                 <Stack direction="horizontal" gap={3}>
@@ -144,4 +131,4 @@ function AddAssignmentModal() {
   );
 }
 
-export default AddAssignmentModal;
+export default UploadSubmissionModal;
