@@ -208,11 +208,14 @@ const SignUpStudent = () => {
             <Button
               variant="primary"
               type="submit"
-              style={{ borderRadius: 100, width: 400 }}
+              style={{
+                borderRadius: 100,
+                width: 400,
+                fontSize: 25,
+                fontWeight: "bolder",
+              }}
             >
-              <label style={{ fontSize: 25, fontWeight: "bolder" }}>
-                Create Account
-              </label>
+              Create Account
             </Button>
           </div>
           <br />

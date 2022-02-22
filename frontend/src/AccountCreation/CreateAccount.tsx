@@ -46,33 +46,35 @@ const CreateAccount = () => {
           style={{ justifyContent: "center" }}
         >
           <Button
+            variant="secondary"
             style={{
               borderRadius: 100,
               backgroundColor: mode === Mode.STUDENT ? "#1163F6" : "gray",
               width: 300,
               height: 60,
               alignContent: "center",
+              fontSize: 25,
+              fontWeight: "bolder",
             }}
             onClick={studentClicked}
           >
-            <label style={{ fontSize: 25, fontWeight: "bolder" }}>
-              Student
-            </label>
+            Student
           </Button>
           <br />
           <Button
+            variant="secondary"
             style={{
               borderRadius: 100,
               backgroundColor: mode === Mode.PROFESSOR ? "#1163F6" : "gray",
               width: 300,
               height: 60,
               alignContent: "center",
+              fontSize: 25,
+              fontWeight: "bolder",
             }}
             onClick={professsorClicked}
           >
-            <label style={{ fontSize: 25, fontWeight: "bolder" }}>
-              Professor
-            </label>
+            Professor
           </Button>
         </Stack>
         {mode === Mode.STUDENT && <SignUpStudent />}

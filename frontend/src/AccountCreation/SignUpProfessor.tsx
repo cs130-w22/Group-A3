@@ -7,7 +7,6 @@ import Alert from "react-bootstrap/Alert";
 import Modal from "react-bootstrap/Modal";
 import React, { FormEvent, useState } from "react";
 import { useCookies } from "react-cookie";
-import React, { useState } from "react";
 import "./CreateAccount.css";
 import { Spinner } from "react-bootstrap";
 
@@ -169,7 +168,7 @@ const SignUpProfessor = () => {
           type="button"
           style={{ borderRadius: 100, marginTop: -10 }}
         >
-          <label>Copy</label>
+          Copy
         </Button>
       );
     }
@@ -282,11 +281,14 @@ const SignUpProfessor = () => {
             <Button
               variant="primary"
               type="submit"
-              style={{ borderRadius: 100, width: 400 }}
+              style={{
+                borderRadius: 100,
+                width: 400,
+                fontSize: 25,
+                fontWeight: "bolder",
+              }}
             >
-              <label style={{ fontSize: 25, fontWeight: "bolder" }}>
-                Create Account
-              </label>
+              Create Account
             </Button>
           </div>
           <br />
