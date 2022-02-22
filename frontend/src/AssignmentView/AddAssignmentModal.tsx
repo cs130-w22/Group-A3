@@ -7,11 +7,11 @@ import Alert from "react-bootstrap/Alert";
 import Stack from "react-bootstrap/Stack";
 import Modal from "react-bootstrap/Modal";
 import { userContext } from "../Context/UserContext";
-//import { StudentAssignmentContext } from "../Context/StudentAssignmentContext";
+import { ProfessorAssignmentContext } from "../Context/ProfessorAssignmentContext";
 
 // This view is a form for professors to add a assignment
 function AddAssignmentModal() {
-  //const studentAssignment = useContext(StudentAssignmentContext);
+  const assignment = useContext(ProfessorAssignmentContext);
   const user = useContext(userContext);
   const [error, setError] = useState("");
   const nav = useNavigate();
@@ -42,17 +42,23 @@ function AddAssignmentModal() {
   }) => setDueDate(value);
 
   async function handleGradingScript() {
-    return fetch("http://localhost:8080/" + user.user.class.id + "/", {
-      method: "POST",
-      mode: "cors",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        GradingScriptName: gradingScriptName,
-        GradingScriptFile: gradingScriptFile,
-      }),
-    })
+    return fetch(
+      "http://localhost:8080/" +
+        user.user.class.id +
+        "/" +
+        assignment.assignment.id,
+      {
+        method: "POST",
+        mode: "cors",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          GradingScriptName: gradingScriptName,
+          GradingScriptFile: gradingScriptFile,
+        }),
+      }
+    )
       .then((response) => {
         if (response.status == 401) throw "Unauthorized";
         return response.json();

@@ -40,7 +40,7 @@ function UploadSubmissionModal() {
       "http://localhost:8080/" +
         user.user.class.id +
         "/" +
-        studentAssignment.assignment.assignment.id,
+        studentAssignment.assignment.id,
       {
         method: "POST",
         mode: "cors",

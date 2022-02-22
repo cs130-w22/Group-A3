@@ -8,6 +8,7 @@ import Button from "react-bootstrap/Button";
 import StudentAssignmentCard from "./StudentAssignmentCard";
 import ProfessorAssignmentCard from "./ProfessorAssignmentCard";
 import AddAssignmentModal from "../AssignmentView/AddAssignmentModal";
+import { ProfessorAssignmentContext } from "../Context/ProfessorAssignmentContext";
 
 const Assignments = ["Assignment 1", "Assignment 2", "Assignment 3"]; // should be reading assignments from a database
 
@@ -57,7 +58,9 @@ function ClassView() {
               <StudentAssignmentCard name={x} />
               
           ) : (
-            <ProfessorAssignmentCard name={x} />
+            <ProfessorAssignmentContext.Provider value={defaultAssignment(x)}>
+              <ProfessorAssignmentCard name={x} />
+            </ProfessorAssignmentContext.Provider>
           )
         )}
         {mode === "student" ? null : <AddAssignmentModal />}
