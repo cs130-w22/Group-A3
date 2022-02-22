@@ -7,6 +7,12 @@ import { Form } from "react-bootstrap";
 import Card from "react-bootstrap/Card";
 import CardGroup from "react-bootstrap/CardGroup";
 import ProgressBar from "react-bootstrap/ProgressBar";
+import {
+  buildStyles,
+  CircularProgressbar,
+  CircularProgressbarWithChildren,
+} from "react-circular-progressbar";
+import "react-circular-progressbar/dist/styles.css";
 
 class hint {
   name: string;
@@ -24,32 +30,64 @@ const hint1 = new hint("hint title", "hint body", 1);
 const hint2 = new hint("hint title 2", "hint body 2", 2);
 const hints = [hint1, hint2]; // take from database
 
-const userGrade = 60; // check dynamically
-const classMedian = 60;
+const userGrade = 80; // check dynamically
+const classMedian = 75;
 const classMean = 60;
 
 //Student view of the assignment
 function StudentAssignmentCard() {
   return (
     <Container>
-      <h2>Current Grade: </h2>
-      <div>
-        <ProgressBar
-          variant="success"
-          now={userGrade}
-          label={`Your Grade: ${userGrade}%`}
-        />
-        <ProgressBar
-          variant="info"
-          now={classMedian}
-          label={`Class Median: ${classMedian}%`}
-        />
-        <ProgressBar
-          variant="warning"
-          now={classMean}
-          label={`Class Mean: ${classMean}%`}
-        />
-      </div>
+      <Stack
+        direction="horizontal"
+        gap={3}
+        style={{ justifyContent: "center" }}
+      >
+        <div className="row" style={{ width: 300, height: 300 }}>
+          <CircularProgressbarWithChildren
+            value={userGrade}
+            styles={buildStyles({ pathColor: "#1273de", strokeLinecap: 1 })}
+          >
+            {/* Put any JSX content in here that you'd like. It'll be vertically and horizonally centered. */}
+            <div style={{ fontSize: 20, marginTop: -5, color: "#808080" }}>
+              <strong>Your Score:</strong>
+            </div>
+            <div style={{ fontSize: 40, marginTop: -5, color: "#1273de" }}>
+              <strong>{userGrade}%</strong>
+            </div>
+          </CircularProgressbarWithChildren>
+        </div>
+        <br />
+        <div className="row" style={{ width: 300, height: 300 }}>
+          <CircularProgressbarWithChildren
+            value={classMedian}
+            styles={buildStyles({ pathColor: "#1273de", strokeLinecap: 1 })}
+          >
+            {/* Put any JSX content in here that you'd like. It'll be vertically and horizonally centered. */}
+            <div style={{ fontSize: 20, marginTop: -5, color: "#808080" }}>
+              <strong>Class Median:</strong>
+            </div>
+            <div style={{ fontSize: 40, marginTop: -5, color: "#1273de" }}>
+              <strong>{classMedian}%</strong>
+            </div>
+          </CircularProgressbarWithChildren>
+        </div>
+        <br />
+        <div className="row" style={{ width: 300, height: 300 }}>
+          <CircularProgressbarWithChildren
+            value={classMean}
+            styles={buildStyles({ pathColor: "#1273de", strokeLinecap: 1 })}
+          >
+            {/* Put any JSX content in here that you'd like. It'll be vertically and horizonally centered. */}
+            <div style={{ fontSize: 20, marginTop: -5, color: "#808080" }}>
+              <strong>Class Mean:</strong>
+            </div>
+            <div style={{ fontSize: 40, marginTop: -5, color: "#1273de" }}>
+              <strong>{classMean}%</strong>
+            </div>
+          </CircularProgressbarWithChildren>
+        </div>
+      </Stack>
       <br />
       <h2>Test Cases</h2>
       <CardGroup>
