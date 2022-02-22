@@ -88,7 +88,7 @@ const SignUpProfessor = () => {
     })
       //check for errors
       .then((res) => {
-        if (res.status === 201) {
+        if (res.status === 200) {
           handleLogin(uid, password);
         } else {
           setError("Error in Creating Class");
@@ -98,7 +98,7 @@ const SignUpProfessor = () => {
       .catch(setError);
   }
 
-  async function handleLogin(username: string, password: string) {
+  function handleLogin(username: string, password: string) {
     return fetch("http://localhost:8080/login", {
       method: "POST",
       mode: "cors",
@@ -226,9 +226,6 @@ const SignUpProfessor = () => {
           <br />
           <Button variant="primary" type="submit" style={{ borderRadius: 20 }}>
             Create Account
-          </Button>
-          <Button variant="primary" onClick={handleShowModal}>
-            Launch demo modal
           </Button>
           <br />
         </Form>

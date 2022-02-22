@@ -191,9 +191,6 @@ const SignUpStudent = () => {
           <Button variant="primary" type="submit" style={{ borderRadius: 20 }}>
             Create Account
           </Button>
-          <Button variant="primary" onClick={handleShowModal}>
-            Launch demo modal
-          </Button>
           <br />
         </Form>
         <br />
