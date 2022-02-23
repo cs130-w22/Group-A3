@@ -34,7 +34,7 @@ const hint1 = new hint("hint title", "hint body", 1);
 const hint2 = new hint("hint title 2", "hint body 2", 2);
 const hints = [hint1, hint2]; // get all hints from database
 
-const AssignmentView = () => {
+const ProfessorAssignmentView = () => {
   return (
     <Container>
       <h2>Assignment Statistics: </h2>
@@ -105,4 +105,4 @@ const AssignmentView = () => {
   );
 };
 
-export default AssignmentView;
+export default ProfessorAssignmentView;

@@ -13,6 +13,8 @@ import {
   CircularProgressbarWithChildren,
 } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
+import { useEffect, useRef, useState } from "react";
+import { useParams } from "react-router-dom";
 
 class hint {
   name: string;

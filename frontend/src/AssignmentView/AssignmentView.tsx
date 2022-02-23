@@ -5,10 +5,16 @@ import Container from "react-bootstrap/Container";
 import ProgressBar from "react-bootstrap/ProgressBar";
 import StudentAssignmentView from "./StudentAssignmentView";
 import ProfessorAssignmentView from "./ProfessorAssignmentView";
+import { useEffect, useRef, useState } from "react";
+import { useParams } from "react-router-dom";
 
 const Assignments = ["Assignment 1", "Assignment 2", "Assignment 3"];
-function AssignmentView() {
+const AssignmentView = () => {
   const mode: "student" | "faculty" = "student"; //needs to be taken from backend or state
+  const [assignmentName, setAssignmentName] = useState("");
+  const [mean, setMean] = useState(0);
+  const [median, setMedian] = useState(0);
+
   return (
     <Container>
       <h1>Assignment 1</h1>
@@ -33,6 +39,6 @@ function AssignmentView() {
       )}
     </Container>
   );
-}
+};
 
 export default AssignmentView;
