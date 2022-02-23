@@ -196,3 +196,50 @@ func DropStudent(cc echo.Context) error {
 
 	return c.NoContent(http.StatusOK)
 }
+
+// Functionality : add User to a class Endpoint
+// step1 : verify if classId exists
+// step2 : get the user type
+// step3 : add user to ClassMembers table
+// No body content required as of now
+func EnrollStudent(cc echo.Context) error {
+	c := cc.(*Context)
+	classId := c.Get("classId")
+
+	// verify classId
+	if err := c.Conn.QueryRowContext(c, `
+	SELECT id
+	FROM Classes
+	WHERE id = $1
+	`, classId).Scan(&classId); err != nil {
+		return c.NoContent(http.StatusInternalServerError)
+	}
+
+	// get the user type (professor or student)
+	professor := false
+	if err := c.Conn.QueryRowContext(c, `
+	SELECT professor
+	FROM Accounts
+	WHERE id = $1
+	`, c.Claims.UserID).Scan(&professor); err != nil {
+		return c.NoContent(http.StatusInternalServerError)
+	}
+
+	user_status := "student"
+	if professor {
+		user_status = "professor"
+	}
+
+	err := c.Conn.QueryRowContext(c, `
+	INSERT INTO ClassMembers (user_id, class_id, status)
+	VALUES ($1, $2, $3)
+	RETURNING class_id
+	`, c.Claims.UserID, classId, user_status).Scan(&classId)
+	if err != nil {
+		return c.NoContent(http.StatusInternalServerError)
+	}
+
+	return c.JSON(http.StatusOK, echo.Map{
+		"classId": classId,
+	})
+}
