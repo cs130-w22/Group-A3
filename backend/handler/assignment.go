@@ -10,10 +10,9 @@ import (
 func UploadSubmission(cc echo.Context) error {
 	c := cc.(*Context)
 
-	classId, assignmentId := c.Get("classId"), c.Get("assignmentId")
-	submittedFile, err := c.FormFile("file")
+	submittedFile, _ := c.FormFile("file")
 
-	file, err := submittedFile.Open()
+	file, _ := submittedFile.Open()
 	defer file.Close()
 
 	return c.NoContent(http.StatusCreated)
