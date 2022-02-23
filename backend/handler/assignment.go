@@ -1,0 +1,20 @@
+package handler
+
+import (
+	"net/http"
+
+	"github.com/labstack/echo/v4"
+)
+
+// Upload a file to the server, spawning a new submission job.
+func UploadSubmission(cc echo.Context) error {
+	c := cc.(*Context)
+
+	classId, assignmentId := c.Get("classId"), c.Get("assignmentId")
+	submittedFile, err := c.FormFile("file")
+
+	file, err := submittedFile.Open()
+	defer file.Close()
+
+	return c.NoContent(http.StatusCreated)
+}
