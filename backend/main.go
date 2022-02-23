@@ -81,13 +81,13 @@ func main() {
 			return next(c)
 		}
 	})
-	e.POST("/class", Unimplemented)
-	e.POST("/class/", Unimplemented)
+	e.POST("/class", handler.CreateClass)
+	e.POST("/class/", handler.CreateClass)
 	e.GET("/class/:classId/info", Unimplemented)
 	e.GET("/class/:classId/:assignmentId", Unimplemented)
 	e.POST("/:classId/:assignmentId/script", Unimplemented)
 	e.POST("/:classId/:assignmentId/upload", Unimplemented)
-	e.POST("/class/:classId/invite", Unimplemented)
+	classApi.POST("/:classId/invite", handler.CreateInvite)
 	e.POST("/class/:classId/join", Unimplemented)
 
 	// Start serving the backend on port 8080.

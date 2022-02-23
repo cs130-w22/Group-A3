@@ -1,8 +1,8 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-
 import { StudentAssignmentContext } from "../Context/StudentAssignmentContext";
 
+import { useCookies } from "react-cookie";
 import Container from "react-bootstrap/Container";
 import Stack from "react-bootstrap/Stack";
 import Button from "react-bootstrap/Button";
@@ -27,6 +27,11 @@ function ClassView() {
     };
   };
 
+  const [cookies, setCookies, removeCookies] = useCookies(["jwt"]);
+  function handleRemoveCookies() {
+    removeCookies("jwt");
+    nav("/");
+  }
   const navToClassStats = () => {
     nav("/class/classstats");
   };
@@ -45,7 +50,20 @@ function ClassView() {
             </Stack>
           </div>
         )}
-        <h1>My Assignments</h1>
+        <Stack direction="horizontal" gap={3}>
+          <h1>My Assignments</h1>
+          <div className="ms-auto">
+            <Button
+              onClick={handleRemoveCookies}
+              variant="secondary"
+              size="lg"
+              type="button"
+              style={{ borderRadius: 100, alignContent: "left" }}
+            >
+              Log Out
+            </Button>
+          </div>
+        </Stack>
         {Assignments.map((x) =>
           mode === "student" ? (
             <StudentAssignmentContext.Provider value={defaultAssignment(x)}>
