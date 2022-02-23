@@ -83,6 +83,7 @@ func main() {
 	})
 	e.POST("/class", Unimplemented)
 	e.POST("/class/", Unimplemented)
+	e.POST("/class/:classId/drop", handler.DropStudent)
 	e.GET("/class/:classId/info", Unimplemented)
 	e.GET("/class/:classId/:assignmentId", Unimplemented)
 	e.POST("/:classId/:assignmentId/script", Unimplemented)
