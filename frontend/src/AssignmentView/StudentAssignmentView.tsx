@@ -30,14 +30,40 @@ class hint {
 
 const hint1 = new hint("hint title", "hint body", 1);
 const hint2 = new hint("hint title 2", "hint body 2", 2);
-const hints = [hint1, hint2]; // take from database
-
-const userGrade = 80; // check dynamically
-const classMedian = 75;
-const classMean = 60;
+const default_hints = [hint1, hint2];
 
 //Student view of the assignment
-function StudentAssignmentCard() {
+const StudentAssignmentView = () => {
+  const [userGrade, setUserGrade] = useState(23); // currently dummy values before testing with endpoint
+  const [classMean, setClassMean] = useState(75);
+  const [classMedian, setClassMedian] = useState(92);
+  const [hints, setHints] = useState(default_hints);
+  const params = useParams();
+  const assignmentInformation = useRef({});
+
+  useEffect(() => {
+    fetch(
+      "http://localhost:8080/class/${params.classId}/${params.assignmentId}",
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "${cookies}",
+        },
+      }
+    ).then((resp) => {
+      if (resp.status == 201) {
+        setClassMean(JSON.parse(resp.toString()).mean);
+        setClassMedian(JSON.parse(resp.toString()).median);
+        // will add function that takes in the hints and creates hint objects to be displayed
+        assignmentInformation.current = JSON.parse(resp.toString());
+      }
+    });
+    return () => {
+      console.log("cleanup student level assignment view");
+    };
+  });
+
   return (
     <Container>
       <Stack
@@ -104,6 +130,6 @@ function StudentAssignmentCard() {
       </CardGroup>
     </Container>
   );
-}
+};
 
-export default StudentAssignmentCard;
+export default StudentAssignmentView;
