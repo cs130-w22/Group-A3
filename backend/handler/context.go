@@ -35,3 +35,13 @@ func (c Context) Err() error {
 func (c Context) Value(key interface{}) interface{} {
 	return c.Request().Context().Value(key)
 }
+
+// Return whether the user is in a class or not.
+func (c *Context) InClass(classId string) bool {
+	return c.Conn.QueryRowContext(c, `
+	SELECT *
+	FROM ClassMembers
+	WHERE user_id = $1
+	AND class_id = $2
+	`, c.Claims.UserID, classId).Err() == nil
+}

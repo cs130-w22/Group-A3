@@ -84,7 +84,7 @@ func main() {
 	e.POST("/class", Unimplemented)
 	e.POST("/class/", Unimplemented)
 	e.GET("/class/:classId/info", Unimplemented)
-	e.GET("/class/:classId/:assignmentId", Unimplemented)
+	classApi.GET("/:classId/:assignmentId", handler.GetAssignment)
 	e.POST("/:classId/:assignmentId/script", Unimplemented)
 	e.POST("/:classId/:assignmentId/upload", Unimplemented)
 	e.POST("/class/:classId/invite", Unimplemented)
