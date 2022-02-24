@@ -2,6 +2,7 @@ package handler
 
 import (
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/labstack/echo/v4"
@@ -82,4 +83,42 @@ func CreateInvite(cc echo.Context) error {
 	return c.JSON(http.StatusCreated, echo.Map{
 		"inviteCode": inviteCode,
 	})
+}
+
+// Drop a student from the class, or drop the own user.
+func DropStudent(cc echo.Context) error {
+	c := cc.(*Context)
+
+	var body struct {
+		ID string `json:"id"`
+	}
+	classId := c.Get("classId")
+	if err := c.Bind(&body); err != nil || body.ID == "" {
+		return c.NoContent(http.StatusBadRequest)
+	}
+	IDToDrop64, err := strconv.ParseUint(body.ID, 10, 32)
+	if err != nil {
+		return c.NoContent(http.StatusBadRequest)
+	}
+	IDToDrop := uint(IDToDrop64)
+
+	// If the user to drop is themselves, the user must be a student,
+	// not a professor.
+	isProfessor := c.IsProfessor()
+	if c.Claims.UserID == IDToDrop && isProfessor {
+		return c.NoContent(http.StatusUnauthorized)
+	}
+	if c.Claims.UserID != IDToDrop && !isProfessor {
+		return c.NoContent(http.StatusUnauthorized)
+	}
+	_, err = c.Conn.ExecContext(c, `
+		DELETE FROM ClassMembers
+		WHERE user_id = $1
+			AND class_id = $2
+		`, IDToDrop, classId)
+	if err != nil {
+		return c.NoContent(http.StatusInternalServerError)
+	}
+
+	return c.NoContent(http.StatusOK)
 }

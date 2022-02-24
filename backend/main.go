@@ -104,6 +104,7 @@ func main() {
 	})
 	classApi.POST("", handler.CreateClass)
 	classApi.POST("/", handler.CreateClass)
+  classApi.POST("/:classId/drop", handler.DropStudent)
 	e.GET("/class/:classId/info", Unimplemented)
 	e.GET("/class/:classId/:assignmentId", Unimplemented)
 	e.POST("/:classId/:assignmentId/script", Unimplemented)
