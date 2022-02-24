@@ -6,6 +6,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 
+	"github.com/cs130-w22/Group-A3/backend/grading"
 	"github.com/cs130-w22/Group-A3/backend/jwt"
 )
 
@@ -16,8 +17,9 @@ import (
 // are logged in.
 type Context struct {
 	echo.Context
-	Conn   *sql.Conn
-	Claims *jwt.Claims
+	Conn     *sql.Conn
+	Claims   *jwt.Claims
+	JobQueue chan<- grading.Job
 }
 
 func (c Context) Deadline() (time.Time, bool) {

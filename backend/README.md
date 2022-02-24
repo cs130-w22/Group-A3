@@ -302,6 +302,20 @@ Status Code | Semantic
 401 | Unauthorized
 500 | Server error
 
+## Grading Scripts
+
+### Output format
+
+Each test case should be of the format:
+
+Content | Details
+:-|:-
+id | The test ID.
+HIDDEN | If HIDDEN, then only score is required.
+NAME TestName | If NAME is omitted, then all text until the score is treated as the Message.
+Message | 
+SCORE weight num |
+
 ## Appendix
 
 ### Testing the Backend
