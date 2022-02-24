@@ -33,25 +33,26 @@ func GetAssignment(cc echo.Context) error {
 	}
 
 	// Collect assignment information.
-	var assignment []struct {
-		ID      int       `json:"id"`
+	var assignment struct {
 		Name    string    `json:"name"`
 		DueDate time.Time `json:"dueDate"`
 		Points  float64   `json:"points"`
 	}
 	rows, err := c.Conn.QueryContext(c, `
-	SELECT id, name, due_date, points
+	SELECT name, due_date, points
 	FROM Assignments
 	WHERE id = $1
 		AND class = $2`, assignmentId, classId)
 	if err != nil {
 		return c.NoContent(http.StatusInternalServerError)
 	}
-	scan.Rows(&assignment, rows)
+	if err := scan.Row(&assignment, rows); err != nil {
+		return c.NoContent(http.StatusInternalServerError)
+	}
 	rows.Close()
 
 	// Collect submission information.
-	var submission []struct {
+	var submissions []struct {
 		ID           string    `json:"id"`
 		Date         time.Time `json:"date"`
 		PointsEarned float64   `json:"pointsEarned"`
@@ -65,8 +66,12 @@ func GetAssignment(cc echo.Context) error {
 	if err != nil {
 		return c.NoContent(http.StatusInternalServerError)
 	}
-	scan.Rows(&submission, rows)
+	scan.Rows(&submissions, rows)
 	rows.Close()
 
-	return c.JSON(http.StatusOK, assignment)
+	return c.JSON(http.StatusOK, echo.Map{
+		"name":        assignment.Name,
+		"dueDate":     assignment.DueDate,
+		"submissions": submissions,
+	})
 }
