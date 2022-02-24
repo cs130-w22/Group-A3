@@ -72,6 +72,7 @@ func GetAssignment(cc echo.Context) error {
 	return c.JSON(http.StatusOK, echo.Map{
 		"name":        assignment.Name,
 		"dueDate":     assignment.DueDate,
+		"points":      assignment.Points,
 		"submissions": submissions,
 	})
 }
