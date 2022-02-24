@@ -45,7 +45,9 @@ func GetClass(cc echo.Context) error {
 	if err != nil {
 		return c.NoContent(http.StatusInternalServerError)
 	}
-	scan.Rows(&assignments, rows)
+	if err := scan.Rows(&assignments, rows); err != nil {
+		return c.NoContent(http.StatusInternalServerError)
+	}
 
 	// Collect user information.
 	var members []struct {
@@ -63,7 +65,9 @@ func GetClass(cc echo.Context) error {
 	if err != nil {
 		return c.NoContent(http.StatusInternalServerError)
 	}
-	scan.Rows(&members, rows)
+	if err := scan.Rows(&members, rows); err != nil {
+		return c.NoContent(http.StatusInternalServerError)
+	}
 
 	return c.JSON(http.StatusOK, echo.Map{
 		"name":        className,

@@ -49,7 +49,6 @@ func GetAssignment(cc echo.Context) error {
 	if err := scan.Row(&assignment, rows); err != nil {
 		return c.NoContent(http.StatusInternalServerError)
 	}
-	rows.Close()
 
 	// Collect submission information.
 	var submissions []struct {
@@ -66,8 +65,9 @@ func GetAssignment(cc echo.Context) error {
 	if err != nil {
 		return c.NoContent(http.StatusInternalServerError)
 	}
-	scan.Rows(&submissions, rows)
-	rows.Close()
+	if err := scan.Rows(&submissions, rows); err != nil {
+		return c.NoContent(http.StatusInternalServerError)
+	}
 
 	return c.JSON(http.StatusOK, echo.Map{
 		"name":        assignment.Name,
