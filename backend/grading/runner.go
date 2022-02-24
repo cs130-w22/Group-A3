@@ -12,7 +12,7 @@ import (
 )
 
 // Channels are opened, fed objects from some other file.
-func Grade(job Job, jobQueue <-chan bool) error {
+func Grade(job Job, jobQueue <-chan bool) {
 	defer func() { <-jobQueue }()
 	results := job.Results
 
@@ -20,7 +20,7 @@ func Grade(job Job, jobQueue <-chan bool) error {
 	// Not going to worry about it here.
 	zr, err := gzip.NewReader(job.File)
 	if err != nil {
-		return err
+		return
 	}
 	defer zr.Close()
 	tr := tar.NewReader(zr)
@@ -35,8 +35,10 @@ func Grade(job Job, jobQueue <-chan bool) error {
 
 	for header, err := tr.Next(); err == nil; header, err = tr.Next() {
 		tmpFile, err := os.Create(path.Join(dir, header.Name))
-		os.Chmod(tmpFile.Name(), 0640)
 		if err != nil {
+			fmt.Println(err)
+		}
+		if err := os.Chmod(tmpFile.Name(), 0640); err != nil {
 			fmt.Println(err)
 		}
 		if _, err := io.Copy(tmpFile, tr); err != nil {
@@ -48,22 +50,25 @@ func Grade(job Job, jobQueue <-chan bool) error {
 	cmd := exec.Command(job.Script, dir)
 	output, err := cmd.StdoutPipe()
 	if err != nil {
-		return err
+		fmt.Println(err)
+		return
 	}
 	if err := cmd.Start(); err != nil {
-		return err
+		fmt.Println(err)
+		return
 	}
 
 	// Parse the output of running the driver.
 	parsed, err := parseOutput(output)
 	if err != nil {
-		return err
+		fmt.Println(err)
+		return
 	}
 	for _, result := range parsed {
 		results <- result
 	}
 	if err := cmd.Wait(); err != nil {
-		return err
+		fmt.Println(err)
+		return
 	}
-	return nil
 }
