@@ -168,4 +168,4 @@ function uploadSubmission(
     .catch(onFailure);
 }
 
-export { login, createUser, createInvite, uploadSubmission };
+export { login, createUser, createInvite, dropStudent, uploadSubmission };
