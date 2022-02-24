@@ -6,6 +6,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 
+	"github.com/cs130-w22/Group-A3/backend/grading"
 	"github.com/cs130-w22/Group-A3/backend/jwt"
 )
 
@@ -16,8 +17,9 @@ import (
 // are logged in.
 type Context struct {
 	echo.Context
-	Conn   *sql.Conn
-	Claims *jwt.Claims
+	Conn     *sql.Conn
+	Claims   *jwt.Claims
+	JobQueue chan<- grading.Job
 }
 
 func (c Context) Deadline() (time.Time, bool) {
@@ -44,4 +46,22 @@ func (c *Context) InClass(classId string) bool {
 	WHERE user_id = $1
 	AND class_id = $2
 	`, c.Claims.UserID, classId).Err() == nil
+}
+
+// Returns whether the user described in the provided JWT is, in fact, a professor.
+func (c *Context) IsProfessor() bool {
+	if c.Claims == nil {
+		return false
+	}
+
+	isProfessor := false
+	err := c.Conn.QueryRowContext(c, `
+		SELECT professor
+		FROM Accounts
+		WHERE id = $1
+	`, c.Claims.UserID).Scan(&isProfessor)
+	if err != nil {
+		return false
+	}
+	return isProfessor
 }

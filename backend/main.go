@@ -10,6 +10,7 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 	_ "github.com/lib/pq"
 
+	"github.com/cs130-w22/Group-A3/backend/grading"
 	"github.com/cs130-w22/Group-A3/backend/handler"
 	"github.com/cs130-w22/Group-A3/backend/jwt"
 )
@@ -18,6 +19,7 @@ var (
 	connString string
 	secretKey  string
 	port       string
+	maxJobs    uint
 )
 
 func main() {
@@ -25,18 +27,32 @@ func main() {
 	flag.StringVar(&connString, "c", "host=localhost port=5432 dbname=gradebetter user=admin password=admin sslmode=disable", "postgres connection string")
 	flag.StringVar(&port, "p", os.Getenv("PORT"), "`port` to serve the HTTP server on")
 	flag.StringVar(&secretKey, "k", "", "secret `key` to use in JWT minting")
+	flag.UintVar(&maxJobs, "j", 1, "Maximum number of concurrent test scripts running at a given time.")
 	flag.Parse()
 
 	// Set the application's JWT secret key.
 	jwt.UseKey([]byte(secretKey))
 
+	// Configure the HTTP server.
 	e := echo.New()
 	e.HideBanner = true
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 	e.Use(middleware.CORS())
 
-	// Open a database connection for each request of concern.
+	// Create a work queue for grading scripts, then spawn a task runner
+	// to execute grading script jobs in parallel.
+	jobQueue := make(chan grading.Job, maxJobs)
+	go func() {
+		occupied := make(chan bool, maxJobs)
+		for job := range jobQueue {
+			occupied <- true
+			go grading.Grade(job, occupied)
+		}
+	}()
+
+	// Open a database connection for each request. Attach it
+	// and a copy of the job queue channel.
 	db, err := sql.Open("postgres", connString)
 	if err != nil {
 		e.Logger.Error("Failed to open DB")
@@ -46,12 +62,17 @@ func main() {
 			c := &handler.Context{
 				Context: cc,
 			}
+
+			// Attach a database connection.
 			conn, err := db.Conn(c)
 			if err != nil {
 				e.Logger.Errorf("Failed to open connection: %v", err)
 				return c.NoContent(http.StatusInternalServerError)
 			}
 			c.Conn = conn
+
+			// Attach the job queue.
+			c.JobQueue = jobQueue
 			return next(c)
 		}
 	})
@@ -81,13 +102,14 @@ func main() {
 			return next(c)
 		}
 	})
-	e.POST("/class", Unimplemented)
-	e.POST("/class/", Unimplemented)
+	classApi.POST("", handler.CreateClass)
+	classApi.POST("/", handler.CreateClass)
+  classApi.POST("/:classId/drop", handler.DropStudent)
 	e.GET("/class/:classId/info", Unimplemented)
 	classApi.GET("/:classId/:assignmentId", handler.GetAssignment)
 	e.POST("/:classId/:assignmentId/script", Unimplemented)
 	e.POST("/:classId/:assignmentId/upload", Unimplemented)
-	e.POST("/class/:classId/invite", Unimplemented)
+	classApi.POST("/:classId/invite", handler.CreateInvite)
 	e.POST("/class/:classId/join", Unimplemented)
 
 	// Start serving the backend on port 8080.
