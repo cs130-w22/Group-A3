@@ -98,4 +98,39 @@ function createInvite(
     .catch(onFailure);
 }
 
-export { login, createUser, createInvite };
+/**
+ * Upload a submission for an assignment to the backend for
+ * grading.
+ *
+ * @param token Authorization token as returned by a login or user creation.
+ * @param assignmentId Assignment ID to submit to.
+ * @param formData FormData with required fields: `file`.
+ * @param onSuccess Fired on a successful request. `liveID` is the ID returned
+ *                  for monitoring live submission results.
+ * @param onFailure Fired when the request fails.
+ */
+function uploadSubmission(
+  token: string,
+  classId: string,
+  assignmentId: string,
+  formData: FormData,
+  onSuccess: (liveID: string) => void,
+  onFailure: (message: string) => void
+) {
+  fetch(`${BACKEND_URL}/class/${classId}/${assignmentId}/upload`, {
+    method: "POST",
+    mode: "cors",
+    headers: {
+      Authorization: token,
+    },
+    body: formData,
+  })
+    .then((r) => {
+      if (r.status !== 201) throw new Error(`Failed to upload: ${r.status}`);
+      return r.text();
+    })
+    .then(onSuccess)
+    .catch(onFailure);
+}
+
+export { login, createUser, createInvite, uploadSubmission };
