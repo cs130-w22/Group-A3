@@ -81,8 +81,8 @@ func main() {
 			return next(c)
 		}
 	})
-	e.POST("/class", handler.CreateClass)
-	e.POST("/class/", handler.CreateClass)
+	classApi.POST("", handler.CreateClass)
+	classApi.POST("/", handler.CreateClass)
 	e.GET("/class/:classId/info", Unimplemented)
 	e.GET("/class/:classId/:assignmentId", Unimplemented)
 	e.POST("/:classId/:assignmentId/script", Unimplemented)
