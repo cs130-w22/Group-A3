@@ -99,6 +99,41 @@ function createInvite(
 }
 
 /**
+ * Drop a student from a class. Any student can drop themselves from the
+ * class, and a professor can drop anyone from a class except themselves.
+ *
+ * @param token Authorization token as returned by a login or user creation.
+ * @param classId Class to drop the student from.
+ * @param studentId Student ID to drop.
+ * @param onSuccess Fired on successful request.
+ * @param onFailure Fired on failed request.
+ */
+function dropStudent(
+  token: string,
+  classId: string,
+  studentId: string,
+  onSuccess: () => void,
+  onFailure: (message: string) => void
+) {
+  fetch(`${BACKEND_URL}/class/${classId}/drop`, {
+    method: "POST",
+    mode: "cors",
+    headers: {
+      Authorization: token,
+    },
+    body: JSON.stringify({
+      id: studentId,
+    }),
+  })
+    .then((r) => {
+      if (r.status !== 200)
+        throw new Error(`Failed to drop student: ${r.status}`);
+      onSuccess();
+    })
+    .catch(onFailure);
+}
+
+/**
  * Upload a submission for an assignment to the backend for
  * grading.
  *
