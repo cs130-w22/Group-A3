@@ -15,6 +15,7 @@ import (
 func Grade(job Job, jobQueue <-chan bool) {
 	defer func() { <-jobQueue }()
 	results := job.Results
+	defer close(results)
 
 	// job.file will be hosted locally, somewhere.
 	// Not going to worry about it here.

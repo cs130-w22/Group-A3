@@ -9,6 +9,8 @@ import (
 	"time"
 
 	"github.com/blockloop/scan"
+	"github.com/cs130-w22/Group-A3/backend/grading"
+	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 )
 
@@ -77,6 +79,14 @@ func UploadSubmission(cc echo.Context) error {
 	file, _ := submittedFile.Open()
 	defer file.Close()
 
+	submissionID := uuid.NewString()
+	results := make(chan grading.Result, 10)
+	c.JobQueue <- grading.Job{
+		ID:      submissionID,
+		File:    file,
+		Results: results,
+	}
+
 	return c.NoContent(http.StatusCreated)
 }
 
@@ -132,4 +142,11 @@ func GetAssignment(cc echo.Context) error {
 		"points":      assignment.Points,
 		"submissions": submissions,
 	})
+}
+
+// Get a live feed of results for the given submission ID.
+func LiveResults(cc echo.Context) error {
+	c := cc.(*Context)
+
+	return c.NoContent(http.StatusOK)
 }
