@@ -66,6 +66,85 @@ function createUser(
     .catch(onFailure);
 }
 
+interface AssignmentData {
+  name: string;
+  dueDate: Date;
+  points: number;
+  submissions: Array<{
+    id: string;
+    date: Date;
+    pointsEarned: number;
+  }>;
+}
+
+/**
+ * Get information about an assignment. For students, this means submission statistics.
+ *
+ * @param token Authorization token.
+ * @param classId ID of the class to fetch from.
+ * @param assignmentId Assignment ID to get data from.
+ * @param onSuccess Fired on success.
+ * @param onFailure Fired on failure.
+ */
+function getAssignment(
+  token: string,
+  classId: string,
+  assignmentId: string,
+  onSuccess: (data: AssignmentData) => void,
+  onFailure: (message: string) => void
+) {
+  fetch(`${BACKEND_URL}/${classId}/${assignmentId}`, {
+    method: "GET",
+    mode: "cors",
+    headers: {
+      Authorization: token,
+    },
+  })
+    .then((r) => r.json())
+    .then((j) => onSuccess(j))
+    .catch(onFailure);
+}
+
+interface ClassData {
+  name: string;
+  assignments: Array<{
+    id: number;
+    name: string;
+    dueDate: Date;
+    points: number;
+  }>;
+  members: Array<{
+    id: number;
+    username: string;
+  }>;
+}
+
+/**
+ * Get information about a class.
+ *
+ * @param token Authorization token.
+ * @param classId ID of the class to fetch from.
+ * @param onSuccess Fired on success.
+ * @param onFailure Fired on failure.
+ */
+function getClass(
+  token: string,
+  classId: string,
+  onSuccess: (data: ClassData) => void,
+  onFailure: (message: string) => void
+) {
+  fetch(`${BACKEND_URL}/${classId}/info`, {
+    method: "GET",
+    mode: "cors",
+    headers: {
+      Authorization: token,
+    },
+  })
+    .then((r) => r.json())
+    .then((j) => onSuccess(j))
+    .catch(onFailure);
+}
+
 /**
  * Create a new invite to the described class. Will fail if the
  * token provided is not for a professor account.
@@ -168,4 +247,4 @@ function uploadSubmission(
     .catch(onFailure);
 }
 
-export { login, createUser, createInvite, dropStudent, uploadSubmission };
+export * from ".";

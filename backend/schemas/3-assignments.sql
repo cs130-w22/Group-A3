@@ -26,12 +26,15 @@ CREATE TABLE IF NOT EXISTS Assignments (
 CREATE TABLE IF NOT EXISTS Submissions (
   -- Unique submission ID
   id uuid DEFAULT uuid_generate_v4(),
-  
+
   -- ID for the assignment it was submitted to
   assignment INT NOT NULL,
 
   -- UID of submitting user.
   owner VARCHAR(255) NOT NULL,
+
+  -- When the assignment was submitted.
+  submitted_on TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
   -- Total points earned in this submission.
   points_earned DOUBLE PRECISION,
