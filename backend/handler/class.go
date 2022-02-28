@@ -2,10 +2,79 @@ package handler
 
 import (
 	"net/http"
+	"strconv"
 	"time"
 
+	"github.com/blockloop/scan"
 	"github.com/labstack/echo/v4"
 )
+
+// Get listing of all information, assignments, etc. for a class.
+// Requires one path parameter: classId. User must be authorized for
+// this request.
+func GetClass(cc echo.Context) error {
+	c := cc.(*Context)
+
+	classId := c.Param("classId")
+
+	// Confirm that the user is in the class.
+	if !c.InClass(classId) {
+		return c.NoContent(http.StatusUnauthorized)
+	}
+
+	// Get the class' general information.
+	className := ""
+	if err := c.Conn.QueryRowContext(c, `
+	SELECT name
+	FROM Classes
+	WHERE id = $1`, classId).Scan(&className); err != nil {
+		return c.NoContent(http.StatusInternalServerError)
+	}
+
+	// Collect assignment information.
+	var assignments []struct {
+		ID      int       `json:"id"`
+		Name    string    `json:"name"`
+		DueDate time.Time `json:"dueDate"`
+		Points  float64   `json:"points"`
+	}
+	rows, err := c.Conn.QueryContext(c, `
+	SELECT id, name, due_date, points
+	FROM Assignments
+	WHERE class = $2`, classId)
+	if err != nil {
+		return c.NoContent(http.StatusInternalServerError)
+	}
+	if err := scan.Rows(&assignments, rows); err != nil {
+		return c.NoContent(http.StatusInternalServerError)
+	}
+
+	// Collect user information.
+	var members []struct {
+		ID       int    `json:"id"`
+		Username string `json:"username"`
+	}
+	rows, err = c.Conn.QueryContext(c, `
+	SELECT id, username
+	FROM Accounts L
+	JOIN ClassMembers R
+	ON L.id = R.user_id
+	WHERE R.class_id = $1
+	AND L.deleted IS NULL`,
+		classId)
+	if err != nil {
+		return c.NoContent(http.StatusInternalServerError)
+	}
+	if err := scan.Rows(&members, rows); err != nil {
+		return c.NoContent(http.StatusInternalServerError)
+	}
+
+	return c.JSON(http.StatusOK, echo.Map{
+		"name":        className,
+		"assignments": assignments,
+		"members":     members,
+	})
+}
 
 // Create a class in the backend.
 func CreateClass(cc echo.Context) error {
@@ -82,4 +151,42 @@ func CreateInvite(cc echo.Context) error {
 	return c.JSON(http.StatusCreated, echo.Map{
 		"inviteCode": inviteCode,
 	})
+}
+
+// Drop a student from the class, or drop the own user.
+func DropStudent(cc echo.Context) error {
+	c := cc.(*Context)
+
+	var body struct {
+		ID string `json:"id"`
+	}
+	classId := c.Get("classId")
+	if err := c.Bind(&body); err != nil || body.ID == "" {
+		return c.NoContent(http.StatusBadRequest)
+	}
+	IDToDrop64, err := strconv.ParseUint(body.ID, 10, 32)
+	if err != nil {
+		return c.NoContent(http.StatusBadRequest)
+	}
+	IDToDrop := uint(IDToDrop64)
+
+	// If the user to drop is themselves, the user must be a student,
+	// not a professor.
+	isProfessor := c.IsProfessor()
+	if c.Claims.UserID == IDToDrop && isProfessor {
+		return c.NoContent(http.StatusUnauthorized)
+	}
+	if c.Claims.UserID != IDToDrop && !isProfessor {
+		return c.NoContent(http.StatusUnauthorized)
+	}
+	_, err = c.Conn.ExecContext(c, `
+		DELETE FROM ClassMembers
+		WHERE user_id = $1
+			AND class_id = $2
+		`, IDToDrop, classId)
+	if err != nil {
+		return c.NoContent(http.StatusInternalServerError)
+	}
+
+	return c.NoContent(http.StatusOK)
 }

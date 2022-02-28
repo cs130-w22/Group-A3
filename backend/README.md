@@ -138,6 +138,7 @@ Get the unique assignment ID for a given user
 {
   "name": "Cool assigment one",
   "dueDate": "1647205512354",
+  "points": 100.0,
   "submissions": [{"date": "1643663222161", "pointsEarned": 100.0}]
 }
 ```
@@ -170,9 +171,18 @@ allowed), and owner.
 
   // Omitted if you are not logged in to a professor account.
   "members": [
-    {"name": "Svetly"},
-    {"name": "Preetha"},
-    {"name": "Leo"}
+    {
+      "id": 2,
+      "username": "Svetly"
+    },
+    {
+      "id": 2,
+      "username": "Preetha"
+    },
+    {
+      "id": 2,
+      "username": "Leo"
+    }
   ]
 }
 ```
@@ -207,6 +217,31 @@ Create an invite code for the class with ID `class_id`.
 Status Code | Semantic
 :-|:-
 201 | Created
+400 | Bad request (see format)
+401 | Unauthorized
+500 | Server error
+
+### `POST /class/<class_id>/drop`
+
+Drop the student with ID `id` from your class with ID `class_id`. Any student can
+drop themselves from a class, and a professor can drop anyone from a class except
+themselves.
+
+#### Request Body
+
+```json
+{
+  "id": "ID"
+}
+```
+
+#### Response Format
+
+No data is returned with this endpoint.
+
+Status Code | Semantic
+:-|:-
+200 | OK
 400 | Bad request (see format)
 401 | Unauthorized
 500 | Server error
@@ -276,6 +311,20 @@ Status Code | Semantic
 400 | Bad request (see format)
 401 | Unauthorized
 500 | Server error
+
+## Grading Scripts
+
+### Output format
+
+Each test case should be of the format:
+
+Content | Details
+:-|:-
+id | The test ID.
+HIDDEN | If HIDDEN, then only score is required.
+NAME TestName | If NAME is omitted, then all text until the score is treated as the Message.
+Message | 
+SCORE weight num |
 
 ## Appendix
 
