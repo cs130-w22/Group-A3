@@ -47,7 +47,7 @@ func parseOutput(stdout io.Reader) ([]Result, error) {
 			case "NAME":
 				// If there's at least a space after NAME, record it.
 				// Otherwise, we say the name is an empty string.
-				if len(testName) >= 5 {
+				if len(text) >= 5 {
 					testName = text[5:]
 				}
 			case "SCORE":
@@ -63,7 +63,7 @@ func parseOutput(stdout io.Reader) ([]Result, error) {
 				if err != nil {
 					return nil, err
 				}
-				resultScore += weight * score
+				resultScore = weight * score
 			default:
 				msgLines = append(msgLines, text)
 			}
