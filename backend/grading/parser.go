@@ -33,7 +33,7 @@ func parseOutput(stdout io.Reader) ([]Result, error) {
 
 		msgLines := make([]string, 0)
 
-		// Get all lines till an empty line is reached:
+	// Get all lines till an empty line is reached:
 	scan:
 		for stdoutLines.Scan() {
 			text := stdoutLines.Text()
@@ -45,7 +45,8 @@ func parseOutput(stdout io.Reader) ([]Result, error) {
 			case "HIDDEN":
 				hidden = true
 			case "NAME":
-				// If there's at least a space after NAME...
+				// If there's at least a space after NAME, record it.
+				// Otherwise, we say the name is an empty string.
 				if len(testName) >= 5 {
 					testName = text[5:]
 				}
