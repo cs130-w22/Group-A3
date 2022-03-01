@@ -11,6 +11,33 @@ import (
 	"strings"
 )
 
+type ResultStore interface {
+	io.Closer
+	Store(Result) error
+}
+
+// Thread-safe runner for Gradebetter grading script jobs.
+type RunnerConfig struct {
+	Store ResultStore
+	Queue chan Job
+}
+
+// Add a Job to the work queue.
+func (r *RunnerConfig) Add(job Job) {}
+
+// Returns a new handle for the results produced by a given Job,
+// be it live or offline.
+func (r *RunnerConfig) Results()
+
+// Spawn the runner.
+func (r *RunnerConfig) Start() {
+	occupied := make(chan bool, 5)
+	for job := range r.Queue {
+		occupied <- true
+		go Grade(job, occupied)
+	}
+}
+
 // Channels are opened, fed objects from some other file.
 func Grade(job Job, jobQueue <-chan bool) {
 	defer func() { <-jobQueue }()

@@ -12,6 +12,7 @@ import (
 	"github.com/cs130-w22/Group-A3/backend/grading"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
+	"golang.org/x/net/websocket"
 )
 
 // Create a new assignment.
@@ -148,5 +149,18 @@ func GetAssignment(cc echo.Context) error {
 func LiveResults(cc echo.Context) error {
 	c := cc.(*Context)
 
-	return c.NoContent(http.StatusOK)
+	websocket.Handler(func(ws *websocket.Conn) {
+		defer ws.Close()
+
+		// Receive submission ID
+		submissionId := ""
+		if err := websocket.Message.Receive(ws, &submissionId); err != nil {
+			c.Logger().Error(err)
+		}
+
+		if err := websocket.Message.Send(ws, "test"); err != nil {
+			c.Logger().Error(err)
+		}
+	}).ServeHTTP(c.Response(), c.Request())
+	return nil
 }
