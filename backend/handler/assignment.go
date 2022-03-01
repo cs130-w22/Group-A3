@@ -1,8 +1,11 @@
 package handler
 
 import (
+	"io"
 	"net/http"
+	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/blockloop/scan"
@@ -13,15 +16,10 @@ import (
 func CreateAssignment(cc echo.Context) error {
 	c := cc.(*Context)
 
-	// TODO: Put the grading script in another spot.
-	submittedFile, err := c.FormFile("file")
-	if err != nil {
-		return c.String(http.StatusBadRequest, err.Error())
-	}
-	file, _ := submittedFile.Open()
-	defer file.Close()
-
 	assignmentName, dueDateStr, pointsStr := c.FormValue("name"), c.FormValue("dueDate"), c.FormValue("points")
+	if strings.ContainsAny(assignmentName, "/.") {
+		return c.String(http.StatusBadRequest, "'/' and '.' are not allowed in assignment names")
+	}
 	points, err := strconv.ParseFloat(pointsStr, 64)
 	if err != nil {
 		return c.NoContent(http.StatusBadRequest)
@@ -30,6 +28,21 @@ func CreateAssignment(cc echo.Context) error {
 	if err != nil {
 		return c.NoContent(http.StatusBadRequest)
 	}
+
+	// Create a new file for the assignment locally.
+	submittedFile, err := c.FormFile("file")
+	if err != nil {
+		return c.String(http.StatusBadRequest, err.Error())
+	}
+	file, _ := submittedFile.Open()
+	outFile, err := os.Create("./assignments/" + assignmentName + "/grade")
+	if err != nil {
+		return c.NoContent(http.StatusInternalServerError)
+	}
+	if _, err := io.Copy(outFile, file); err != nil {
+		return c.NoContent(http.StatusInternalServerError)
+	}
+	defer file.Close()
 
 	assignmentId := 0
 	if err := c.Conn.QueryRowContext(c, `
