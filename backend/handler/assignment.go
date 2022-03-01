@@ -2,13 +2,49 @@ package handler
 
 import (
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/blockloop/scan"
 	"github.com/labstack/echo/v4"
 )
 
-// Upload a file to the server, spawning a new submission job.
+// Create a new assignment.
+func CreateAssignment(cc echo.Context) error {
+	c := cc.(*Context)
+
+	// TODO: Put the grading script in another spot.
+	submittedFile, err := c.FormFile("file")
+	if err != nil {
+		return c.String(http.StatusBadRequest, err.Error())
+	}
+	file, _ := submittedFile.Open()
+	defer file.Close()
+
+	assignmentName, dueDateStr, pointsStr := c.FormValue("name"), c.FormValue("dueDate"), c.FormValue("points")
+	points, err := strconv.ParseFloat(pointsStr, 64)
+	if err != nil {
+		return c.NoContent(http.StatusBadRequest)
+	}
+	dueDate, err := strconv.ParseUint(dueDateStr, 10, 64)
+	if err != nil {
+		return c.NoContent(http.StatusBadRequest)
+	}
+
+	assignmentId := 0
+	if err := c.Conn.QueryRowContext(c, `
+	INSERT INTO Assignments (class, name, due_date, points)
+	VALUES $1, $2, $3, $4
+	RETURNING id
+	`, c.Param("classId"), assignmentName, dueDate, points).Scan(&assignmentId); err != nil {
+		return c.NoContent(http.StatusInternalServerError)
+	}
+
+	return c.JSON(http.StatusCreated, echo.Map{
+		"id": assignmentId,
+	})
+}
+
 func UploadSubmission(cc echo.Context) error {
 	c := cc.(*Context)
 

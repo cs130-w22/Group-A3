@@ -270,23 +270,35 @@ Status Code | Semantic
 401 | Unauthorized
 500 | Server error
 
-### `POST /<class_id>/<assignment_id>/script`
+### `POST /<class_id>/assignment`
 
-Upload a grading script for the assignment with the specified ID.
+Create a new assignment with the provided **FORM DATA** parameters.
 
 #### Request Body
 
-```formData
-<input type="file" name="file">
-```
+The request should supply a [form-type body](https://developer.mozilla.org/en-US/docs/Web/API/FormData/FormData) (e.g., `new FormData(form)`) with the following
+parameters:
+
+Key | Value
+:-|:-
+`name` | Name of the assignment (string)
+`dueDate` | Due date of the assignment in milliseconds since the epoch (integer)
+`points` | Maximum points possible for the assignment (floating point)
+`file` | Grading script to use with the assignment (blob)
 
 #### Response Format
 
-As of right now, no data is returned by this endpoint.
+The endpoint returns the ID of the newly-created assignment.
+
+```json
+{
+  "id": 0000
+}
+```
 
 Status Code | Semantic
 :-|:-
-204 | OK. Grading script has been uploaded successfully.
+201 | OK. Assignment has been created successfully.
 400 | Bad request (see format)
 401 | Unauthorized
 500 | Server error
