@@ -69,7 +69,7 @@ const SignUpProfessor = () => {
       //check for errors
       .then((res) => {
         if (res.status === 201) {
-          handleClassCreation(courseName);
+          handleLogin(uid, password);
         } else {
           setError("Error in Signing Up");
           throw "Error in Signing Up";
@@ -78,12 +78,13 @@ const SignUpProfessor = () => {
       .catch(setError);
   }
 
-  function handleClassCreation(courseName: string) {
+  function handleClassCreation(courseName: string, token: string) {
     fetch("http://localhost:8080/class", {
       method: "POST",
       mode: "cors",
       headers: {
         "Content-Type": "application/json",
+        Authorization: token,
       },
       body: JSON.stringify({
         name: courseName,
@@ -91,9 +92,7 @@ const SignUpProfessor = () => {
     })
       //check for errors
       .then((res) => {
-        if (res.status === 200) {
-          handleLogin(uid, password);
-        } else {
+        if (res.status !== 201) {
           setError("Error in Creating Class");
           throw "Error in Creating Class";
         }
@@ -119,6 +118,7 @@ const SignUpProfessor = () => {
       })
       .then((response) => {
         setCookies("jwt", response.token);
+        handleClassCreation(courseName, response.token);
         handleShowModal();
       })
       .catch((e) => {
