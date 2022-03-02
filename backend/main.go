@@ -90,7 +90,7 @@ func main() {
 			c.Conn = conn
 
 			// Attach the runner.
-			c.Runner = &runner
+			c.Runner = runner
 			return next(c)
 		}
 	})
