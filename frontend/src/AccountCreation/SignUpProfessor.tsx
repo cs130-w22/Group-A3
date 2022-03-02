@@ -26,7 +26,7 @@ const SignUpProfessor = () => {
 
   function handleCloseModal() {
     setShow(false);
-    nav("/class");
+    nav("/");
   }
 
   //check if passwords match
