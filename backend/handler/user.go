@@ -117,7 +117,9 @@ func GetUser(cc echo.Context) error {
 	if err != nil {
 		return c.NoContent(http.StatusInternalServerError)
 	}
-	scan.Rows(&response.Classes, rows)
+	if err := scan.Rows(&response.Classes, rows); err != nil {
+		return c.NoContent(http.StatusInternalServerError)
+	}
 
 	// Get all assignment information for classes the student is in.
 	rows, err = c.Conn.QueryContext(c, `
@@ -130,7 +132,9 @@ func GetUser(cc echo.Context) error {
 	if err != nil {
 		return c.NoContent(http.StatusInternalServerError)
 	}
-	scan.Rows(&response.Assignments, rows)
+	if err := scan.Rows(&response.Assignments, rows); err != nil {
+		return c.NoContent(http.StatusInternalServerError)
+	}
 
 	return c.JSON(http.StatusOK, &response)
 }
