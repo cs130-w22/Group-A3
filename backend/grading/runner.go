@@ -13,8 +13,12 @@ import (
 	"sync"
 	"time"
 
+	"github.com/blockloop/scan"
 	"github.com/google/uuid"
 )
+
+// Time to refresh results, in milliseconds.
+const REFRESH_MILLIS = 500
 
 // Multi-threaded job runner.
 type Runner struct {
@@ -44,14 +48,12 @@ func (r *Runner) Results(ctx context.Context, jobId string) <-chan Result {
 	output := make(chan Result, 5)
 	go func() {
 		conn, _ := r.store.Conn(ctx)
-		ticker := time.NewTicker(500 * time.Millisecond)
+		ticker := time.NewTicker(REFRESH_MILLIS * time.Millisecond)
 		for range ticker.C {
-			conn.QueryContext(ctx, `
+			rows, err := conn.QueryContext(ctx, `
 			SELECT
-				submitted_on,
-				points_earned,
-				test_id,
 				hidden,
+				test_id,
 				test_name,
 				score,
 				message
@@ -60,8 +62,19 @@ func (r *Runner) Results(ctx context.Context, jobId string) <-chan Result {
 			ON L.id = R.submission_id
 			WHERE id = $1
 			`, jobId)
-			output <- Result{
-				Score: 100,
+			if err != nil {
+				fmt.Println(err)
+				close(output)
+				return
+			}
+
+			var results []Result
+			if err := scan.Rows(&results, rows); err != nil {
+				close(output)
+				return
+			}
+			for _, result := range results {
+				output <- result
 			}
 		}
 	}()
@@ -88,15 +101,27 @@ func Start(ctx context.Context, store *sql.DB) *Runner {
 			results := make(chan Result, 5)
 			go Grade(jobAndID.id, jobAndID.job, results)
 
-			// TODO: For each result of the grading script, write it back to the database.
-			go func() {
+			// For each result of the grading script, write it back to the database.
+			go func(jobAndID jobWithID) {
 				for result := range results {
 					conn.ExecContext(ctx, `
-					INSERT INTO Results (test_id)
-					VALUES $1
-					`, result.TestID)
+					INSERT INTO Results (
+						submission_id,
+						test_id,
+						hidden,
+						test_name,
+						score,
+						message
+					)
+					VALUES ($1, $2, $3, $4, $5, $6)
+					`, jobAndID.id,
+						result.TestID,
+						result.Hidden,
+						result.TestName,
+						result.Score,
+						result.Msg)
 				}
-			}()
+			}(jobAndID)
 		}
 	}()
 
