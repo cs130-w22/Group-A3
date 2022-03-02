@@ -4,12 +4,13 @@ The backend for our grading solution supports operations on user-sensitive data.
 
 ## Get Started Developing
 
-You will need
+You will need:
+* [`make`](https://www.gnu.org/software/make/)
 * [`go` >= go1.16.3](https://go.dev/doc/install)
 
 ```sh
 # make sure you're in the backend directory
-go build
+make
 ./backend
 ```
 

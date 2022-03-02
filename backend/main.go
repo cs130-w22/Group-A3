@@ -8,11 +8,12 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	_ "github.com/lib/pq"
+	_ "github.com/mattn/go-sqlite3"
 
 	"github.com/cs130-w22/Group-A3/backend/grading"
 	"github.com/cs130-w22/Group-A3/backend/handler"
 	"github.com/cs130-w22/Group-A3/backend/jwt"
+	"github.com/cs130-w22/Group-A3/backend/schemas"
 )
 
 var (
@@ -24,7 +25,7 @@ var (
 
 func main() {
 	// Sensible default values for parameters.
-	flag.StringVar(&connString, "c", "host=localhost port=5432 dbname=gradebetter user=admin password=admin sslmode=disable", "postgres connection string")
+	flag.StringVar(&connString, "c", "file:test.db?cache=shared&mode=rwc", "sqlite `connection string`")
 	flag.StringVar(&port, "p", os.Getenv("PORT"), "`port` to serve the HTTP server on")
 	flag.StringVar(&secretKey, "k", "", "secret `key` to use in JWT minting")
 	flag.UintVar(&maxJobs, "j", 1, "Maximum number of concurrent test scripts running at a given time.")
@@ -40,6 +41,15 @@ func main() {
 	e.Use(middleware.Recover())
 	e.Use(middleware.CORS())
 
+	// Set up our database.
+	db, err := sql.Open("sqlite3", connString)
+	if err != nil {
+		e.Logger.Error("Failed to open DB")
+		return
+	}
+	schemas.Migrate(db, true)
+	defer db.Close()
+
 	// Create a work queue for grading scripts, then spawn a task runner
 	// to execute grading script jobs in parallel.
 	jobQueue := make(chan grading.Job, maxJobs)
@@ -53,10 +63,6 @@ func main() {
 
 	// Open a database connection for each request. Attach it
 	// and a copy of the job queue channel.
-	db, err := sql.Open("postgres", connString)
-	if err != nil {
-		e.Logger.Error("Failed to open DB")
-	}
 	e.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(cc echo.Context) error {
 			c := &handler.Context{

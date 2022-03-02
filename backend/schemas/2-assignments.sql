@@ -1,11 +1,11 @@
 --
--- 3-assignments
+-- 2-assignments
 --
 -- Schemas for all class assignments and submissions.
 --
 
-CREATE TABLE IF NOT EXISTS Assignments (
-  id INT GENERATED ALWAYS AS IDENTITY,
+CREATE TABLE Assignments (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
 
   -- Owning class
   class INT NOT NULL,
@@ -14,18 +14,17 @@ CREATE TABLE IF NOT EXISTS Assignments (
   name VARCHAR(255) NOT NULL,
 
   -- Due date.
-  due_date TIMESTAMPTZ NOT NULL,
+  due_date DATETIME NOT NULL,
 
   -- Points possible for the assignment.
   points DOUBLE PRECISION,
   
-  PRIMARY KEY (id),
-  FOREIGN KEY (class) REFERENCES Classes (id)
+  FOREIGN KEY (class) REFERENCES Courses (id)
 );
 
-CREATE TABLE IF NOT EXISTS Submissions (
+CREATE TABLE Submissions (
   -- Unique submission ID
-  id uuid DEFAULT uuid_generate_v4(),
+  id TEXT NOT NULL,
 
   -- ID for the assignment it was submitted to
   assignment INT NOT NULL,
@@ -34,7 +33,7 @@ CREATE TABLE IF NOT EXISTS Submissions (
   owner VARCHAR(255) NOT NULL,
 
   -- When the assignment was submitted.
-  submitted_on TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  submitted_on DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
   -- Total points earned in this submission.
   points_earned DOUBLE PRECISION,
