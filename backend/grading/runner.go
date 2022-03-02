@@ -8,25 +8,19 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"os/exec"
 	"path"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/google/uuid"
 )
 
+// Multi-threaded job runner.
 type Runner struct {
-	Store sql.Conn
-	queue chan jobWithID
-}
-
-// A job in progress - cached.
-type JobManager struct {
-	sync.Mutex
-	liveResults   <-chan Result
-	cachedResults []Result
-	listeners     []chan<- Result
+	store   *sql.DB
+	queue   chan jobWithID
+	running sync.Map
 }
 
 type jobWithID struct {
@@ -34,54 +28,7 @@ type jobWithID struct {
 	id  string
 }
 
-func (j *JobManager) addListener(listener chan<- Result) {
-	j.Lock()
-	defer j.Unlock()
-
-	// Add a listener to the JobManager.
-	j.listeners = append(j.listeners, listener)
-
-	// Write existing results to keep up to date.
-	for _, result := range j.cachedResults {
-		listener <- result
-	}
-}
-
-func startJob(ctx context.Context, id string, j Job, writeback *sql.Conn) *JobManager {
-	// TODO: if the job has already run, then a SQL query will return the results
-	// of the submission. In this case, we can just write back all the pre-run
-	// results to the user.
-
-	live := make(chan Result, 10)
-	go Grade(id, j, live)
-
-	progress := JobManager{
-		liveResults:   live,
-		cachedResults: nil,
-		listeners:     nil,
-	}
-
-	go func() {
-		// For each result we receive, cache it.
-		for result := range live {
-			progress.Lock()
-			progress.cachedResults = append(progress.cachedResults, result)
-			progress.Unlock()
-		}
-
-		// When the channel closes, writeback.
-		// TODO: use sqlx to prepare from cache slice
-		insertion := `
-			INSERT INTO Results (submission_id, test_id, hidden, test_name, score, message)
-			VALUES ($1, :TestID, :Hidden, :TestName, :Score, :Msg),
-		`
-		writeback.ExecContext(ctx, insertion)
-	}()
-
-	return &progress
-}
-
-// Add a job to the runner, returning its job ID.
+// Add a job to the runner, returning its associated job ID.
 func (r *Runner) Add(job Job) string {
 	withId := jobWithID{
 		job: job,
@@ -93,28 +40,67 @@ func (r *Runner) Add(job Job) string {
 
 // Get a receive-only channel of results for a given job. If the job has
 // terminated, will return an already-closed channel of Results.
-func (r *Runner) Results(jobId string) <-chan Result {
-	// TODO: add subscriber to job ID.
-	return nil
+func (r *Runner) Results(ctx context.Context, jobId string) <-chan Result {
+	output := make(chan Result, 5)
+	go func() {
+		conn, _ := r.store.Conn(ctx)
+		ticker := time.NewTicker(500 * time.Millisecond)
+		for range ticker.C {
+			conn.QueryContext(ctx, `
+			SELECT
+				submitted_on,
+				points_earned,
+				test_id,
+				hidden,
+				test_name,
+				score,
+				message
+			FROM Submissions L
+			JOIN Results R
+			ON L.id = R.submission_id
+			WHERE id = $1
+			`, jobId)
+			output <- Result{
+				Score: 100,
+			}
+		}
+	}()
+	return output
 }
 
-// Start a new work runner.
-func Start(ctx context.Context, store *sql.DB) Runner {
+// Start a new work runner for controlling batch jobs.
+func Start(ctx context.Context, store *sql.DB) *Runner {
 	// Create a work queue for grading scripts, then spawn a task runner
 	// to execute grading script jobs in parallel.
 	occupied := make(chan bool, 5)
-	queue := make(chan Job, 5)
+	queue := make(chan jobWithID, 5)
+
+	runner := Runner{
+		store:   store,
+		queue:   queue,
+		running: sync.Map{},
+	}
+
 	go func() {
-		for job := range queue {
+		for jobAndID := range queue {
 			occupied <- true
 			conn, _ := store.Conn(ctx)
-			jobId := uuid.NewString()
-			startJob(ctx, jobId, job, conn)
-			<-occupied
+			results := make(chan Result, 5)
+			go Grade(jobAndID.id, jobAndID.job, results)
+
+			// TODO: For each result of the grading script, write it back to the database.
+			go func() {
+				for result := range results {
+					conn.ExecContext(ctx, `
+					INSERT INTO Results (test_id)
+					VALUES $1
+					`, result.TestID)
+				}
+			}()
 		}
 	}()
 
-	return Runner{}
+	return &runner
 }
 
 // Channels are opened, fed objects from some other file.
@@ -152,7 +138,7 @@ func Grade(id string, job Job, results chan<- Result) {
 	}
 
 	// Execute grading script driver.
-	cmd := exec.Command(job.Script, dir)
+	cmd := job.Script
 	output, err := cmd.StdoutPipe()
 	if err != nil {
 		fmt.Println(err)

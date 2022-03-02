@@ -2,13 +2,14 @@ package grading
 
 import (
 	"io"
+	"os/exec"
 )
 
 type Job struct {
 	File io.Reader
 
 	// Path to the script to run on the Job.
-	Script string
+	Script *exec.Cmd
 }
 
 // Result from a single test case in the grading script.
