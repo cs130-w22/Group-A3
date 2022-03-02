@@ -36,39 +36,44 @@ class hint {
 const hint1 = new hint("hint title", "hint body", 1);
 const hint2 = new hint("hint title 2", "hint body 2", 2);
 const default_hints = [hint1, hint2];
+interface Submission {
+  id: string;
+  date: string;
+  pointsEarned: number;
+}
+function calculateTotalScore(submissions: Submission[]) {
+  const totalScores: number[] = [];
+
+  submissions.forEach((j) => totalScores.push(j["pointsEarned"]));
+  return totalScores;
+}
 
 const ProfessorAssignmentView = () => {
   const [classMean, setClassMean] = useState(23); // currently dummy values before testing with endpoint
   const [classMedian, setClassMedian] = useState(93);
   const [hints, setHints] = useState(default_hints);
   const [submissionCount, setSubmissionCount] = useState(24);
+  const [submissionScore, setSubmissionScore] = useState([]);
   const params = useParams();
   const [cookies, setCookies] = useCookies(["jwt"]);
-  const assignmentInformation = useRef({});
 
-  useEffect(() => {
-    fetch(
-      "http://localhost:8080/class/${params.classId}/${params.assignmentId}",
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: "${cookies}",
-        },
-      }
-    ).then((resp) => {
-      if (resp.status == 201) {
-        setClassMean(JSON.parse(resp.toString()).mean);
-        setClassMedian(JSON.parse(resp.toString()).median);
-        setSubmissionCount(Number(JSON.parse(resp.toString()).submissionCount));
-        // will add function that takes in the hints and creates hint objects to be displayed
-        assignmentInformation.current = JSON.parse(resp.toString());
-      }
+  fetch(
+    "http://localhost:8080/class/1/1", //"http://localhost:8080/class/${params.classId}/${params.assignmentId}",
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: cookies.jwt,
+      },
+    }
+  )
+    .then((resp) => {
+      if (resp.status === 200) return resp.json();
+    })
+    .then((resp) => {
+      const total = calculateTotalScore(resp.submissions);
+      setClassMean(total.reduce((a, b) => a + b, 0) / total.length);
     });
-    return () => {
-      console.log("cleanup professor level assignment view");
-    };
-  });
 
   return (
     <Container>

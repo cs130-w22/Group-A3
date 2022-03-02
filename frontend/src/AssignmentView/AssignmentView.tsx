@@ -11,32 +11,28 @@ import { useCookies } from "react-cookie";
 
 const AssignmentView = () => {
   const mode: "student" | "faculty" = "student";
-  const [assignmentName, setAssignmentName] = useState(
-    "default assignment name"
-  ); // dummy value before testing with endpoint
+  const [assignmentName, setAssignmentName] = useState("Loading Assignment..."); // dummy value before testing with endpoint
+  const [information, setInformation] = useState({});
   const [cookies, setCookies] = useCookies(["jwt"]);
   const params = useParams();
+  const assignmentInformation = useRef({});
 
-  useEffect(() => {
-    fetch(
-      "http://localhost:8080/class/${params.classId}/${params.assignmentId}",
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: "${cookies}",
-        },
-      }
-    ).then((resp) => {
-      if (resp.status == 201) {
-        setAssignmentName(JSON.parse(resp.toString()).name);
-      }
+  fetch(
+    "http://localhost:8080/class/1/1", //"http://localhost:8080/class/${params.classId}/${params.assignmentId}",
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: cookies.jwt,
+      },
+    }
+  )
+    .then((resp) => {
+      if (resp.status === 200) return resp.json();
+    })
+    .then((resp) => {
+      setAssignmentName(resp.name);
     });
-    return () => {
-      console.log("cleanup top level assignment view");
-    };
-  });
-
   return (
     <Container>
       <h1>{assignmentName}</h1>

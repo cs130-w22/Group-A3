@@ -15,6 +15,7 @@ import {
 import "react-circular-progressbar/dist/styles.css";
 import { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
+import { useCookies } from "react-cookie";
 
 class hint {
   name: string;
@@ -32,6 +33,18 @@ const hint1 = new hint("hint title", "hint body", 1);
 const hint2 = new hint("hint title 2", "hint body 2", 2);
 const default_hints = [hint1, hint2];
 
+interface Submission {
+  id: string;
+  date: string;
+  pointsEarned: number;
+}
+function calculateTotalScore(submissions: Submission[]) {
+  const totalScores: number[] = [];
+
+  submissions.forEach((j) => totalScores.push(j["pointsEarned"]));
+  return totalScores;
+}
+
 //Student view of the assignment
 const StudentAssignmentView = () => {
   const [userGrade, setUserGrade] = useState(23); // currently dummy values before testing with endpoint
@@ -39,30 +52,26 @@ const StudentAssignmentView = () => {
   const [classMedian, setClassMedian] = useState(92);
   const [hints, setHints] = useState(default_hints);
   const params = useParams();
-  const assignmentInformation = useRef({});
+  const [cookies, setCookies] = useCookies(["jwt"]);
 
-  useEffect(() => {
-    fetch(
-      "http://localhost:8080/class/${params.classId}/${params.assignmentId}",
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: "${cookies}",
-        },
-      }
-    ).then((resp) => {
-      if (resp.status == 201) {
-        setClassMean(JSON.parse(resp.toString()).mean);
-        setClassMedian(JSON.parse(resp.toString()).median);
-        // will add function that takes in the hints and creates hint objects to be displayed
-        assignmentInformation.current = JSON.parse(resp.toString());
-      }
+  fetch(
+    "http://localhost:8080/class/1/1", //"http://localhost:8080/class/${params.classId}/${params.assignmentId}",
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: cookies.jwt,
+      },
+    }
+  )
+    .then((resp) => {
+      if (resp.status === 200) return resp.json();
+    })
+    .then((resp) => {
+      const total = calculateTotalScore(resp.submissions);
+      setClassMean(total.reduce((a, b) => a + b, 0) / total.length);
+      // add median, check most recent submissions
     });
-    return () => {
-      console.log("cleanup student level assignment view");
-    };
-  });
 
   return (
     <Container>
