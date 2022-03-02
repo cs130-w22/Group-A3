@@ -325,6 +325,24 @@ Status Code | Semantic
 401 | Unauthorized
 500 | Server error
 
+### `GET /live/<assignment_id>`
+
+#### Websocket Format
+
+This endpoint sends a continuous stream of the following object:
+
+```json
+{
+  "hidden": bool,
+  "testId": 0,
+  "testName": "name",
+  "score": 100.0,
+  "msg": "Error message or further information."
+}
+```
+
+If the `hidden` field is set to `true`, the `msg` and `testName` fields will be empty.
+
 ## Grading Scripts
 
 ### Output format

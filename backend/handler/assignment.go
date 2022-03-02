@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"encoding/json"
 	"io"
 	"net/http"
 	"os"
@@ -10,7 +11,6 @@ import (
 
 	"github.com/blockloop/scan"
 	"github.com/cs130-w22/Group-A3/backend/grading"
-	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	"golang.org/x/net/websocket"
 )
@@ -80,15 +80,10 @@ func UploadSubmission(cc echo.Context) error {
 	file, _ := submittedFile.Open()
 	defer file.Close()
 
-	submissionID := uuid.NewString()
-	results := make(chan grading.Result, 10)
-	c.JobQueue <- grading.Job{
-		ID:      submissionID,
-		File:    file,
-		Results: results,
-	}
-
-	return c.NoContent(http.StatusCreated)
+	return c.JSON(http.StatusCreated, echo.Map{
+		"id": c.Runner.Add(grading.Job{
+			File: file,
+		})})
 }
 
 // Get information about an assignment.
@@ -153,13 +148,17 @@ func LiveResults(cc echo.Context) error {
 		defer ws.Close()
 
 		// Receive submission ID
-		submissionId := ""
-		if err := websocket.Message.Receive(ws, &submissionId); err != nil {
-			c.Logger().Error(err)
-		}
+		submissionId := c.Param("assignmentId")
 
-		if err := websocket.Message.Send(ws, "test"); err != nil {
-			c.Logger().Error(err)
+		// Fetch the results channel and begin relaying results.
+		for result := range c.Runner.Results(submissionId) {
+			bytes, err := json.Marshal(result)
+			if err != nil {
+				c.Logger().Warn(err)
+			}
+			if err := websocket.Message.Send(ws, bytes); err != nil {
+				c.Logger().Error(err)
+			}
 		}
 	}).ServeHTTP(c.Response(), c.Request())
 	return nil

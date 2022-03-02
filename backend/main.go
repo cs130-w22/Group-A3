@@ -89,8 +89,8 @@ func main() {
 			}
 			c.Conn = conn
 
-			// Attach the job queue.
-			c.JobQueue = jobQueue
+			// Attach the runner.
+			c.Runner = &runner
 			return next(c)
 		}
 	})

@@ -3,45 +3,122 @@ package grading
 import (
 	"archive/tar"
 	"compress/gzip"
+	"context"
+	"database/sql"
 	"fmt"
 	"io"
 	"os"
 	"os/exec"
 	"path"
 	"strings"
+	"sync"
+
+	"github.com/google/uuid"
 )
 
-type ResultStore interface {
-	io.Closer
-	Store(Result) error
+type Runner struct {
+	Store sql.Conn
+	queue chan jobWithID
 }
 
-// Thread-safe runner for Gradebetter grading script jobs.
-type RunnerConfig struct {
-	Store ResultStore
-	Queue chan Job
+// A job in progress - cached.
+type JobManager struct {
+	sync.Mutex
+	liveResults   <-chan Result
+	cachedResults []Result
+	listeners     []chan<- Result
 }
 
-// Add a Job to the work queue.
-func (r *RunnerConfig) Add(job Job) {}
+type jobWithID struct {
+	job Job
+	id  string
+}
 
-// Returns a new handle for the results produced by a given Job,
-// be it live or offline.
-func (r *RunnerConfig) Results()
+func (j *JobManager) addListener(listener chan<- Result) {
+	j.Lock()
+	defer j.Unlock()
 
-// Spawn the runner.
-func (r *RunnerConfig) Start() {
-	occupied := make(chan bool, 5)
-	for job := range r.Queue {
-		occupied <- true
-		go Grade(job, occupied)
+	// Add a listener to the JobManager.
+	j.listeners = append(j.listeners, listener)
+
+	// Write existing results to keep up to date.
+	for _, result := range j.cachedResults {
+		listener <- result
 	}
 }
 
+func startJob(ctx context.Context, id string, j Job, writeback *sql.Conn) *JobManager {
+	// TODO: if the job has already run, then a SQL query will return the results
+	// of the submission. In this case, we can just write back all the pre-run
+	// results to the user.
+
+	live := make(chan Result, 10)
+	go Grade(id, j, live)
+
+	progress := JobManager{
+		liveResults:   live,
+		cachedResults: nil,
+		listeners:     nil,
+	}
+
+	go func() {
+		// For each result we receive, cache it.
+		for result := range live {
+			progress.Lock()
+			progress.cachedResults = append(progress.cachedResults, result)
+			progress.Unlock()
+		}
+
+		// When the channel closes, writeback.
+		// TODO: use sqlx to prepare from cache slice
+		insertion := `
+			INSERT INTO Results (submission_id, test_id, hidden, test_name, score, message)
+			VALUES ($1, :TestID, :Hidden, :TestName, :Score, :Msg),
+		`
+		writeback.ExecContext(ctx, insertion)
+	}()
+
+	return &progress
+}
+
+// Add a job to the runner, returning its job ID.
+func (r *Runner) Add(job Job) string {
+	withId := jobWithID{
+		job: job,
+		id:  uuid.NewString(),
+	}
+	r.queue <- withId
+	return withId.id
+}
+
+// Get a receive-only channel of results for a given job. If the job has
+// terminated, will return an already-closed channel of Results.
+func (r *Runner) Results(jobId string) <-chan Result {
+	// TODO: add subscriber to job ID.
+	return nil
+}
+
+// Start a new work runner.
+func Start(ctx context.Context, store *sql.DB) Runner {
+	// Create a work queue for grading scripts, then spawn a task runner
+	// to execute grading script jobs in parallel.
+	occupied := make(chan bool, 5)
+	queue := make(chan Job, 5)
+	go func() {
+		for job := range queue {
+			occupied <- true
+			conn, _ := store.Conn(ctx)
+			jobId := uuid.NewString()
+			startJob(ctx, jobId, job, conn)
+			<-occupied
+		}
+	}()
+
+	return Runner{}
+}
+
 // Channels are opened, fed objects from some other file.
-func Grade(job Job, jobQueue <-chan bool) {
-	defer func() { <-jobQueue }()
-	results := job.Results
+func Grade(id string, job Job, results chan<- Result) {
 	defer close(results)
 
 	// job.file will be hosted locally, somewhere.
@@ -55,7 +132,7 @@ func Grade(job Job, jobQueue <-chan bool) {
 
 	// Stick to bigmoney pattern for creating the temp assignment directory.
 	dirPfx := "./run"
-	dir := path.Join(dirPfx, dirPfx+"-"+strings.ReplaceAll(job.ID, "-", ""))
+	dir := path.Join(dirPfx, dirPfx+"-"+strings.ReplaceAll(id, "-", ""))
 	if err := os.MkdirAll(dir, 0640); err != nil {
 		panic(err)
 	}
