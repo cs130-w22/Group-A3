@@ -138,6 +138,7 @@ Get the unique assignment ID for a given user
 {
   "name": "Cool assigment one",
   "dueDate": "1647205512354",
+  "points": 100.0,
   "submissions": [{"date": "1643663222161", "pointsEarned": 100.0}]
 }
 ```
@@ -170,9 +171,18 @@ allowed), and owner.
 
   // Omitted if you are not logged in to a professor account.
   "members": [
-    {"name": "Svetly"},
-    {"name": "Preetha"},
-    {"name": "Leo"}
+    {
+      "id": 2,
+      "username": "Svetly"
+    },
+    {
+      "id": 2,
+      "username": "Preetha"
+    },
+    {
+      "id": 2,
+      "username": "Leo"
+    }
   ]
 }
 ```
