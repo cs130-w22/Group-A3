@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"flag"
 	"net/http"
@@ -50,7 +51,7 @@ func main() {
 		return
 	}
 	defer db.Close()
-	if err := schemas.Migrate(db, false); err != nil {
+	if err := schemas.Migrate(db, true); err != nil {
 		e.Logger.Error(err)
 		return
 	}
@@ -64,14 +65,7 @@ func main() {
 
 	// Create a work queue for grading scripts, then spawn a task runner
 	// to execute grading script jobs in parallel.
-	jobQueue := make(chan grading.Job, maxJobs)
-	go func() {
-		occupied := make(chan bool, maxJobs)
-		for job := range jobQueue {
-			occupied <- true
-			go grading.Grade(job, occupied)
-		}
-	}()
+	runner := grading.Start(context.Background(), db)
 
 	// Open a database connection for each request. Attach it
 	// and a copy of the job queue channel.

@@ -151,7 +151,7 @@ func LiveResults(cc echo.Context) error {
 		submissionId := c.Param("assignmentId")
 
 		// Fetch the results channel and begin relaying results.
-		for result := range c.Runner.Results(submissionId) {
+		for result := range c.Runner.Results(c, submissionId) {
 			bytes, err := json.Marshal(result)
 			if err != nil {
 				c.Logger().Warn(err)
