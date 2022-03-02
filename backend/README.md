@@ -372,3 +372,15 @@ If you have the backend running on port 8080, this will automatically be reflect
 
 If you want to see how your SQL query is running, [DataGrip](https://www.jetbrains.com/datagrip/)
 or another similar database browser makes life much easier.
+
+You can also use the CLI program `sqlite3` to investigate the database that you have created (by default `test.db`).
+Below is an example:
+
+```
+➜  backend git:(==leo/sqlite) sqlite3 test.db
+SQLite version 3.31.1 2020-01-27 19:55:54
+Enter ".help" for usage hints.
+sqlite> SELECT * FROM Accounts;
+1|leo|iMQqebOjHtuHuhsjhZogP+dYy5dbIrB07AJYUOVy95g=|0qMCFGhCDT9l6D+fiqndpzk9B1aM9DJMIOxtYbp/WEY6x42QPKuK4q9TVSqdtAuM2KBiHiiEihkVGfLgaQ76tA==|1|
+sqlite> 
+```
