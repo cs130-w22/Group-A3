@@ -16,7 +16,7 @@ const BACKEND_URL = "http://localhost:8080/";
  * @param onSuccess Fired on a successful return.
  * @param onFailure Fired when the request fails or the response is unfavorable.
  */
-export function login(
+function login(
   username: string,
   password: string,
   onSuccess: (token: string) => void,
@@ -45,7 +45,7 @@ export function login(
  * @param onSuccess Fired on a successful return.
  * @param onFailure Fired when the request fails or the response is unfavorable.
  */
-export function createUser(
+function createUser(
   username: string,
   password: string,
   accountType: "student" | "professor",
@@ -86,7 +86,7 @@ interface AssignmentData {
  * @param onSuccess Fired on success.
  * @param onFailure Fired on failure.
  */
-export function getAssignment(
+function getAssignment(
   token: string,
   classId: string,
   assignmentId: string,
@@ -127,7 +127,7 @@ interface ClassData {
  * @param onSuccess Fired on success.
  * @param onFailure Fired on failure.
  */
-export function getClass(
+function getClass(
   token: string,
   classId: string,
   onSuccess: (data: ClassData) => void,
@@ -155,7 +155,7 @@ export function getClass(
  * @param onSuccess Fired on success with the new invite code.
  * @param onFailure Fired on failure with a message.
  */
-export function createInvite(
+function createInvite(
   token: string,
   classId: string,
   validUntil: Date,
@@ -187,7 +187,7 @@ export function createInvite(
  * @param onSuccess Fired on successful request.
  * @param onFailure Fired on failed request.
  */
-export function dropStudent(
+function dropStudent(
   token: string,
   classId: string,
   studentId: string,
@@ -223,7 +223,7 @@ export function dropStudent(
  *                  for monitoring live submission results.
  * @param onFailure Fired when the request fails.
  */
-export function uploadSubmission(
+function uploadSubmission(
   token: string,
   classId: string,
   assignmentId: string,
@@ -246,3 +246,5 @@ export function uploadSubmission(
     .then(onSuccess)
     .catch(onFailure);
 }
+
+export * from ".";
