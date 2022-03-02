@@ -16,7 +16,7 @@ const BACKEND_URL = "http://localhost:8080/";
  * @param onSuccess Fired on a successful return.
  * @param onFailure Fired when the request fails or the response is unfavorable.
  */
-function login(
+export function login(
   username: string,
   password: string,
   onSuccess: (token: string) => void,
@@ -45,7 +45,7 @@ function login(
  * @param onSuccess Fired on a successful return.
  * @param onFailure Fired when the request fails or the response is unfavorable.
  */
-function createUser(
+export function createUser(
   username: string,
   password: string,
   accountType: "student" | "professor",
@@ -86,7 +86,7 @@ interface AssignmentData {
  * @param onSuccess Fired on success.
  * @param onFailure Fired on failure.
  */
-function getAssignment(
+export function getAssignment(
   token: string,
   classId: string,
   assignmentId: string,
@@ -127,7 +127,7 @@ interface ClassData {
  * @param onSuccess Fired on success.
  * @param onFailure Fired on failure.
  */
-function getClass(
+export function getClass(
   token: string,
   classId: string,
   onSuccess: (data: ClassData) => void,
@@ -155,7 +155,7 @@ function getClass(
  * @param onSuccess Fired on success with the new invite code.
  * @param onFailure Fired on failure with a message.
  */
-function createInvite(
+export function createInvite(
   token: string,
   classId: string,
   validUntil: Date,
@@ -187,7 +187,7 @@ function createInvite(
  * @param onSuccess Fired on successful request.
  * @param onFailure Fired on failed request.
  */
-function dropStudent(
+export function dropStudent(
   token: string,
   classId: string,
   studentId: string,
@@ -223,7 +223,7 @@ function dropStudent(
  *                  for monitoring live submission results.
  * @param onFailure Fired when the request fails.
  */
-function uploadSubmission(
+export function uploadSubmission(
   token: string,
   classId: string,
   assignmentId: string,
@@ -246,5 +246,3 @@ function uploadSubmission(
     .then(onSuccess)
     .catch(onFailure);
 }
-
-export * from ".";
