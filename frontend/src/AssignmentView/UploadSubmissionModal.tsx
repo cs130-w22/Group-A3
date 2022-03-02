@@ -23,31 +23,16 @@ function UploadSubmissionModal() {
   const assignmentId = 1;
 
   const [show, setShow] = useState(false);
-  const [submissionName, setSubmissionName] = useState("");
-  const [submissionFile, setSubmissionFile] = useState("");
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
 
-  const onInputSubmissionName = ({
-    target: { value },
-  }: {
-    target: { value: string };
-  }) => setSubmissionName(value);
-
-  const onInputSubmissionFile = ({
-    target: { value },
-  }: {
-    target: { value: string };
-  }) => setSubmissionFile(value);
-
-  async function handleSubmission(data: any) {
+  function handleSubmission(data: FormData) {
     return fetch(
       `http://localhost:8080/class/${classId}/${assignmentId}/upload`,
       {
         method: "POST",
         mode: "cors",
         headers: {
-          "Content-Type": "application/json",
           Authorization: cookies.jwt,
         },
         body: data,
@@ -67,10 +52,10 @@ function UploadSubmissionModal() {
       });
   }
 
-  async function submit(e: any) {
+  function submit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const data = new FormData(e.target);
-    const response = await handleSubmission(data);
+    const data = new FormData(e.currentTarget);
+    handleSubmission(data);
     // TODO: The API call to submit a file is still unimplemented. Will fix when implemented
     setError((err) => (err ? "" : `File type is not supported`));
     //nav("/professor/class/");
@@ -102,18 +87,11 @@ function UploadSubmissionModal() {
                     type="text"
                     name="name"
                     placeholder="Submission Name"
-                    value={submissionName}
-                    onChange={onInputSubmissionName}
                   />
                 </Form.Group>
                 <Form.Group className="mb-3" controlId="formSubmissionFile">
                   <Form.Label>Submission Upload</Form.Label>
-                  <Form.Control
-                    type="file"
-                    name="submission"
-                    value={submissionFile}
-                    onChange={onInputSubmissionFile}
-                  />
+                  <Form.Control type="file" name="submission" />
                 </Form.Group>
                 <Stack direction="horizontal" gap={3}>
                   <Button variant="primary" type="submit">

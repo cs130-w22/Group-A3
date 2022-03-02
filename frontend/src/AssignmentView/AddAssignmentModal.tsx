@@ -26,32 +26,13 @@ function AddAssignmentModal() {
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
 
-  const onInputGradingScriptName = ({
-    target: { value },
-  }: {
-    target: { value: string };
-  }) => setGradingScriptName(value);
-
-  const onInputGradingScriptFile = ({
-    target: { value },
-  }: {
-    target: { value: string };
-  }) => setGradingScriptFile(value);
-
-  const onInputDueDate = ({
-    target: { value },
-  }: {
-    target: { value: string };
-  }) => setDueDate(value);
-
-  async function handleGradingScript(data: any) {
+  function handleGradingScript(data: FormData) {
     return fetch(
       `http://localhost:8080/class/${classId}/${assignmentId}/upload`,
       {
         method: "POST",
         mode: "cors",
         headers: {
-          "Content-Type": "application/json",
           Authorization: cookies.jwt,
         },
         body: data,
@@ -71,11 +52,11 @@ function AddAssignmentModal() {
       });
   }
 
-  async function submit(e: any) {
+  async function submit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     console.log("hey");
-    const data = new FormData(e.target);
-    const response = await handleGradingScript(data);
+    const data = new FormData(e.currentTarget);
+    handleGradingScript(data);
     // TODO: The API call to submit a file is still unimplemented. Will fix when implemented
     //setError((err) => (err ? "" : `File type is not supported`));
     //nav("/professor/class/");
@@ -111,27 +92,15 @@ function AddAssignmentModal() {
                     type="text"
                     name="name"
                     placeholder="Assignment Name"
-                    value={gradingScriptName}
-                    onChange={onInputGradingScriptName}
                   />
                 </Form.Group>
                 <Form.Group className="mb-3" controlId="formDueDate">
                   <Form.Label>Due Date</Form.Label>
-                  <Form.Control
-                    type="date"
-                    name="due date"
-                    value={dueDate}
-                    onChange={onInputDueDate}
-                  />
+                  <Form.Control type="date" name="due date" />
                 </Form.Group>
                 <Form.Group className="mb-3" controlId="formGradingScript">
                   <Form.Label>Grading Script</Form.Label>
-                  <Form.Control
-                    type="file"
-                    name="script"
-                    value={gradingScriptFile}
-                    onChange={onInputGradingScriptFile}
-                  />
+                  <Form.Control type="file" name="script" />
                 </Form.Group>
                 <Stack direction="horizontal" gap={3}>
                   <Button variant="primary" type="submit">
