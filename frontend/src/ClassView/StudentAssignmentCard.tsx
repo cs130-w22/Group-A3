@@ -41,8 +41,8 @@ function StudentAssignmentCard(props: { name: string }) {
                 <div
                   className="row"
                   style={{
-                    width: 140,
-                    height: 140,
+                    width: 120,
+                    height: 120,
                     marginLeft: "95%",
                     marginTop: "-7%",
                     marginBottom: "-2%",
@@ -55,14 +55,8 @@ function StudentAssignmentCard(props: { name: string }) {
                       strokeLinecap: 1,
                     })}
                   >
-                    {/* Put any JSX content in here that you'd like. It'll be vertically and horizonally centered. */}
                     <div
-                      style={{ fontSize: 20, marginTop: -15, color: "#808080" }}
-                    >
-                      <strong>Grade:</strong>
-                    </div>
-                    <div
-                      style={{ fontSize: 30, marginTop: -5, color: "#1273de" }}
+                      style={{ fontSize: 25, marginTop: -20, color: "#1273de" }}
                     >
                       <strong>{grade}%</strong>
                     </div>
