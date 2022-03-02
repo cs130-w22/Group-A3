@@ -148,7 +148,7 @@ func LiveResults(cc echo.Context) error {
 		defer ws.Close()
 
 		// Receive submission ID
-		submissionId := c.Param("assignmentId")
+		submissionId := c.Param("submissionId")
 
 		// Fetch the results channel and begin relaying results.
 		for result := range c.Runner.Results(c, submissionId) {

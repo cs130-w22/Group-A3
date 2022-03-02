@@ -125,6 +125,9 @@ func main() {
 	classApi.POST("/:classId/invite", handler.CreateInvite)
 	e.POST("/class/:classId/join", Unimplemented)
 
+	// Websockets
+	e.GET("/live/:submissionId", handler.LiveResults)
+
 	// Start serving the backend on port 8080.
 	e.Logger.Fatal(e.Start(":" + port))
 }

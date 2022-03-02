@@ -70,6 +70,7 @@ func (r *Runner) Results(ctx context.Context, jobId string) <-chan Result {
 
 			var results []Result
 			if err := scan.Rows(&results, rows); err != nil {
+				fmt.Println(err)
 				close(output)
 				return
 			}
