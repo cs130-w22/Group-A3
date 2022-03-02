@@ -4,8 +4,7 @@ import Container from "react-bootstrap/Container";
 import Stack from "react-bootstrap/Stack";
 import { Button } from "react-bootstrap";
 import "./CreateAccount.css";
-import SignUpProfessor from "./SignUpProfessor";
-import SignUpStudent from "./SignUpStudent";
+import SignUpForm from "./SignUpForm";
 
 enum Mode {
   CHOOSING = 0,
@@ -77,8 +76,9 @@ const CreateAccount = () => {
             Professor
           </Button>
         </Stack>
-        {mode === Mode.STUDENT && <SignUpStudent />}
-        {mode === Mode.PROFESSOR && <SignUpProfessor />}
+        {mode !== Mode.CHOOSING && (
+          <SignUpForm mode={mode === Mode.STUDENT ? "student" : "professor"} />
+        )}
         <Button
           variant="outline-primary"
           onClick={() => nav("/")}
