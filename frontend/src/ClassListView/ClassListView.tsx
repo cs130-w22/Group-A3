@@ -1,10 +1,14 @@
 import React, { useState } from "react";
 
+import { useCookies } from "react-cookie";
 import Container from "react-bootstrap/Container";
 import Button from "react-bootstrap/Button";
 import Table from "react-bootstrap/Table";
 import Modal from "react-bootstrap/Modal";
 import Alert from "react-bootstrap/Alert";
+
+import { dropStudent } from "../api";
+
 const ClassId = "1";
 const Students = [
   { name: "Edward", grade: 90, id: "1" },
@@ -36,11 +40,24 @@ function ClassListView() {
       });
   }
   async function handleDropStudent(id: string) {
-    await dropStudent(id);
+    await dropStudent(
+      cookies.jwt,
+      ClassId,
+      id,
+      () => {
+        setDropError(false);
+      },
+      () => {
+        setDropError(true);
+      }
+    );
     handleClose();
   }
   const handleClose = () => setShow(false);
-  const handleShow = () => setShow(true);
+  const handleShow = () => {
+    setDropError(false);
+    setShow(true);
+  };
   return (
     <Container>
       {error && <Alert variant={"danger"}>Error: {error}</Alert>}
