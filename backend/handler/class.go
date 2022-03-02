@@ -166,11 +166,15 @@ func DropStudent(cc echo.Context) error {
 	if err := c.Bind(&body); err != nil || body.ID == "" {
 		return c.NoContent(http.StatusBadRequest)
 	}
-	IDToDrop64, err := strconv.ParseUint(body.ID, 10, 32)
-	if err != nil {
-		return c.NoContent(http.StatusBadRequest)
+
+	IDToDrop := c.Claims.UserID
+	if body.ID != "" {
+		IDToDrop64, err := strconv.ParseUint(body.ID, 10, 32)
+		if err != nil {
+			return c.NoContent(http.StatusBadRequest)
+		}
+		IDToDrop = uint(IDToDrop64)
 	}
-	IDToDrop := uint(IDToDrop64)
 
 	// If the user to drop is themselves, the user must be a student,
 	// not a professor.
@@ -181,7 +185,7 @@ func DropStudent(cc echo.Context) error {
 	if c.Claims.UserID != IDToDrop && !isProfessor {
 		return c.NoContent(http.StatusUnauthorized)
 	}
-	_, err = c.Conn.ExecContext(c, `
+	_, err := c.Conn.ExecContext(c, `
 		DELETE FROM ClassMembers
 		WHERE user_id = $1
 			AND class_id = $2
