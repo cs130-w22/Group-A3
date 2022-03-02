@@ -7,39 +7,39 @@ import Alert from "react-bootstrap/Alert";
 import Stack from "react-bootstrap/Stack";
 import Row from "react-bootstrap/Row";
 
-import { userContext } from "./Context/UserContext";
-
 import { useCookies } from "react-cookie";
 function Login() {
   const [error, setError] = useState("");
-  const [cookies, setCookies] = useCookies(["jwt"]);
-
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-
-  const [user, setUser] = useState({ user: { token: "" } });
-  const [token, setToken] = useState("");
+  const { 1: setCookies } = useCookies(["jwt"]);
 
   const nav = useNavigate();
 
-  async function handleLogin(username: string, password: string) {
-    return fetch("http://localhost:8080/login", {
+  function submit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+
+    const target = e.currentTarget as typeof e.currentTarget & {
+      username: { value: string };
+      password: { value: string };
+    };
+
+    fetch("http://localhost:8080/login", {
       method: "POST",
       mode: "cors",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        username: username,
-        password: password,
+        username: target.username.value,
+        password: target.password.value,
       }),
     })
       .then((response) => {
-        if (response.status == 401) throw "Unauthorized";
+        if (response.status === 401) throw new Error("Unauthorized");
         return response.json();
       })
-      .then((response) => {
-        setCookies("jwt", response.token);
+      .then((json) => {
+        setCookies("jwt", json?.token);
+        nav("/");
       })
       .catch((e) => {
         setError(
@@ -50,23 +50,6 @@ function Login() {
         );
       });
   }
-
-  async function submit(e: FormEvent) {
-    e.preventDefault();
-    const response = await handleLogin(username, password);
-    setUser({ user: { token: token } });
-  }
-
-  const onInputUsername = ({
-    target: { value },
-  }: {
-    target: { value: string };
-  }) => setUsername(value);
-  const onInputPassword = ({
-    target: { value },
-  }: {
-    target: { value: string };
-  }) => setPassword(value);
 
   const createAccount = () => {
     nav("/create");
@@ -99,18 +82,11 @@ function Login() {
               type="text"
               name="username"
               placeholder="Josie Bruin"
-              value={username}
-              onChange={onInputUsername}
             />
           </Form.Group>
           <Form.Group className="mb-3" controlId="formPassword">
             <Form.Label>Password</Form.Label>
-            <Form.Control
-              type="password"
-              name="password"
-              value={password}
-              onChange={onInputPassword}
-            />
+            <Form.Control type="password" name="password" />
           </Form.Group>
 
           <Stack direction="vertical" gap={3}>

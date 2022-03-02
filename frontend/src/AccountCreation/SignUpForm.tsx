@@ -1,28 +1,53 @@
+import React, { FormEvent, useState } from "react";
+
 import { useNavigate } from "react-router-dom";
+import { useCookies } from "react-cookie";
+
 import Container from "react-bootstrap/Container";
 import Stack from "react-bootstrap/Stack";
-import { Button } from "react-bootstrap";
+import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
 import Alert from "react-bootstrap/Alert";
 import Modal from "react-bootstrap/Modal";
-import React, { FormEvent, useState } from "react";
-import { useCookies } from "react-cookie";
-import "./CreateAccount.css";
-import { Spinner } from "react-bootstrap";
+import Spinner from "react-bootstrap/Spinner";
 
-const SignUpProfessor = () => {
+import "./CreateAccount.css";
+
+const SuccessModal = ({
+  show,
+  handleCloseModal,
+}: {
+  show: boolean;
+  handleCloseModal: () => void;
+}) => (
+  <Modal show={show} onHide={handleCloseModal}>
+    <Modal.Header>
+      <Modal.Title>Account Created Successfully</Modal.Title>
+    </Modal.Header>
+    <Modal.Body>
+      You will now be directed to the assignment view where you can add
+      assignments and manage your class.
+    </Modal.Body>
+    <Modal.Footer>
+      <Button variant="primary" onClick={handleCloseModal}>
+        Let&apos;s Go!
+      </Button>
+    </Modal.Footer>
+  </Modal>
+);
+
+/**
+ * Form to create a new account in the Gradebetter system.
+ *
+ * @param props Mode to render the form in: either professor or student.
+ */
+const SignUpForm = ({ mode }: { mode: "professor" | "student" }) => {
   const nav = useNavigate();
   const [error, setError] = useState("");
-  const [courseCode, setCourseCode] = useState("");
+  const { 0: courseCode } = useState("");
 
-  const [name, setName] = useState("");
-  const [uid, setUID] = useState("");
-  const [courseName, setCourseName] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
   const [show, setShow] = useState(false);
-  const handleShowModal = () => setShow(true);
-  const [cookies, setCookies] = useCookies(["jwt"]);
+  const { 1: setCookies } = useCookies(["jwt"]);
 
   function handleCloseModal() {
     setShow(false);
@@ -33,7 +58,6 @@ const SignUpProfessor = () => {
   function validateForm(
     name: string,
     uid: string,
-    course_name: string,
     password: string,
     confirm_password: string
   ) {
@@ -50,9 +74,29 @@ const SignUpProfessor = () => {
     return true;
   }
 
-  function handleProfCreation(e: FormEvent) {
+  function handleCreation(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    if (!validateForm(name, uid, courseName, password, confirmPassword)) return;
+
+    const target = e.currentTarget as typeof e.currentTarget & {
+      name: { value: string };
+      uid: { value: string };
+      courseCode?: { value: string };
+      courseName?: { value: string };
+      password: { value: string };
+      confirmPassword: { value: string };
+    };
+
+    // truly the worst timeline
+    if (
+      !validateForm(
+        target.name.value,
+        target.uid.value,
+        target.password.value,
+        target.confirmPassword.value
+      )
+    )
+      return;
+
     fetch("http://localhost:8080/user", {
       method: "POST",
       mode: "cors",
@@ -60,75 +104,42 @@ const SignUpProfessor = () => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        name: name,
-        username: uid,
-        password: password,
-        type: "professor",
+        name: target.name.value,
+        username: target.uid.value,
+        password: target.password.value,
+        type: mode,
+        courseName: target?.courseName?.value,
       }),
     })
-      //check for errors
-      .then((res) => {
-        if (res.status === 201) {
-          handleLogin(uid, password);
-        } else {
-          setError("Error in Signing Up");
-          throw "Error in Signing Up";
-        }
+      .then((r) => {
+        if (r.status !== 201) throw new Error("Error in signing up!");
+        return r.json();
+      })
+      .then((j) => {
+        setCookies("jwt", j?.token);
+        if (mode === "professor" && target.courseName)
+          handleClassCreation(j?.token, target.courseName.value);
       })
       .catch(setError);
   }
 
-  function handleClassCreation(courseName: string, token: string) {
+  function handleClassCreation(authToken: string, courseName: string) {
     fetch("http://localhost:8080/class", {
       method: "POST",
       mode: "cors",
       headers: {
         "Content-Type": "application/json",
-        Authorization: token,
+        Authorization: authToken,
       },
       body: JSON.stringify({
         name: courseName,
       }),
     })
-      //check for errors
       .then((res) => {
-        if (res.status !== 201) {
-          setError("Error in Creating Class");
-          throw "Error in Creating Class";
-        }
+        if (res.status !== 201) throw new Error("Error in creating class");
+        setShow(true);
       })
       .catch(setError);
-  }
-
-  function handleLogin(username: string, password: string) {
-    return fetch("http://localhost:8080/login", {
-      method: "POST",
-      mode: "cors",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        username: username,
-        password: password,
-      }),
-    })
-      .then((response) => {
-        if (response.status == 401) throw "Unauthorized";
-        return response.json();
-      })
-      .then((response) => {
-        setCookies("jwt", response.token);
-        handleClassCreation(courseName, response.token);
-        handleShowModal();
-      })
-      .catch((e) => {
-        setError(
-          `Failed uploading! Server responded with: ${String(e).replace(
-            "TypeError: ",
-            ""
-          )}`
-        );
-      });
   }
 
   function getCourseCode() {
@@ -176,34 +187,37 @@ const SignUpProfessor = () => {
 
   return (
     <Container>
-      <Modal show={show} onHide={handleCloseModal}>
-        <Modal.Header>
-          <Modal.Title>Account Created Successfully</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          You will now be directed to the assignment view where you can add
-          assignments and manage your class.
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="primary" onClick={handleCloseModal}>
-            Let&apos;s Go!
-          </Button>
-        </Modal.Footer>
-      </Modal>
+      <SuccessModal show={show} handleCloseModal={handleCloseModal} />
       <Stack direction="vertical" gap={3}>
         {error && (
           <Alert variant={"danger"}>Failed to create account: {error}</Alert>
         )}
         <br />
-        <Form onSubmit={handleProfCreation}>
-          <Stack direction="horizontal" className="signUpFormText">
+        <Form onSubmit={handleCreation}>
+          {mode === "professor" && (
+            <Stack direction="horizontal" className="signUpFormText">
+              <Form.Group className="mb-3" controlId="formCourseCode">
+                <Form.Label>Your Course Code:</Form.Label>
+                <br />
+                {getCourseCode()}
+                {addCopyButton()}
+              </Form.Group>
+            </Stack>
+          )}
+
+          {mode === "student" && (
             <Form.Group className="mb-3" controlId="formCourseCode">
-              <Form.Label>Your Course Code:</Form.Label>
-              <br />
-              {getCourseCode()}
-              {addCopyButton()}
+              <Form.Label className="signUpFormText">Course Code</Form.Label>
+              <Form.Control
+                required
+                className="signUpForm"
+                type="text"
+                name="courseCode"
+                placeholder="Enter Code"
+              />
             </Form.Group>
-          </Stack>
+          )}
+
           <Form.Group className="mb-3" controlId="formCourseCode">
             <Form.Label className="signUpFormText">
               First and Last Name
@@ -212,38 +226,34 @@ const SignUpProfessor = () => {
               required
               className="signUpForm"
               type="text"
-              name="course code"
+              name="name"
               placeholder="Joe Bruin"
-              onChange={(e) => {
-                setName(e.target.value);
-              }}
             />
           </Form.Group>
+
           <Form.Group className="mb-3" controlId="formCourseCode">
             <Form.Label className="signUpFormText">UID</Form.Label>
             <Form.Control
               required
               className="signUpForm"
               type="text"
-              name="course code"
+              name="uid"
               placeholder="---------"
-              onChange={(e) => {
-                setUID(e.target.value);
-              }}
             />
           </Form.Group>
-          <Form.Group className="mb-3" controlId="formCourseName">
-            <Form.Label className="signUpFormText">Course Name</Form.Label>
-            <Form.Control
-              required
-              className="signUpForm"
-              type="text"
-              name="course name"
-              onChange={(e) => {
-                setCourseName(e.target.value);
-              }}
-            />
-          </Form.Group>
+
+          {mode === "professor" && (
+            <Form.Group className="mb-3" controlId="formCourseName">
+              <Form.Label className="signUpFormText">Course Name</Form.Label>
+              <Form.Control
+                required
+                className="signUpForm"
+                type="text"
+                name="courseName"
+              />
+            </Form.Group>
+          )}
+
           <Form.Group className="mb-3" controlId="formPassword">
             <Form.Label className="signUpFormText">Password</Form.Label>
             <Form.Control
@@ -251,12 +261,9 @@ const SignUpProfessor = () => {
               className="signUpForm"
               type="password"
               name="password"
-              onChange={(e) => {
-                setPassword(e.target.value);
-              }}
             />
           </Form.Group>
-          <Form.Group className="mb-3" controlId="formPassword">
+          <Form.Group className="mb-3" controlId="formConfirmPassword">
             <Form.Label className="signUpFormText">
               Re-enter Password
             </Form.Label>
@@ -264,10 +271,7 @@ const SignUpProfessor = () => {
               required
               className="signUpForm"
               type="password"
-              name="password"
-              onChange={(e) => {
-                setConfirmPassword(e.target.value);
-              }}
+              name="confirmPassword"
             />
           </Form.Group>
           <br />
@@ -299,4 +303,4 @@ const SignUpProfessor = () => {
   );
 };
 
-export default SignUpProfessor;
+export default SignUpForm;
