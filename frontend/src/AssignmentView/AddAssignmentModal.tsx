@@ -8,13 +8,16 @@ import Stack from "react-bootstrap/Stack";
 import Modal from "react-bootstrap/Modal";
 import { userContext } from "../Context/UserContext";
 import { ProfessorAssignmentContext } from "../Context/ProfessorAssignmentContext";
+import { useCookies } from "react-cookie";
 
 // This view is a form for professors to add a assignment
 function AddAssignmentModal() {
-  const assignment = useContext(ProfessorAssignmentContext);
   const user = useContext(userContext);
   const [error, setError] = useState("");
+  const [cookies, setCookies] = useCookies(["jwt"]);
   const nav = useNavigate();
+  const classId = 1;
+  const assignmentId = 1;
 
   const [show, setShow] = useState(false);
   const [gradingScriptName, setGradingScriptName] = useState("");
@@ -41,22 +44,17 @@ function AddAssignmentModal() {
     target: { value: string };
   }) => setDueDate(value);
 
-  async function handleGradingScript() {
+  async function handleGradingScript(data: any) {
     return fetch(
-      "http://localhost:8080/" +
-        user.user.class.id +
-        "/" +
-        assignment.assignment.id,
+      `http://localhost:8080/class/${classId}/${assignmentId}/upload`,
       {
         method: "POST",
         mode: "cors",
         headers: {
           "Content-Type": "application/json",
+          Authorization: cookies.jwt,
         },
-        body: JSON.stringify({
-          GradingScriptName: gradingScriptName,
-          GradingScriptFile: gradingScriptFile,
-        }),
+        body: data,
       }
     )
       .then((response) => {
@@ -73,11 +71,13 @@ function AddAssignmentModal() {
       });
   }
 
-  async function submit(e: FormEvent) {
+  async function submit(e: any) {
     e.preventDefault();
-    //const response = await handleGradingScript();
+    console.log("hey");
+    const data = new FormData(e.target);
+    const response = await handleGradingScript(data);
     // TODO: The API call to submit a file is still unimplemented. Will fix when implemented
-    setError((err) => (err ? "" : `File type is not supported`));
+    //setError((err) => (err ? "" : `File type is not supported`));
     //nav("/professor/class/");
   }
 

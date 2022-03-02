@@ -6,6 +6,8 @@ import Button from "react-bootstrap/Button";
 import Alert from "react-bootstrap/Alert";
 import Stack from "react-bootstrap/Stack";
 import Modal from "react-bootstrap/Modal";
+import { useCookies } from "react-cookie";
+
 import { userContext } from "../Context/UserContext";
 import { StudentAssignmentContext } from "../Context/StudentAssignmentContext";
 
@@ -13,9 +15,12 @@ import { StudentAssignmentContext } from "../Context/StudentAssignmentContext";
 function UploadSubmissionModal() {
   const studentAssignment = useContext(StudentAssignmentContext);
   const user = useContext(userContext);
+  const [cookies, setCookies] = useCookies(["jwt"]);
 
   const [error, setError] = useState("");
   const nav = useNavigate();
+  const classId = 1;
+  const assignmentId = 1;
 
   const [show, setShow] = useState(false);
   const [submissionName, setSubmissionName] = useState("");
@@ -35,22 +40,17 @@ function UploadSubmissionModal() {
     target: { value: string };
   }) => setSubmissionFile(value);
 
-  async function handleSubmission() {
+  async function handleSubmission(data: any) {
     return fetch(
-      "http://localhost:8080/" +
-        user.user.class.id +
-        "/" +
-        studentAssignment.assignment.id,
+      `http://localhost:8080/class/${classId}/${assignmentId}/upload`,
       {
         method: "POST",
         mode: "cors",
         headers: {
           "Content-Type": "application/json",
+          Authorization: cookies.jwt,
         },
-        body: JSON.stringify({
-          submissionName: submissionName,
-          submissionFile: submissionFile,
-        }),
+        body: data,
       }
     )
       .then((response) => {
@@ -67,9 +67,10 @@ function UploadSubmissionModal() {
       });
   }
 
-  async function submit(e: FormEvent) {
+  async function submit(e: any) {
     e.preventDefault();
-    //const response = await handleSubmission();
+    const data = new FormData(e.target);
+    const response = await handleSubmission(data);
     // TODO: The API call to submit a file is still unimplemented. Will fix when implemented
     setError((err) => (err ? "" : `File type is not supported`));
     //nav("/professor/class/");
