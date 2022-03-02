@@ -50,9 +50,12 @@ func main() {
 		return
 	}
 	defer db.Close()
-	if err := schemas.Migrate(db, resetTables); err != nil {
-		e.Logger.Error(err)
-		return
+
+	if resetTables {
+		if err := schemas.Migrate(db, true); err != nil {
+			e.Logger.Error(err)
+			return
+		}
 	}
 
 	// Create a work queue for grading scripts, then spawn a task runner
@@ -118,6 +121,7 @@ func main() {
 	classApi.POST("/:classId/drop", handler.DropStudent)
 	classApi.GET("/:classId/info", handler.GetClass)
 	classApi.GET("/:classId/:assignmentId", handler.GetAssignment)
+	classApi.POST("/:classId/assignment", handler.CreateAssignment)
 	e.POST("/:classId/:assignmentId/script", Unimplemented)
 	e.POST("/:classId/:assignmentId/upload", Unimplemented)
 	classApi.POST("/:classId/invite", handler.CreateInvite)

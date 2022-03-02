@@ -271,7 +271,7 @@ Status Code | Semantic
 401 | Unauthorized
 500 | Server error
 
-### `POST /<class_id>/assignment`
+### `POST /class/<class_id>/assignment`
 
 Create a new assignment with the provided **FORM DATA** parameters.
 
