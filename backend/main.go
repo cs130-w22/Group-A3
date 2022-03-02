@@ -104,6 +104,7 @@ func main() {
 	})
 	classApi.POST("", handler.CreateClass)
 	classApi.POST("/", handler.CreateClass)
+	classApi.GET("/me", handler.GetUser)
 	classApi.POST("/:classId/drop", handler.DropStudent)
 	classApi.GET("/:classId/info", handler.GetClass)
 	classApi.GET("/:classId/:assignmentId", handler.GetAssignment)

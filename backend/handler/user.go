@@ -2,7 +2,9 @@ package handler
 
 import (
 	"net/http"
+	"time"
 
+	"github.com/blockloop/scan"
 	"github.com/labstack/echo/v4"
 
 	"github.com/cs130-w22/Group-A3/backend/jwt"
@@ -73,4 +75,62 @@ func CreateUser(cc echo.Context) error {
 	return c.JSON(http.StatusCreated, echo.Map{
 		"token": token,
 	})
+}
+
+// Get all relevant information about the logged-in user.
+func GetUser(cc echo.Context) error {
+	c := cc.(*Context)
+
+	var response struct {
+		Username  string `json:"username"`
+		Professor bool   `json:"professor"`
+		Classes   []struct {
+			ID   int    `json:"id"`
+			Name string `json:"name"`
+		} `json:"classes"`
+		Assignments []struct {
+			ID             int       `json:"id"`
+			Class          int       `json:"class"`
+			Name           string    `json:"name"`
+			DueDate        time.Time `json:"dueDate"`
+			PointsPossible float64   `json:"pointsPossible"`
+		} `json:"assignments"`
+	}
+
+	// Get username and professor status.
+	if err := c.Conn.QueryRowContext(c, `
+	SELECT username, professor
+	FROM Accounts
+	WHERE id = $1
+	`, c.Claims.UserID).Scan(&response.Username, &response.Professor); err != nil {
+		return c.NoContent(http.StatusNotFound)
+	}
+
+	// Get all class information.
+	rows, err := c.Conn.QueryContext(c, `
+	SELECT class_id, name
+	FROM ClassMembers L
+	JOIN Classes R
+	ON L.class_id = R.id
+	WHERE L.user_id = $1
+	`, c.Claims.UserID)
+	if err != nil {
+		return c.NoContent(http.StatusInternalServerError)
+	}
+	scan.Rows(&response.Classes, rows)
+
+	// Get all assignment information for classes the student is in.
+	rows, err = c.Conn.QueryContext(c, `
+	SELECT id, class, name, due_date, points
+	FROM Assignments L
+	JOIN ClassMembers R
+	ON L.class = R.class_id
+	WHERE R.user_id = $1
+	`, c.Claims.UserID)
+	if err != nil {
+		return c.NoContent(http.StatusInternalServerError)
+	}
+	scan.Rows(&response.Assignments, rows)
+
+	return c.JSON(http.StatusOK, &response)
 }
