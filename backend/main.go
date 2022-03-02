@@ -50,6 +50,10 @@ func main() {
 		return
 	}
 	defer db.Close()
+	if err := schemas.Migrate(db, false); err != nil {
+		e.Logger.Error(err)
+		return
+	}
 
 	if resetTables {
 		if err := schemas.Migrate(db, true); err != nil {
