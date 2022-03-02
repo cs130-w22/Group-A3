@@ -176,8 +176,8 @@ const SignUpStudent = () => {
             <Form.Control
               required
               className="signUpForm"
-              type="text"
-              name="course code"
+              type="password"
+              name="password"
               onChange={(e) => {
                 setPassword(e.target.value);
               }}
