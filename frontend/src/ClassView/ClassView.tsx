@@ -19,14 +19,6 @@ function ClassView() {
   const nav = useNavigate();
   const mode: "student" | "faculty" = "student"; // should be taken from some app state / login info
 
-  const defaultAssignment = (id: string) => {
-    return {
-      assignment: {
-        id: id,
-      },
-    };
-  };
-
   const [cookies, setCookies, removeCookies] = useCookies(["jwt"]);
   function handleRemoveCookies() {
     removeCookies("jwt");
@@ -68,9 +60,7 @@ function ClassView() {
           mode === "student" ? (
             <StudentAssignmentCard name={x} />
           ) : (
-            <ProfessorAssignmentContext.Provider value={defaultAssignment(x)}>
-              <ProfessorAssignmentCard name={x} />
-            </ProfessorAssignmentContext.Provider>
+            <ProfessorAssignmentCard name={x} />
           )
         )}
         {mode === "student" ? null : <AddAssignmentModal />}
