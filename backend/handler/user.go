@@ -82,6 +82,7 @@ func GetUser(cc echo.Context) error {
 	c := cc.(*Context)
 
 	var response struct {
+		ID        int    `json:"id"`
 		Username  string `json:"username"`
 		Professor bool   `json:"professor"`
 		Classes   []struct {
@@ -96,6 +97,7 @@ func GetUser(cc echo.Context) error {
 			PointsPossible float64   `json:"pointsPossible"`
 		} `json:"assignments"`
 	}
+	response.ID = int(c.Claims.UserID)
 
 	// Get username and professor status.
 	if err := c.Conn.QueryRowContext(c, `

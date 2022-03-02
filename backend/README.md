@@ -105,6 +105,7 @@ Status Code | Semantic
 ### `GET /class/me`
 
 Get information about the currently logged on user's:
+* ID
 * Name
 * Professor status
 * Class membership
@@ -118,6 +119,7 @@ This endpoint does not require a request body.
 
 ```json
 {
+  "id": 1,
   "username": "myname",
   "professor": "true",
   "classes": [
