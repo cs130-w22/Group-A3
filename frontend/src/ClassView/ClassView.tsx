@@ -1,5 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import { StudentAssignmentContext } from "../Context/StudentAssignmentContext";
+
 import { useCookies } from "react-cookie";
 import Container from "react-bootstrap/Container";
 import Stack from "react-bootstrap/Stack";
@@ -16,6 +18,15 @@ const Assignments = ["Assignment 1", "Assignment 2", "Assignment 3"]; // should 
 function ClassView() {
   const nav = useNavigate();
   const mode: "student" | "faculty" = "student"; // should be taken from some app state / login info
+
+  const defaultAssignment = (id: string) => {
+    return {
+      assignment: {
+        id: id,
+      },
+    };
+  };
+
   const [cookies, setCookies, removeCookies] = useCookies(["jwt"]);
   function handleRemoveCookies() {
     removeCookies("jwt");
@@ -55,8 +66,7 @@ function ClassView() {
         </Stack>
         {Assignments.map((x) =>
           mode === "student" ? (
-              <StudentAssignmentCard name={x} />
-              
+            <StudentAssignmentCard name={x} />
           ) : (
             <ProfessorAssignmentContext.Provider value={defaultAssignment(x)}>
               <ProfessorAssignmentCard name={x} />
