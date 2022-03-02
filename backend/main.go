@@ -44,11 +44,14 @@ func main() {
 	// Set up our database.
 	db, err := sql.Open("sqlite3", connString)
 	if err != nil {
-		e.Logger.Error("Failed to open DB")
+		e.Logger.Error(err)
 		return
 	}
-	schemas.Migrate(db, true)
 	defer db.Close()
+	if err := schemas.Migrate(db, false); err != nil {
+		e.Logger.Error(err)
+		return
+	}
 
 	// Create a work queue for grading scripts, then spawn a task runner
 	// to execute grading script jobs in parallel.

@@ -15,7 +15,7 @@ var (
 	assignments string
 )
 
-func Migrate(db *sql.DB, resetSchemas bool) {
+func Migrate(db *sql.DB, resetSchemas bool) error {
 	var queries []string
 	if resetSchemas {
 		queries = []string{reset, accounts, assignments}
@@ -23,9 +23,10 @@ func Migrate(db *sql.DB, resetSchemas bool) {
 		queries = []string{accounts, assignments}
 	}
 
-	tx, _ := db.Begin()
 	for _, query := range queries {
-		db.Exec(query)
+		if _, err := db.Exec(query); err != nil {
+			return err
+		}
 	}
-	tx.Commit()
+	return nil
 }
