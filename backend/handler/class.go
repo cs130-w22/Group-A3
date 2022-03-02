@@ -23,7 +23,7 @@ func GetClass(cc echo.Context) error {
 	}
 
 	// Get the class' general information.
-	className := ""
+	className := "my class"
 	if err := c.Conn.QueryRowContext(c, `
 	SELECT name
 	FROM Courses
@@ -44,6 +44,7 @@ func GetClass(cc echo.Context) error {
 		c.Logger().Error(err)
 		return c.NoContent(http.StatusInternalServerError)
 	}
+	c.Logger().Error("end")
 	if err := scan.Rows(&assignments, rows); err != nil {
 		return c.NoContent(http.StatusInternalServerError)
 	}
