@@ -1,14 +1,10 @@
 import React, { useState } from "react";
 
-import { useCookies } from "react-cookie";
 import Container from "react-bootstrap/Container";
 import Button from "react-bootstrap/Button";
 import Table from "react-bootstrap/Table";
 import Modal from "react-bootstrap/Modal";
 import Alert from "react-bootstrap/Alert";
-
-import { dropStudent } from "../api";
-
 const ClassId = "1";
 const Students = [
   { name: "Edward", grade: 90, id: "1" },
@@ -20,34 +16,39 @@ const Students = [
 function ClassListView() {
   const [show, setShow] = useState(false);
   const [error, setError] = useState("");
-  const [cookies, setCookies] = useCookies(["jwt"]);
-  const [dropError, setDropError] = useState(false);
-
-  async function handleDropStudent(id: string) {
-    await dropStudent(
-      cookies.jwt,
-      ClassId,
-      id,
-      () => {
-        setDropError(false);
+  async function dropStudent(id: string) {
+    return fetch(`http://localhost:8080/class/${ClassId}/drop`, {
+      method: "POST",
+      mode: "cors",
+      headers: {
+        "Content-Type": "application/json",
       },
-      () => {
-        setDropError(true);
-      }
-    );
+      body: JSON.stringify({
+        id: id,
+      }),
+    })
+      .then((response) => {
+        if (response.status == 401) throw "Unauthorized";
+        return response.json();
+      })
+      .catch((e) => {
+        setError(
+          `Failed dropping student! Server responded with: ${String(e).replace(
+            "TypeError: ",
+            ""
+          )}`
+        );
+      });
+  }
+  async function handleDropStudent(id: string) {
+    await dropStudent(id);
     handleClose();
   }
   const handleClose = () => setShow(false);
-  const handleShow = () => {
-    setDropError(false);
-    setShow(true);
-  };
+  const handleShow = () => setShow(true);
   return (
     <Container>
       {error && <Alert variant={"danger"}>Failed to login: {error}</Alert>}
-      {dropError && (
-        <Alert variant={"danger"}>Failed to drop student{error}</Alert>
-      )}
       <h1>My Students</h1>
       <Table striped bordered hover>
         <thead>
