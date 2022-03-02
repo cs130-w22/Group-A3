@@ -17,10 +17,11 @@ import (
 )
 
 var (
-	connString string
-	secretKey  string
-	port       string
-	maxJobs    uint
+	connString  string
+	secretKey   string
+	port        string
+	maxJobs     uint
+	resetTables bool
 )
 
 func main() {
@@ -28,7 +29,8 @@ func main() {
 	flag.StringVar(&connString, "c", "file:test.db?cache=shared&mode=rwc", "sqlite `connection string`")
 	flag.StringVar(&port, "p", os.Getenv("PORT"), "`port` to serve the HTTP server on")
 	flag.StringVar(&secretKey, "k", "", "secret `key` to use in JWT minting")
-	flag.UintVar(&maxJobs, "j", 1, "Maximum number of concurrent test scripts running at a given time.")
+	flag.UintVar(&maxJobs, "j", 1, "Maximum number of concurrent test scripts running at a given time")
+	flag.BoolVar(&resetTables, "D", false, "Reset SQLite database schema (DROP ALL TABLES)")
 	flag.Parse()
 
 	// Set the application's JWT secret key.
@@ -48,7 +50,7 @@ func main() {
 		return
 	}
 	defer db.Close()
-	if err := schemas.Migrate(db, false); err != nil {
+	if err := schemas.Migrate(db, resetTables); err != nil {
 		e.Logger.Error(err)
 		return
 	}
