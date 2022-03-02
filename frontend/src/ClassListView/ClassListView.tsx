@@ -32,12 +32,7 @@ function ClassListView() {
         return response.json();
       })
       .catch((e) => {
-        setError(
-          `Failed dropping student! Server responded with: ${String(e).replace(
-            "TypeError: ",
-            ""
-          )}`
-        );
+        setError(`Failed dropping student ${id}`);
       });
   }
   async function handleDropStudent(id: string) {
@@ -48,7 +43,7 @@ function ClassListView() {
   const handleShow = () => setShow(true);
   return (
     <Container>
-      {error && <Alert variant={"danger"}>Failed to login: {error}</Alert>}
+      {error && <Alert variant={"danger"}>Error: {error}</Alert>}
       <h1>My Students</h1>
       <Table striped bordered hover>
         <thead>
