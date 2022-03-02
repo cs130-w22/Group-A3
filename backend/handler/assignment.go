@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"encoding/json"
 	"io"
 	"net/http"
 	"os"
@@ -9,7 +10,9 @@ import (
 	"time"
 
 	"github.com/blockloop/scan"
+	"github.com/cs130-w22/Group-A3/backend/grading"
 	"github.com/labstack/echo/v4"
+	"golang.org/x/net/websocket"
 )
 
 // Create a new assignment.
@@ -77,7 +80,10 @@ func UploadSubmission(cc echo.Context) error {
 	file, _ := submittedFile.Open()
 	defer file.Close()
 
-	return c.NoContent(http.StatusCreated)
+	return c.JSON(http.StatusCreated, echo.Map{
+		"id": c.Runner.Add(grading.Job{
+			File: file,
+		})})
 }
 
 // Get information about an assignment.
@@ -132,4 +138,28 @@ func GetAssignment(cc echo.Context) error {
 		"points":      assignment.Points,
 		"submissions": submissions,
 	})
+}
+
+// Get a live feed of results for the given submission ID.
+func LiveResults(cc echo.Context) error {
+	c := cc.(*Context)
+
+	websocket.Handler(func(ws *websocket.Conn) {
+		defer ws.Close()
+
+		// Receive submission ID
+		submissionId := c.Param("submissionId")
+
+		// Fetch the results channel and begin relaying results.
+		for result := range c.Runner.Results(c, submissionId) {
+			bytes, err := json.Marshal(result)
+			if err != nil {
+				c.Logger().Warn(err)
+			}
+			if err := websocket.Message.Send(ws, bytes); err != nil {
+				c.Logger().Error(err)
+			}
+		}
+	}).ServeHTTP(c.Response(), c.Request())
+	return nil
 }

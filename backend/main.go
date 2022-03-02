@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"flag"
 	"net/http"
@@ -50,6 +51,10 @@ func main() {
 		return
 	}
 	defer db.Close()
+	if err := schemas.Migrate(db, true); err != nil {
+		e.Logger.Error(err)
+		return
+	}
 
 	if resetTables {
 		if err := schemas.Migrate(db, true); err != nil {
@@ -60,14 +65,7 @@ func main() {
 
 	// Create a work queue for grading scripts, then spawn a task runner
 	// to execute grading script jobs in parallel.
-	jobQueue := make(chan grading.Job, maxJobs)
-	go func() {
-		occupied := make(chan bool, maxJobs)
-		for job := range jobQueue {
-			occupied <- true
-			go grading.Grade(job, occupied)
-		}
-	}()
+	runner := grading.Start(context.Background(), db)
 
 	// Open a database connection for each request. Attach it
 	// and a copy of the job queue channel.
@@ -85,8 +83,8 @@ func main() {
 			}
 			c.Conn = conn
 
-			// Attach the job queue.
-			c.JobQueue = jobQueue
+			// Attach the runner.
+			c.Runner = runner
 			return next(c)
 		}
 	})
@@ -126,6 +124,9 @@ func main() {
 	e.POST("/:classId/:assignmentId/upload", Unimplemented)
 	classApi.POST("/:classId/invite", handler.CreateInvite)
 	e.POST("/class/:classId/join", Unimplemented)
+
+	// Websockets
+	e.GET("/live/:submissionId", handler.LiveResults)
 
 	// Start serving the backend on port 8080.
 	e.Logger.Fatal(e.Start(":" + port))
