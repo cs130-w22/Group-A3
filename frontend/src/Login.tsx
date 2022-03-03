@@ -38,12 +38,37 @@ function Login() {
         return response.json();
       })
       .then((json) => {
-        setCookies("jwt", json?.token);
-        nav("/");
+        fetchClassInfo(json?.token);
       })
       .catch((e) => {
         setError(
           `Failed uploading! Server responded with: ${String(e).replace(
+            "TypeError: ",
+            ""
+          )}`
+        );
+      });
+  }
+
+  function fetchClassInfo(token: any) {
+    fetch("http://localhost:8080/class/me", {
+      method: "GET",
+      mode: "cors",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: String(token),
+      },
+    })
+      .then((response) => {
+        if (response.status === 401) throw new Error("Unauthorized");
+        return response.json();
+      })
+      .then((json) => {
+        nav("/class" + json.id);
+      })
+      .catch((e) => {
+        setError(
+          `Failed to get class info! Server responded with: ${String(e).replace(
             "TypeError: ",
             ""
           )}`
