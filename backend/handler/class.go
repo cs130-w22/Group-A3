@@ -23,11 +23,12 @@ func GetClass(cc echo.Context) error {
 	}
 
 	// Get the class' general information.
-	className := ""
+	className := "my class"
 	if err := c.Conn.QueryRowContext(c, `
 	SELECT name
-	FROM Classes
+	FROM Courses
 	WHERE id = $1`, classId).Scan(&className); err != nil {
+		c.Logger().Error(err)
 		return c.NoContent(http.StatusInternalServerError)
 	}
 
@@ -38,16 +39,16 @@ func GetClass(cc echo.Context) error {
 		DueDate time.Time `json:"dueDate"`
 		Points  float64   `json:"points"`
 	}
-	rows, err := c.Conn.QueryContext(c, `
-	SELECT id, name, due_date, points
-	FROM Assignments
-	WHERE class = $2`, classId)
+	rows, err := c.Conn.QueryContext(c, "SELECT id, name, due_date, points FROM Assignments WHERE class = $1", classId)
 	if err != nil {
+		c.Logger().Error(err)
 		return c.NoContent(http.StatusInternalServerError)
 	}
+	c.Logger().Error("end")
 	if err := scan.Rows(&assignments, rows); err != nil {
 		return c.NoContent(http.StatusInternalServerError)
 	}
+	rows.Close()
 
 	// Collect user information.
 	var members []struct {
@@ -68,6 +69,7 @@ func GetClass(cc echo.Context) error {
 	if err := scan.Rows(&members, rows); err != nil {
 		return c.NoContent(http.StatusInternalServerError)
 	}
+	rows.Close()
 
 	return c.JSON(http.StatusOK, echo.Map{
 		"name":        className,
@@ -99,7 +101,7 @@ func CreateClass(cc echo.Context) error {
 
 	classId := 0
 	err := c.Conn.QueryRowContext(c, `
-	INSERT INTO Classes (name, owner)
+	INSERT INTO Courses (name, owner)
 	VALUES ($1, $2)
 	RETURNING id
 	`, body.Name, c.Claims.UserID).Scan(&classId)
@@ -129,7 +131,7 @@ func CreateInvite(cc echo.Context) error {
 	if err := c.Conn.QueryRowContext(c, `
 	SELECT professor
 	FROM Accounts L
-	JOIN Classes R
+	JOIN Courses R
 	ON L.id = R.owner
 	WHERE L.id = $1
 		AND L.professor = 'true'
@@ -164,11 +166,15 @@ func DropStudent(cc echo.Context) error {
 	if err := c.Bind(&body); err != nil || body.ID == "" {
 		return c.NoContent(http.StatusBadRequest)
 	}
-	IDToDrop64, err := strconv.ParseUint(body.ID, 10, 32)
-	if err != nil {
-		return c.NoContent(http.StatusBadRequest)
+
+	IDToDrop := c.Claims.UserID
+	if body.ID != "" {
+		IDToDrop64, err := strconv.ParseUint(body.ID, 10, 32)
+		if err != nil {
+			return c.NoContent(http.StatusBadRequest)
+		}
+		IDToDrop = uint(IDToDrop64)
 	}
-	IDToDrop := uint(IDToDrop64)
 
 	// If the user to drop is themselves, the user must be a student,
 	// not a professor.
@@ -179,7 +185,7 @@ func DropStudent(cc echo.Context) error {
 	if c.Claims.UserID != IDToDrop && !isProfessor {
 		return c.NoContent(http.StatusUnauthorized)
 	}
-	_, err = c.Conn.ExecContext(c, `
+	_, err := c.Conn.ExecContext(c, `
 		DELETE FROM ClassMembers
 		WHERE user_id = $1
 			AND class_id = $2

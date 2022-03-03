@@ -4,12 +4,13 @@ The backend for our grading solution supports operations on user-sensitive data.
 
 ## Get Started Developing
 
-You will need
+You will need:
+* [`make`](https://www.gnu.org/software/make/)
 * [`go` >= go1.16.3](https://go.dev/doc/install)
 
 ```sh
 # make sure you're in the backend directory
-go build
+make
 ./backend
 ```
 
@@ -101,6 +102,44 @@ Status Code | Semantic
 400 | Bad request (see format)
 401 | Unauthorized
 500 | Server error
+
+### `GET /class/me`
+
+Get information about the currently logged on user's:
+* ID
+* Name
+* Professor status
+* Class membership
+* Current assignments
+
+#### Request Body
+
+This endpoint does not require a request body.
+
+#### Response Format
+
+```json
+{
+  "id": 1,
+  "username": "myname",
+  "professor": "true",
+  "classes": [
+    {
+      "id": 1,
+      "name": "CS 131"
+    }
+  ],
+  "assignments": [
+    {
+      "id": 1,
+      "class": 1,
+      "name": "Name of assignment",
+      "dueDate": 1646238619671,
+      "pointsPossible": 100.0
+    }
+  ]
+}
+```
 
 ### `POST /class`
 
@@ -229,6 +268,9 @@ themselves.
 
 #### Request Body
 
+THIS IS AN OPTIONAL REQUEST BODY. IF AN EMPTY BODY IS SUPPLIED, THE ENDPOINT WILL
+ATTEMPT TO DROP THE USER REPRESENTED IN THE AUTHORIZATION TOKEN FROM THE CLASS.
+
 ```json
 {
   "id": "ID"
@@ -270,23 +312,35 @@ Status Code | Semantic
 401 | Unauthorized
 500 | Server error
 
-### `POST /<class_id>/<assignment_id>/script`
+### `POST /class/<class_id>/assignment`
 
-Upload a grading script for the assignment with the specified ID.
+Create a new assignment with the provided **FORM DATA** parameters.
 
 #### Request Body
 
-```formData
-<input type="file" name="file">
-```
+The request should supply a [form-type body](https://developer.mozilla.org/en-US/docs/Web/API/FormData/FormData) (e.g., `new FormData(form)`) with the following
+parameters:
+
+Key | Value
+:-|:-
+`name` | Name of the assignment (string)
+`dueDate` | Due date of the assignment in milliseconds since the epoch (integer)
+`points` | Maximum points possible for the assignment (floating point)
+`file` | Grading script to use with the assignment (blob)
 
 #### Response Format
 
-As of right now, no data is returned by this endpoint.
+The endpoint returns the ID of the newly-created assignment.
+
+```json
+{
+  "id": 0000
+}
+```
 
 Status Code | Semantic
 :-|:-
-204 | OK. Grading script has been uploaded successfully.
+201 | OK. Assignment has been created successfully.
 400 | Bad request (see format)
 401 | Unauthorized
 500 | Server error
@@ -311,6 +365,24 @@ Status Code | Semantic
 400 | Bad request (see format)
 401 | Unauthorized
 500 | Server error
+
+### `GET /live/<assignment_id>`
+
+#### Websocket Format
+
+This endpoint sends a continuous stream of the following object:
+
+```json
+{
+  "hidden": bool,
+  "testId": 0,
+  "testName": "name",
+  "score": 100.0,
+  "msg": "Error message or further information."
+}
+```
+
+If the `hidden` field is set to `true`, the `msg` and `testName` fields will be empty.
 
 ## Grading Scripts
 
@@ -359,3 +431,15 @@ If you have the backend running on port 8080, this will automatically be reflect
 
 If you want to see how your SQL query is running, [DataGrip](https://www.jetbrains.com/datagrip/)
 or another similar database browser makes life much easier.
+
+You can also use the CLI program `sqlite3` to investigate the database that you have created (by default `test.db`).
+Below is an example:
+
+```
+➜  backend git:(==leo/sqlite) sqlite3 test.db
+SQLite version 3.31.1 2020-01-27 19:55:54
+Enter ".help" for usage hints.
+sqlite> SELECT * FROM Accounts;
+1|leo|iMQqebOjHtuHuhsjhZogP+dYy5dbIrB07AJYUOVy95g=|0qMCFGhCDT9l6D+fiqndpzk9B1aM9DJMIOxtYbp/WEY6x42QPKuK4q9TVSqdtAuM2KBiHiiEihkVGfLgaQ76tA==|1|
+sqlite> 
+```

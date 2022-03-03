@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"flag"
 	"net/http"
@@ -8,26 +9,29 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	_ "github.com/lib/pq"
+	_ "github.com/mattn/go-sqlite3"
 
 	"github.com/cs130-w22/Group-A3/backend/grading"
 	"github.com/cs130-w22/Group-A3/backend/handler"
 	"github.com/cs130-w22/Group-A3/backend/jwt"
+	"github.com/cs130-w22/Group-A3/backend/schemas"
 )
 
 var (
-	connString string
-	secretKey  string
-	port       string
-	maxJobs    uint
+	connString  string
+	secretKey   string
+	port        string
+	maxJobs     uint
+	resetTables bool
 )
 
 func main() {
 	// Sensible default values for parameters.
-	flag.StringVar(&connString, "c", "host=localhost port=5432 dbname=gradebetter user=admin password=admin sslmode=disable", "postgres connection string")
+	flag.StringVar(&connString, "c", "file:test.db?cache=shared&mode=rwc", "sqlite `connection string`")
 	flag.StringVar(&port, "p", os.Getenv("PORT"), "`port` to serve the HTTP server on")
 	flag.StringVar(&secretKey, "k", "", "secret `key` to use in JWT minting")
-	flag.UintVar(&maxJobs, "j", 1, "Maximum number of concurrent test scripts running at a given time.")
+	flag.UintVar(&maxJobs, "j", 1, "Maximum number of concurrent test scripts running at a given time")
+	flag.BoolVar(&resetTables, "D", false, "Reset SQLite database schema (DROP ALL TABLES)")
 	flag.Parse()
 
 	// Set the application's JWT secret key.
@@ -40,23 +44,28 @@ func main() {
 	e.Use(middleware.Recover())
 	e.Use(middleware.CORS())
 
+	// Set up our database.
+	db, err := sql.Open("sqlite3", connString)
+	if err != nil {
+		e.Logger.Error(err)
+		return
+	}
+	defer db.Close()
+
+	if resetTables {
+		e.Logger.Error("Migrating...")
+		if err := schemas.Migrate(db, true); err != nil {
+			e.Logger.Error(err)
+			return
+		}
+	}
+
 	// Create a work queue for grading scripts, then spawn a task runner
 	// to execute grading script jobs in parallel.
-	jobQueue := make(chan grading.Job, maxJobs)
-	go func() {
-		occupied := make(chan bool, maxJobs)
-		for job := range jobQueue {
-			occupied <- true
-			go grading.Grade(job, occupied)
-		}
-	}()
+	runner := grading.Start(context.Background(), db)
 
 	// Open a database connection for each request. Attach it
 	// and a copy of the job queue channel.
-	db, err := sql.Open("postgres", connString)
-	if err != nil {
-		e.Logger.Error("Failed to open DB")
-	}
 	e.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(cc echo.Context) error {
 			c := &handler.Context{
@@ -71,8 +80,8 @@ func main() {
 			}
 			c.Conn = conn
 
-			// Attach the job queue.
-			c.JobQueue = jobQueue
+			// Attach the runner.
+			c.Runner = runner
 			return next(c)
 		}
 	})
@@ -104,13 +113,18 @@ func main() {
 	})
 	classApi.POST("", handler.CreateClass)
 	classApi.POST("/", handler.CreateClass)
+	classApi.GET("/me", handler.GetUser)
 	classApi.POST("/:classId/drop", handler.DropStudent)
 	classApi.GET("/:classId/info", handler.GetClass)
 	classApi.GET("/:classId/:assignmentId", handler.GetAssignment)
+	classApi.POST("/:classId/assignment", handler.CreateAssignment)
 	e.POST("/:classId/:assignmentId/script", Unimplemented)
 	e.POST("/:classId/:assignmentId/upload", Unimplemented)
 	classApi.POST("/:classId/invite", handler.CreateInvite)
 	e.POST("/class/:classId/join", Unimplemented)
+
+	// Websockets
+	e.GET("/live/:submissionId", handler.LiveResults)
 
 	// Start serving the backend on port 8080.
 	e.Logger.Fatal(e.Start(":" + port))
