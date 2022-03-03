@@ -118,10 +118,14 @@ const SignUpForm = ({ mode }: { mode: "professor" | "student" }) => {
       })
       .then((j) => {
         setCookies("jwt", j?.token);
-        fetchClassInfo(j?.token);
-        if (mode === "professor" && target.courseName)
+        if (mode === "professor" && target.courseName) {
           handleClassCreation(j?.token, target.courseName.value);
-        else if (mode === "student") setShow(true);
+          fetchClassInfo(j?.token);
+          setShow(true);
+        } else if (mode === "student") {
+          fetchClassInfo(j?.token);
+          setShow(true);
+        }
       })
       .catch(setError);
   }
@@ -140,7 +144,6 @@ const SignUpForm = ({ mode }: { mode: "professor" | "student" }) => {
     })
       .then((res) => {
         if (res.status !== 201) throw new Error("Error in creating class");
-        setShow(true);
       })
       .catch(setError);
   }
