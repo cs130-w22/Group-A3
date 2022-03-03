@@ -45,9 +45,20 @@ function calculateTotalScore(submissions: Submission[]) {
   return totalScores;
 }
 
+function median(numbers: number[]) {
+  const sorted = numbers.slice().sort((a, b) => a - b);
+  const middle = Math.floor(sorted.length / 2);
+
+  if (sorted.length % 2 === 0) {
+    return (sorted[middle - 1] + sorted[middle]) / 2;
+  }
+
+  return sorted[middle];
+}
+
 //Student view of the assignment
 const StudentAssignmentView = () => {
-  const [userGrade, setUserGrade] = useState(23); // currently dummy values before testing with endpoint
+  const [userGrade, setUserGrade] = useState(23);
   const [classMean, setClassMean] = useState(75);
   const [classMedian, setClassMedian] = useState(92);
   const [hints, setHints] = useState(default_hints);
@@ -69,8 +80,10 @@ const StudentAssignmentView = () => {
     })
     .then((resp) => {
       const total = calculateTotalScore(resp.submissions);
+      // Mean and Median should be changed to work with assignment submissions for all class members
       setClassMean(total.reduce((a, b) => a + b, 0) / total.length);
-      // add median, check most recent submissions
+      setClassMedian(median(total));
+      setUserGrade(total[total.length - 1]);
     });
 
   return (

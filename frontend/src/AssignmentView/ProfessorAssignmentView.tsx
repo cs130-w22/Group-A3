@@ -17,10 +17,6 @@ import { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useCookies } from "react-cookie";
 
-const numSubmissions = 60; // percentage of submitted assignments
-const classMedian = 60; // change dynamically
-const classMean = 60;
-
 class hint {
   name: string;
   text: string;
@@ -36,16 +32,27 @@ class hint {
 const hint1 = new hint("hint title", "hint body", 1);
 const hint2 = new hint("hint title 2", "hint body 2", 2);
 const default_hints = [hint1, hint2];
+
 interface Submission {
   id: string;
   date: string;
   pointsEarned: number;
 }
+
 function calculateTotalScore(submissions: Submission[]) {
   const totalScores: number[] = [];
 
   submissions.forEach((j) => totalScores.push(j["pointsEarned"]));
   return totalScores;
+}
+
+function median(numbers: number[]) {
+  const sorted = numbers.slice().sort((a, b) => a - b);
+  const middle = Math.floor(sorted.length / 2);
+  if (sorted.length % 2 === 0) {
+    return (sorted[middle - 1] + sorted[middle]) / 2;
+  }
+  return sorted[middle];
 }
 
 const ProfessorAssignmentView = () => {
@@ -58,7 +65,7 @@ const ProfessorAssignmentView = () => {
   const [cookies, setCookies] = useCookies(["jwt"]);
 
   fetch(
-    "http://localhost:8080/class/1/1", //"http://localhost:8080/class/${params.classId}/${params.assignmentId}",
+    "http://localhost:8080/class/1/1", //"http://localhost:8080/class/${params.classId}/${params.assignmentId}", will change
     {
       method: "GET",
       headers: {
@@ -73,6 +80,8 @@ const ProfessorAssignmentView = () => {
     .then((resp) => {
       const total = calculateTotalScore(resp.submissions);
       setClassMean(total.reduce((a, b) => a + b, 0) / total.length);
+      setClassMedian(median(total));
+      setSubmissionCount(total.length);
     });
 
   return (

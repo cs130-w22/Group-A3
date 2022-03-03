@@ -10,15 +10,13 @@ import { useParams } from "react-router-dom";
 import { useCookies } from "react-cookie";
 
 const AssignmentView = () => {
-  const mode: "student" | "faculty" = "student";
+  const mode: "student" | "faculty" = "faculty";
   const [assignmentName, setAssignmentName] = useState("Loading Assignment..."); // dummy value before testing with endpoint
-  const [information, setInformation] = useState({});
   const [cookies, setCookies] = useCookies(["jwt"]);
   const params = useParams();
-  const assignmentInformation = useRef({});
 
   fetch(
-    "http://localhost:8080/class/1/1", //"http://localhost:8080/class/${params.classId}/${params.assignmentId}",
+    "http://localhost:8080/class/1/1", //"http://localhost:8080/class/${params.classId}/${params.assignmentId}", will change
     {
       method: "GET",
       headers: {
@@ -33,27 +31,28 @@ const AssignmentView = () => {
     .then((resp) => {
       setAssignmentName(resp.name);
     });
+
   return (
     <Container>
       <h1>{assignmentName}</h1>
       <Form.Group className="mb-3">
         <Form.Control type="file" />
       </Form.Group>
-      {mode === "student" ? (
+      {mode === "faculty" ? (
         <Button variant="primary" type="submit" style={{ borderRadius: 20 }}>
-          Upload Assignment
+          Upload Grading Script
         </Button>
       ) : (
         <Button variant="primary" type="submit" style={{ borderRadius: 20 }}>
-          Upload Grading Script
+          Upload Assignment
         </Button>
       )}
       <br />
       <br />
-      {mode === "student" ? (
-        <StudentAssignmentView />
-      ) : (
+      {mode === "faculty" ? (
         <ProfessorAssignmentView />
+      ) : (
+        <StudentAssignmentView />
       )}
     </Container>
   );
