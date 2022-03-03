@@ -103,6 +103,44 @@ Status Code | Semantic
 401 | Unauthorized
 500 | Server error
 
+### `GET /class/me`
+
+Get information about the currently logged on user's:
+* ID
+* Name
+* Professor status
+* Class membership
+* Current assignments
+
+#### Request Body
+
+This endpoint does not require a request body.
+
+#### Response Format
+
+```json
+{
+  "id": 1,
+  "username": "myname",
+  "professor": "true",
+  "classes": [
+    {
+      "id": 1,
+      "name": "CS 131"
+    }
+  ],
+  "assignments": [
+    {
+      "id": 1,
+      "class": 1,
+      "name": "Name of assignment",
+      "dueDate": 1646238619671,
+      "pointsPossible": 100.0
+    }
+  ]
+}
+```
+
 ### `POST /class`
 
 Creates a class in the database.
@@ -230,6 +268,9 @@ themselves.
 
 #### Request Body
 
+THIS IS AN OPTIONAL REQUEST BODY. IF AN EMPTY BODY IS SUPPLIED, THE ENDPOINT WILL
+ATTEMPT TO DROP THE USER REPRESENTED IN THE AUTHORIZATION TOKEN FROM THE CLASS.
+
 ```json
 {
   "id": "ID"
@@ -271,7 +312,7 @@ Status Code | Semantic
 401 | Unauthorized
 500 | Server error
 
-### `POST /<class_id>/assignment`
+### `POST /class/<class_id>/assignment`
 
 Create a new assignment with the provided **FORM DATA** parameters.
 
@@ -324,6 +365,24 @@ Status Code | Semantic
 400 | Bad request (see format)
 401 | Unauthorized
 500 | Server error
+
+### `GET /live/<assignment_id>`
+
+#### Websocket Format
+
+This endpoint sends a continuous stream of the following object:
+
+```json
+{
+  "hidden": bool,
+  "testId": 0,
+  "testName": "name",
+  "score": 100.0,
+  "msg": "Error message or further information."
+}
+```
+
+If the `hidden` field is set to `true`, the `msg` and `testName` fields will be empty.
 
 ## Grading Scripts
 

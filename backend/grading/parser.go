@@ -23,7 +23,7 @@ func parseOutput(stdout io.Reader) ([]Result, error) {
 	for stdoutLines.Scan() {
 		hidden := false
 		testName := ""
-		resultScore := float64(-1)
+		resultScore := float64(0)
 		testIdStr := stdoutLines.Text()
 		testId, err := strconv.Atoi(testIdStr)
 		if err != nil {

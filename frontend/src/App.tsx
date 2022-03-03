@@ -7,8 +7,6 @@ import ClassView from "./ClassView/ClassView";
 import AssignmentView from "./AssignmentView/AssignmentView";
 import ClassStatsView from "./ClassStatsView/ClassStatsView";
 import ClassListView from "./ClassListView/ClassListView";
-import SignUpProfessor from "./AccountCreation/SignUpProfessor";
-import SignUpStudent from "./AccountCreation/SignUpStudent";
 
 import { userContext } from "./Context/UserContext";
 import { useCookies } from "react-cookie";
@@ -35,12 +33,6 @@ function App() {
           </Route>
           <Route path="/create">
             <Route index element={<CreateAccount />} />
-          </Route>
-          <Route path="/create/professor">
-            <Route index element={<SignUpProfessor />} />
-          </Route>
-          <Route path="/create/student">
-            <Route index element={<SignUpStudent />} />
           </Route>
           <Route path="/class">
             <Route index element={<ClassView />} />

@@ -42,3 +42,27 @@ CREATE TABLE Submissions (
   FOREIGN KEY (owner) REFERENCES Accounts (username),
   FOREIGN KEY (assignment) REFERENCES Assignments (id)
 );
+
+-- Detailed table of results for each test case.
+CREATE TABLE Results (
+  -- Associated submission.
+  submission_id uuid NOT NULL,
+
+  -- ID of the test case.
+  test_id INT NOT NULL,
+
+  -- Whether the result is hidden.
+  hidden BOOLEAN NOT NULL,
+
+  -- Name of the test.
+  test_name VARCHAR(255) NOT NULL,
+
+  -- Score for the result.
+  score DOUBLE PRECISION NOT NULL,
+
+  -- Error message
+  message VARCHAR(1024) NOT NULL,
+
+  PRIMARY KEY (submission_id, test_id),
+  FOREIGN KEY (submission_id) REFERENCES Submissions (id)
+);

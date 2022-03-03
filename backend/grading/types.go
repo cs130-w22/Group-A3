@@ -2,24 +2,21 @@ package grading
 
 import (
 	"io"
+	"os/exec"
 )
 
 type Job struct {
-	ID   string
 	File io.Reader
 
 	// Path to the script to run on the Job.
-	Script string
-
-	// Channel to send results down to the Job requester.
-	Results chan<- Result
+	Script *exec.Cmd
 }
 
 // Result from a single test case in the grading script.
 type Result struct {
-	Hidden   bool
-	TestID   int
-	TestName string
-	Score    float64
-	Msg      string
+	Hidden   bool    `json:"hidden"`
+	TestID   int     `json:"testId"`
+	TestName string  `json:"testName"`
+	Score    float64 `json:"score"`
+	Msg      string  `json:"msg"`
 }

@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"encoding/json"
 	"io"
 	"net/http"
 	"os"
@@ -9,7 +10,9 @@ import (
 	"time"
 
 	"github.com/blockloop/scan"
+	"github.com/cs130-w22/Group-A3/backend/grading"
 	"github.com/labstack/echo/v4"
+	"golang.org/x/net/websocket"
 )
 
 // Create a new assignment.
@@ -24,7 +27,7 @@ func CreateAssignment(cc echo.Context) error {
 	if err != nil {
 		return c.NoContent(http.StatusBadRequest)
 	}
-	dueDate, err := strconv.ParseUint(dueDateStr, 10, 64)
+	dueDate, err := strconv.ParseInt(dueDateStr, 10, 64)
 	if err != nil {
 		return c.NoContent(http.StatusBadRequest)
 	}
@@ -34,22 +37,33 @@ func CreateAssignment(cc echo.Context) error {
 	if err != nil {
 		return c.String(http.StatusBadRequest, err.Error())
 	}
-	file, _ := submittedFile.Open()
-	outFile, err := os.Create("./assignments/" + assignmentName + "/grade")
+	file, err := submittedFile.Open()
 	if err != nil {
+		c.Logger().Error(file)
+		return c.NoContent(http.StatusBadRequest)
+	}
+	defer file.Close()
+	if err := os.MkdirAll("./assignments", 0644); err != nil {
+		c.Logger().Error(err)
+		return c.NoContent(http.StatusInternalServerError)
+	}
+	outFile, err := os.Create("assignments/" + assignmentName)
+	if err != nil {
+		c.Logger().Error(err)
 		return c.NoContent(http.StatusInternalServerError)
 	}
 	if _, err := io.Copy(outFile, file); err != nil {
+		c.Logger().Error(err)
 		return c.NoContent(http.StatusInternalServerError)
 	}
-	defer file.Close()
 
 	assignmentId := 0
 	if err := c.Conn.QueryRowContext(c, `
 	INSERT INTO Assignments (class, name, due_date, points)
-	VALUES $1, $2, $3, $4
+	VALUES ($1, $2, $3, $4)
 	RETURNING id
-	`, c.Param("classId"), assignmentName, dueDate, points).Scan(&assignmentId); err != nil {
+	`, c.Param("classId"), assignmentName, time.UnixMilli(dueDate).Format("2006-01-01 00:00:00"), points).Scan(&assignmentId); err != nil {
+		c.Logger().Error(err)
 		return c.NoContent(http.StatusInternalServerError)
 	}
 
@@ -66,7 +80,10 @@ func UploadSubmission(cc echo.Context) error {
 	file, _ := submittedFile.Open()
 	defer file.Close()
 
-	return c.NoContent(http.StatusCreated)
+	return c.JSON(http.StatusCreated, echo.Map{
+		"id": c.Runner.Add(grading.Job{
+			File: file,
+		})})
 }
 
 // Get information about an assignment.
@@ -87,15 +104,12 @@ func GetAssignment(cc echo.Context) error {
 		DueDate time.Time `json:"dueDate"`
 		Points  float64   `json:"points"`
 	}
-	rows, err := c.Conn.QueryContext(c, `
+	err := c.Conn.QueryRowContext(c, `
 	SELECT name, due_date, points
 	FROM Assignments
 	WHERE id = $1
-		AND class = $2`, assignmentId, classId)
+		AND class = $2`, assignmentId, classId).Scan(&assignment.Name, &assignment.DueDate, &assignment.Points)
 	if err != nil {
-		return c.NoContent(http.StatusInternalServerError)
-	}
-	if err := scan.Row(&assignment, rows); err != nil {
 		return c.NoContent(http.StatusInternalServerError)
 	}
 
@@ -105,7 +119,7 @@ func GetAssignment(cc echo.Context) error {
 		Date         time.Time `json:"date"`
 		PointsEarned float64   `json:"pointsEarned"`
 	}
-	rows, err = c.Conn.QueryContext(c, `
+	rows, err := c.Conn.QueryContext(c, `
 	SELECT id, submitted_on, points_earned
 	FROM Submissions
 	WHERE assignment = $1
@@ -124,4 +138,28 @@ func GetAssignment(cc echo.Context) error {
 		"points":      assignment.Points,
 		"submissions": submissions,
 	})
+}
+
+// Get a live feed of results for the given submission ID.
+func LiveResults(cc echo.Context) error {
+	c := cc.(*Context)
+
+	websocket.Handler(func(ws *websocket.Conn) {
+		defer ws.Close()
+
+		// Receive submission ID
+		submissionId := c.Param("submissionId")
+
+		// Fetch the results channel and begin relaying results.
+		for result := range c.Runner.Results(c, submissionId) {
+			bytes, err := json.Marshal(result)
+			if err != nil {
+				c.Logger().Warn(err)
+			}
+			if err := websocket.Message.Send(ws, bytes); err != nil {
+				c.Logger().Error(err)
+			}
+		}
+	}).ServeHTTP(c.Response(), c.Request())
+	return nil
 }

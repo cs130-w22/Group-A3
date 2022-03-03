@@ -17,9 +17,9 @@ import (
 // are logged in.
 type Context struct {
 	echo.Context
-	Conn     *sql.Conn
-	Claims   *jwt.Claims
-	JobQueue chan<- grading.Job
+	Conn   *sql.Conn
+	Claims *jwt.Claims
+	Runner *grading.Runner
 }
 
 func (c Context) Deadline() (time.Time, bool) {

@@ -1,6 +1,7 @@
-DROP TABLE Accounts;
-DROP TABLE Courses;
-DROP TABLE ClassMembers;
-DROP TABLE Invites;
-DROP TABLE Assignments;
 DROP TABLE Submissions;
+DROP TABLE Results;
+DROP TABLE Invites;
+DROP TABLE ClassMembers;
+DROP TABLE Assignments;
+DROP TABLE Courses;
+DROP TABLE Accounts;
