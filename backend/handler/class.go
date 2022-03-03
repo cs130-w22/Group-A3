@@ -196,3 +196,51 @@ func DropStudent(cc echo.Context) error {
 
 	return c.NoContent(http.StatusOK)
 }
+
+// Functionality : add User to a class Endpoint
+// step1 : make request containing an invite code
+// step2 : check if invite code exists and not expired
+// step3 : if yes,retrieve class code associated to invite code and insert user to class
+//else: return error
+func EnrollStudent(cc echo.Context) error {
+	c := cc.(*Context)
+	inviteCode := c.Get("inviteCode")
+
+	classId := 0
+	if err := c.Conn.QueryRowContext(c, `
+	SELECT invites_to
+	FROM Invites
+	WHERE id = $1
+	AND expires >= CURRENT_TIMESTAMP
+	`, inviteCode).Scan(&classId); err != nil {
+		return c.NoContent(http.StatusNotFound)
+	}
+
+	// get the user type (professor or student)
+	professor := false
+	if err := c.Conn.QueryRowContext(c, `
+	SELECT professor
+	FROM Accounts
+	WHERE id = $1
+	`, c.Claims.UserID).Scan(&professor); err != nil {
+		return c.NoContent(http.StatusInternalServerError)
+	}
+
+	user_status := "student"
+	if professor {
+		user_status = "professor"
+	}
+
+	err := c.Conn.QueryRowContext(c, `
+	INSERT INTO ClassMembers (user_id, class_id, status)
+	VALUES ($1, $2, $3)
+	RETURNING class_id
+	`, c.Claims.UserID, classId, user_status).Scan(&classId)
+	if err != nil {
+		return c.NoContent(http.StatusInternalServerError)
+	}
+
+	return c.JSON(http.StatusOK, echo.Map{
+		"classId": classId,
+	})
+}
