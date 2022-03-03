@@ -7,152 +7,6 @@
 
 const BACKEND_URL = "http://localhost:8080";
 
-export interface AssignmentData {
-  name: string;
-  dueDate: Date;
-  points: number;
-  submissions: Array<{
-    id: string;
-    date: Date;
-    pointsEarned: number;
-  }>;
-}
-
-/**
- * Get information about an assignment. For students, this means submission statistics.
- *
- * @param token Authorization token.
- * @param classId ID of the class to fetch from.
- * @param assignmentId Assignment ID to get data from.
- * @param onSuccess Fired on success.
- * @param onFailure Fired on failure.
- */
-export function getAssignment(
-  token: string,
-  classId: string,
-  assignmentId: string,
-  onSuccess: (data: AssignmentData) => void,
-  onFailure: (message: string) => void
-) {
-  fetch(`${BACKEND_URL}/${classId}/${assignmentId}`, {
-    method: "GET",
-    mode: "cors",
-    headers: {
-      Authorization: token,
-    },
-  })
-    .then((r) => r.json())
-    .then((j) => onSuccess(j))
-    .catch(onFailure);
-}
-
-export interface ClassData {
-  name: string;
-  assignments: Array<{
-    id: number;
-    name: string;
-    dueDate: Date;
-    points: number;
-  }>;
-  members: Array<{
-    id: number;
-    username: string;
-  }>;
-}
-
-/**
- * Get information about a class.
- *
- * @param token Authorization token.
- * @param classId ID of the class to fetch from.
- * @param onSuccess Fired on success.
- * @param onFailure Fired on failure.
- */
-export function getClass(
-  token: string,
-  classId: string,
-  onSuccess: (data: ClassData) => void,
-  onFailure: (message: string) => void
-) {
-  fetch(`${BACKEND_URL}/${classId}/info`, {
-    method: "GET",
-    mode: "cors",
-    headers: {
-      Authorization: token,
-    },
-  })
-    .then((r) => r.json())
-    .then((j) => onSuccess(j))
-    .catch(onFailure);
-}
-
-/**
- * Create a new invite to the described class. Will fail if the
- * token provided is not for a professor account.
- *
- * @param token JWT returned from `/login` or `/user`.
- * @param classId ID for the class to invite students to.
- * @param validUntil How long the invite is valid for.
- * @param onSuccess Fired on success with the new invite code.
- * @param onFailure Fired on failure with a message.
- */
-export function createInvite(
-  token: string,
-  classId: string,
-  validUntil: Date,
-  onSuccess: (inviteCode: string) => void,
-  onFailure: (message: string) => void
-) {
-  fetch(`${BACKEND_URL}/class/${classId}/invite`, {
-    method: "POST",
-    mode: "cors",
-    headers: {
-      Authorization: token,
-    },
-    body: JSON.stringify({
-      validUntil,
-    }),
-  })
-    .then((r) => r.json())
-    .then((j) => onSuccess(j?.inviteCode))
-    .catch(onFailure);
-}
-
-/**
- * Drop a student from a class. Any student can drop themselves from the
- * class, and a professor can drop anyone from a class except themselves.
- *
- * @param token Authorization token as returned by a login or user creation.
- * @param classId Class to drop the student from.
- * @param studentId Student ID to drop.
- * @param onSuccess Fired on successful request.
- * @param onFailure Fired on failed request.
- */
-export function dropStudent(
-  token: string,
-  classId: string,
-  studentId: string,
-  onSuccess: () => void,
-  onFailure: (message: string) => void
-) {
-  fetch(`${BACKEND_URL}/class/${classId}/drop`, {
-    method: "POST",
-    mode: "cors",
-    headers: {
-      Authorization: token,
-    },
-    body: JSON.stringify({
-      id: studentId,
-    }),
-  })
-    .then((r) => {
-      if (r.status !== 200)
-        throw new Error(`Failed to drop student: ${r.status}`);
-      onSuccess();
-    })
-    .catch(onFailure);
-}
-
 /**
  * Upload a submission for an assignment to the backend for
  * grading. This endpoint is a special case, since it uses FormData instead
@@ -203,7 +57,7 @@ export type UnauthorizedEndpoint<P, R> = (
 
 // TODO: make uriGenerator parition parameters into URI values and the corresponding body.
 function authorized<T, R>(
-  uriGenerator: (params: T) => string,
+  uriGenerator: (params: T) => [string, unknown],
   statusOk = 200,
   expectJSON = true,
   method: "post" | "get" = "post"
@@ -214,14 +68,16 @@ function authorized<T, R>(
     onSuccess: (result: R) => void,
     onFailure: (error: Error) => void
   ) => {
-    fetch(`${BACKEND_URL}${uriGenerator(params)}`, {
+    const [uri, body] = uriGenerator(params);
+
+    fetch(`${BACKEND_URL}${uri}`, {
       method,
       mode: "cors",
       headers: {
         Authorization: token,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(params),
+      body: JSON.stringify(body),
     })
       .then((r) => {
         if (r.status !== statusOk) throw new Error(r.statusText);
@@ -233,7 +89,7 @@ function authorized<T, R>(
 }
 
 function unauthorized<T, R>(
-  uriGenerator: (params: T) => string,
+  uriGenerator: (params: T) => [string, unknown],
   statusOk = 200,
   expectJSON = true,
   method: "post" | "get" = "post"
@@ -243,13 +99,15 @@ function unauthorized<T, R>(
     onSuccess: (result: R) => void,
     onFailure: (error: Error) => void
   ) => {
-    fetch(`${BACKEND_URL}${uriGenerator(params)}`, {
+    const [uri, body] = uriGenerator(params);
+
+    fetch(`${BACKEND_URL}${uri}`, {
       method,
       mode: "cors",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(params),
+      body: JSON.stringify(body),
     })
       .then((r) => {
         if (r.status !== statusOk) throw new Error(r.statusText);
@@ -259,6 +117,65 @@ function unauthorized<T, R>(
       .catch(onFailure);
   };
 }
+
+export interface AssignmentData {
+  name: string;
+  dueDate: Date;
+  points: number;
+  submissions: Array<{
+    id: string;
+    date: Date;
+    pointsEarned: number;
+  }>;
+}
+
+/**
+ * Get information about an assignment. For students, this means submission statistics.
+ *
+ * @param token Authorization token.
+ * @param classId ID of the class to fetch from.
+ * @param assignmentId Assignment ID to get data from.
+ * @param onSuccess Fired on success.
+ * @param onFailure Fired on failure.
+ */
+export const getAssignment = authorized<
+  { classId: string; assignmentId: string },
+  AssignmentData
+>(
+  ({ classId, assignmentId }) => [`/${classId}/${assignmentId}`, {}],
+  200,
+  true,
+  "get"
+);
+
+export interface ClassData {
+  name: string;
+  assignments: Array<{
+    id: number;
+    name: string;
+    dueDate: Date;
+    points: number;
+  }>;
+  members: Array<{
+    id: number;
+    username: string;
+  }>;
+}
+
+/**
+ * Get information about a class.
+ *
+ * @param token Authorization token.
+ * @param classId ID of the class to fetch from.
+ * @param onSuccess Fired on success.
+ * @param onFailure Fired on failure.
+ */
+export const getClass = authorized<{ classId: string }, ClassData>(
+  ({ classId }) => [`/${classId}/info`, {}],
+  200,
+  true,
+  "get"
+);
 
 /**
  * Create a new user account, with the provided username, password
@@ -273,7 +190,7 @@ function unauthorized<T, R>(
 export const createUser = unauthorized<
   { username: string; password: string; type: "student" | "professor" },
   { token: string }
->(() => "/user", 201);
+>(() => ["/user", {}], 201);
 
 /**
  * Log in as the given user, minting a new JWT for use in future
@@ -287,14 +204,46 @@ export const createUser = unauthorized<
 export const login = unauthorized<
   { username: string; password: string },
   { token: string }
->(() => "/login");
+>(() => ["/login", {}]);
 
 export const createClass = authorized<{ name: string }, { id: string }>(
-  () => "/class",
+  () => ["/class", {}],
   201
 );
 
 export const joinClass = authorized<{ inviteCode: string }, void>(
-  () => "/class/join",
+  () => ["/class/join", {}],
   204
+);
+
+/**
+ * Create a new invite to the described class. Will fail if the
+ * token provided is not for a professor account.
+ *
+ * @param token JWT returned from `/login` or `/user`.
+ * @param classId ID for the class to invite students to.
+ * @param validUntil How long the invite is valid for.
+ * @param onSuccess Fired on success with the new invite code.
+ * @param onFailure Fired on failure with a message.
+ */
+export const createInvite = authorized<
+  { classId: string; validUntil: Date },
+  { inviteCode: string }
+>(
+  ({ classId, validUntil }) => [`/class/${classId}/invite`, { validUntil }],
+  201
+);
+
+/**
+ * Drop a student from a class. Any student can drop themselves from the
+ * class, and a professor can drop anyone from a class except themselves.
+ *
+ * @param token Authorization token as returned by a login or user creation.
+ * @param classId Class to drop the student from.
+ * @param studentId Student ID to drop.
+ * @param onSuccess Fired on successful request.
+ * @param onFailure Fired on failed request.
+ */
+const dropStudent = authorized<{ classId: string; studentId: string }, void>(
+  ({ classId, studentId }) => [`/class/${classId}/drop`, { studentId }]
 );
