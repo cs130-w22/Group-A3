@@ -1,5 +1,8 @@
 import React from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import { useCookies } from "react-cookie";
+
+import { userContext } from "./Context/UserContext";
 
 import Login from "./Login";
 import CreateAccount from "./AccountCreation/CreateAccount";
@@ -7,9 +10,7 @@ import ClassView from "./ClassView/ClassView";
 import AssignmentView from "./AssignmentView/AssignmentView";
 import ClassStatsView from "./ClassStatsView/ClassStatsView";
 import ClassListView from "./ClassListView/ClassListView";
-
-import { userContext } from "./Context/UserContext";
-import { useCookies } from "react-cookie";
+import Me from "./Me";
 
 const defaultUser = {
   user: {
@@ -24,28 +25,13 @@ function App() {
     <userContext.Provider value={defaultUser}>
       <Router>
         <Routes>
-          <Route path="/">
-            {!cookies.jwt ? (
-              <Route index element={<Login />} />
-            ) : (
-              <Route index element={<ClassView />} />
-            )}
-          </Route>
-          <Route path="/create">
-            <Route index element={<CreateAccount />} />
-          </Route>
-          <Route path="/class">
-            <Route index element={<ClassView />} />
-          </Route>
-          <Route path="/class/assignment">
-            <Route index element={<AssignmentView />} />
-          </Route>
-          <Route path="/class/classstats">
-            <Route index element={<ClassStatsView />} />
-          </Route>
-          <Route path="/class/classlist">
-            <Route index element={<ClassListView />} />
-          </Route>
+          <Route path="/" element={cookies.jwt ? <Me /> : <Login />} />
+
+          <Route path="/create" element={<CreateAccount />} />
+          <Route path="/class" element={<ClassView />} />
+          <Route path="/class/assignment" element={<AssignmentView />} />
+          <Route path="/class/classstats" element={<ClassStatsView />} />
+          <Route path="/class/classlist" element={<ClassListView />} />
         </Routes>
       </Router>
     </userContext.Provider>
