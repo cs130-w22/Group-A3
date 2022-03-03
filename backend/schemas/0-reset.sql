@@ -1,7 +1,7 @@
-DROP TABLE Submissions;
-DROP TABLE Results;
-DROP TABLE Invites;
-DROP TABLE ClassMembers;
-DROP TABLE Assignments;
-DROP TABLE Courses;
-DROP TABLE Accounts;
+DROP TABLE IF EXISTS Submissions;
+DROP TABLE IF EXISTS Results;
+DROP TABLE IF EXISTS Invites;
+DROP TABLE IF EXISTS ClassMembers;
+DROP TABLE IF EXISTS Assignments;
+DROP TABLE IF EXISTS Courses;
+DROP TABLE IF EXISTS Accounts;
