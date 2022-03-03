@@ -105,7 +105,7 @@ func Start(ctx context.Context, store *sql.DB) *Runner {
 			// For each result of the grading script, write it back to the database.
 			go func(jobAndID jobWithID) {
 				for result := range results {
-					conn.ExecContext(ctx, `
+					_, err := conn.ExecContext(ctx, `
 					INSERT INTO Results (
 						submission_id,
 						test_id,
@@ -121,6 +121,9 @@ func Start(ctx context.Context, store *sql.DB) *Runner {
 						result.TestName,
 						result.Score,
 						result.Msg)
+					if err != nil {
+						fmt.Println(err)
+					}
 				}
 			}(jobAndID)
 		}
