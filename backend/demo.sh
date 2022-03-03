@@ -19,5 +19,5 @@ echo "----"
 
 # Create a class
 echo "Creating CS 31..."
-curl -sd '{ "name": "CS 31" }' -H 'Content-Type: application/json' -H "Authorization: $MY_TOKEN" localhost:8080/class
+curl -sd '{ "name": "CS 31" }' -H 'Content-Type: application/json' -H "Authorization: $PROFESSOR_TOKEN" localhost:8080/class
 echo "Done."
