@@ -109,6 +109,15 @@ func CreateClass(cc echo.Context) error {
 		return c.NoContent(http.StatusInternalServerError)
 	}
 
+	// Insert into class members.
+	_, err = c.Conn.ExecContext(c, `
+	INSERT INTO ClassMembers (user_id, class_id, status)
+	VALUES ($1, $2, $3)
+	`, c.Claims.UserID, classId, "ta")
+	if err != nil {
+		return c.NoContent(http.StatusInternalServerError)
+	}
+
 	return c.JSON(http.StatusCreated, echo.Map{
 		"id": classId,
 	})
