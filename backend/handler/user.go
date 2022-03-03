@@ -143,6 +143,7 @@ func GetUser(cc echo.Context) error {
 	FROM Accounts
 	WHERE id = $1
 	`, c.Claims.UserID).Scan(&response.Username, &response.Professor); err != nil {
+		c.Logger().Error(err)
 		return c.NoContent(http.StatusNotFound)
 	}
 
@@ -150,14 +151,16 @@ func GetUser(cc echo.Context) error {
 	rows, err := c.Conn.QueryContext(c, `
 	SELECT class_id, name
 	FROM ClassMembers L
-	JOIN Classes R
+	JOIN Courses R
 	ON L.class_id = R.id
 	WHERE L.user_id = $1
 	`, c.Claims.UserID)
 	if err != nil {
+		c.Logger().Error(err)
 		return c.NoContent(http.StatusInternalServerError)
 	}
 	if err := scan.Rows(&response.Classes, rows); err != nil {
+		c.Logger().Error(err)
 		return c.NoContent(http.StatusInternalServerError)
 	}
 
@@ -170,9 +173,11 @@ func GetUser(cc echo.Context) error {
 	WHERE R.user_id = $1
 	`, c.Claims.UserID)
 	if err != nil {
+		c.Logger().Error(err)
 		return c.NoContent(http.StatusInternalServerError)
 	}
 	if err := scan.Rows(&response.Assignments, rows); err != nil {
+		c.Logger().Error(err)
 		return c.NoContent(http.StatusInternalServerError)
 	}
 
