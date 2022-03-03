@@ -65,8 +65,11 @@ function Login() {
         return response.json();
       })
       .then((json) => {
-        console.log(json);
-        nav("/class/" + json?.classes[0].id);
+        if (json.classes[0].id) {
+          nav("/class/" + json.classes[0].id);
+        } else {
+          nav("/class/ClassID");
+        }
       })
       .catch((e) => {
         setError(

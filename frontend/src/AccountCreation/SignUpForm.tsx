@@ -48,7 +48,7 @@ const SignUpForm = ({ mode }: { mode: "professor" | "student" }) => {
 
   const [show, setShow] = useState(false);
   const { 1: setCookies } = useCookies(["jwt"]);
-  const [classID, setClassID] = useState("");
+  const [classID, setClassID] = useState("classID");
 
   function handleCloseModal() {
     setShow(false);
@@ -162,7 +162,9 @@ const SignUpForm = ({ mode }: { mode: "professor" | "student" }) => {
         return response.json();
       })
       .then((json) => {
-        setClassID(json?.classes[0].id);
+        if (json?.classes[0].id) {
+          setClassID(json?.classes[0].id);
+        }
       })
       .catch((e) => {
         setError(
