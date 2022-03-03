@@ -19,8 +19,11 @@ function ClassView() {
   const mode: "student" | "faculty" = "student"; // should be taken from some app state / login info
   const [cookies, setCookies, removeCookies] = useCookies(["jwt"]);
   const [error, setError] = useState("");
-  const [classID, setClassID] = useState("");
   const params = useParams();
+  const [classID, setClassID] = useState("");
+  const [assignments, setAssignments] = useState(new Array<any>());
+  getClassInfo(cookies.jwt);
+
   function handleRemoveCookies() {
     removeCookies("jwt");
     nav("/");
@@ -33,6 +36,35 @@ function ClassView() {
     fetchClassInfo(cookies.jwt);
     nav("/class/" + classID + "/classlist");
   };
+
+  // Use this function to get the class info from the database and pass it into the assignment card
+  function getClassInfo(token: any) {
+    fetch("http://localhost:8080/class/me", {
+      method: "GET",
+      mode: "cors",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: String(token),
+      },
+    })
+      .then((response) => {
+        if (response.status === 401) throw new Error("Unauthorized");
+        return response.json();
+      })
+      .then((json) => {
+        setClassID(String(json.classes[0].id));
+        setAssignments(json.classes[0].assignments);
+      })
+      .catch((e) => {
+        setError(
+          `Failed to get class info! Server responded with: ${String(e).replace(
+            "TypeError: ",
+            ""
+          )}`
+        );
+      });
+    return [classID];
+  }
 
   function fetchClassInfo(token: any) {
     fetch("http://localhost:8080/class/me", {
@@ -88,9 +120,17 @@ function ClassView() {
         </Stack>
         {Assignments.map((x) =>
           mode === "student" ? (
-            <StudentAssignmentCard name={x} />
+            <StudentAssignmentCard
+              name={x}
+              classID={"ClassID"}
+              assignmentID={"AssignmentID"}
+            />
           ) : (
-            <ProfessorAssignmentCard name={x} />
+            <ProfessorAssignmentCard
+              name={x}
+              classID={"ClassID"}
+              assignmentID={"AssignmentID"}
+            />
           )
         )}
         {mode === "student" ? null : <AddAssignmentModal />}

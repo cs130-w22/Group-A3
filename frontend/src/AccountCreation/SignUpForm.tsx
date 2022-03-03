@@ -162,7 +162,7 @@ const SignUpForm = ({ mode }: { mode: "professor" | "student" }) => {
         return response.json();
       })
       .then((json) => {
-        setClassID(json.id);
+        setClassID(json?.classes[0].id);
       })
       .catch((e) => {
         setError(

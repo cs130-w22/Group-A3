@@ -9,13 +9,17 @@ import ProgressBar from "react-bootstrap/ProgressBar";
 import { Link } from "react-router-dom";
 
 // A card representing a single assignment overview
-function StudentAssignmentCard(props: { name: string }) {
+function StudentAssignmentCard(props: {
+  name: string;
+  classID: string;
+  assignmentID: string;
+}) {
   const grade = 50; // should be server calls sometime
 
   const duedate = "3/22/2022"; // should be server calls sometime
   return (
     <Link
-      to="/class/assignment"
+      to={`/class/${props.classID}/assignment/${props.assignmentID}`}
       style={{ textDecoration: "none", color: "inherit" }}
     >
       <Card /* style={{ width: '18rem' }} */>

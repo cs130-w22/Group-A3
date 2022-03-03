@@ -38,6 +38,7 @@ function Login() {
         return response.json();
       })
       .then((json) => {
+        setCookies("jwt", json?.token);
         fetchClassInfo(json?.token);
       })
       .catch((e) => {
@@ -64,7 +65,8 @@ function Login() {
         return response.json();
       })
       .then((json) => {
-        nav("/class/" + json.id);
+        console.log(json);
+        nav("/class/" + json?.classes[0].id);
       })
       .catch((e) => {
         setError(
