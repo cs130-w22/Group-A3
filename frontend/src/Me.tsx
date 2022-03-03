@@ -12,18 +12,27 @@ import Spinner from "react-bootstrap/Spinner";
 import Button from "react-bootstrap/Button";
 
 import { Link } from "react-router-dom";
+import JoinClassModal from "./Modal/JoinClassModal";
+import CreateClassModal from "./Modal/CreateClassModal";
 
-export default function Me(props: { view?: boolean }) {
+import { createClass, joinClass } from "./api";
+
+export default function Me() {
   const [cookies, setCookies] = useCookies(["jwt"]);
   const removeCookies = () => {
     setCookies("jwt", "");
   };
 
+  const [showJoinClass, setShowJoinClass] = useState(false);
+  const [showCreateClass, setShowCreateClass] = useState(false);
   const [data, setData] = useState<{
     professor?: boolean;
     username?: string;
     assignments?: Array<string>;
-    classes?: Array<string>;
+    classes?: Array<{
+      id: number;
+      name: string;
+    }>;
   }>({});
   const [errors, setErrors] = useState<Array<Error>>([]);
 
@@ -45,6 +54,7 @@ export default function Me(props: { view?: boolean }) {
       })
       .then((j) => {
         setData(j);
+        console.log(j);
       })
       .catch((newErr) => setErrors((errors) => [newErr, ...errors]));
   }, [cookies.jwt]);
@@ -55,7 +65,7 @@ export default function Me(props: { view?: boolean }) {
       <Container>
         {errors.map((err, idx) => (
           <Alert key={idx} variant="warning">
-            {err}
+            {String(err)}
           </Alert>
         ))}
       </Container>
@@ -76,25 +86,50 @@ export default function Me(props: { view?: boolean }) {
       <Stack direction="vertical" gap={3}>
         <Header username={data?.username} removeCookies={removeCookies} />
 
-        {data?.professor && (
-          <>
-            <h2>Professor Tools</h2>
-            <Stack direction="horizontal">
-              <Card>
-                <Card.Body>
-                  <Card.Title>Create a class</Card.Title>
-                </Card.Body>
-              </Card>
-            </Stack>
-          </>
-        )}
+        <JoinClassModal
+          show={showJoinClass}
+          onHide={() => setShowJoinClass(false)}
+          onSubmit={(inviteCode) => {
+            joinClass(
+              cookies.jwt,
+              { inviteCode },
+              () => setShowJoinClass(false),
+              (e) => setErrors((errors) => [e, ...errors])
+            );
+          }}
+        />
+        <CreateClassModal
+          show={showCreateClass}
+          onHide={() => setShowCreateClass(false)}
+          onSubmit={(name) => {
+            createClass(
+              cookies.jwt,
+              { name },
+              () => setShowCreateClass(false),
+              (e) => setErrors((errors) => [e, ...errors])
+            );
+          }}
+        />
 
         <h2>Classes</h2>
         <Stack direction="horizontal" gap={3}>
           {data?.classes?.map((k, idx) => (
-            <ClassCard key={idx} />
+            <ClassCard key={idx} id={String(k.id)} name={k.name} />
           ))}
-          <ClassCard name={"CS 130"} />
+
+          {data?.professor ? (
+            <Card onClick={() => setShowCreateClass(true)}>
+              <Card.Body>
+                <Card.Title>Create a class</Card.Title>
+              </Card.Body>
+            </Card>
+          ) : (
+            <Card onClick={() => setShowJoinClass(true)}>
+              <Card.Body>
+                <Card.Title>Join a class</Card.Title>
+              </Card.Body>
+            </Card>
+          )}
         </Stack>
 
         <h2>Upcoming Assignments</h2>
@@ -184,7 +219,7 @@ function ClassCard({ id, name }: { id?: string; name?: string }) {
       <Card>
         <Card.Body>
           <Card.Title>{name}</Card.Title>
-          <Card.Subtitle>Owner Name</Card.Subtitle>
+          <Card.Subtitle>Extra information</Card.Subtitle>
         </Card.Body>
       </Card>
     </Link>
