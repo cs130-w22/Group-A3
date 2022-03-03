@@ -2,10 +2,9 @@ import React from "react";
 import Button from "react-bootstrap/Button";
 import { Form } from "react-bootstrap";
 import Container from "react-bootstrap/Container";
-import ProgressBar from "react-bootstrap/ProgressBar";
 import StudentAssignmentView from "./StudentAssignmentView";
 import ProfessorAssignmentView from "./ProfessorAssignmentView";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { useCookies } from "react-cookie";
 

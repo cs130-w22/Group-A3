@@ -2,18 +2,15 @@ import React from "react";
 
 import Container from "react-bootstrap/Container";
 import Stack from "react-bootstrap/Stack";
-import Button from "react-bootstrap/Button";
-import { Form } from "react-bootstrap";
 import Card from "react-bootstrap/Card";
 import CardGroup from "react-bootstrap/CardGroup";
-import ProgressBar from "react-bootstrap/ProgressBar";
 import {
   buildStyles,
   CircularProgressbar,
   CircularProgressbarWithChildren,
 } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { useCookies } from "react-cookie";
 
@@ -60,7 +57,6 @@ const ProfessorAssignmentView = () => {
   const [classMedian, setClassMedian] = useState(93);
   const [hints, setHints] = useState(default_hints);
   const [submissionCount, setSubmissionCount] = useState(24);
-  const [submissionScore, setSubmissionScore] = useState([]);
   const params = useParams();
   const [cookies, setCookies] = useCookies(["jwt"]);
 
@@ -79,6 +75,7 @@ const ProfessorAssignmentView = () => {
     })
     .then((resp) => {
       const total = calculateTotalScore(resp.submissions);
+      // should be changed to work with assignment submissions for all class members
       setClassMean(total.reduce((a, b) => a + b, 0) / total.length);
       setClassMedian(median(total));
       setSubmissionCount(total.length);
