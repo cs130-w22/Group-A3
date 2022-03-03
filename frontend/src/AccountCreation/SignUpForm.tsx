@@ -48,10 +48,11 @@ const SignUpForm = ({ mode }: { mode: "professor" | "student" }) => {
 
   const [show, setShow] = useState(false);
   const { 1: setCookies } = useCookies(["jwt"]);
+  const [classID, setClassID] = useState("");
 
   function handleCloseModal() {
     setShow(false);
-    nav("/");
+    nav("/class/" + classID);
   }
 
   //check if passwords match
@@ -117,6 +118,7 @@ const SignUpForm = ({ mode }: { mode: "professor" | "student" }) => {
       })
       .then((j) => {
         setCookies("jwt", j?.token);
+        fetchClassInfo(j?.token);
         if (mode === "professor" && target.courseName)
           handleClassCreation(j?.token, target.courseName.value);
         else if (mode === "student") setShow(true);
@@ -141,6 +143,32 @@ const SignUpForm = ({ mode }: { mode: "professor" | "student" }) => {
         setShow(true);
       })
       .catch(setError);
+  }
+
+  function fetchClassInfo(token: any) {
+    fetch("http://localhost:8080/class/me", {
+      method: "GET",
+      mode: "cors",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: String(token),
+      },
+    })
+      .then((response) => {
+        if (response.status === 401) throw new Error("Unauthorized");
+        return response.json();
+      })
+      .then((json) => {
+        setClassID(json.id);
+      })
+      .catch((e) => {
+        setError(
+          `Failed to get class info! Server responded with: ${String(e).replace(
+            "TypeError: ",
+            ""
+          )}`
+        );
+      });
   }
 
   function getCourseCode() {

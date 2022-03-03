@@ -64,7 +64,7 @@ function Login() {
         return response.json();
       })
       .then((json) => {
-        nav("/class" + json.id);
+        nav("/class/" + json.id);
       })
       .catch((e) => {
         setError(

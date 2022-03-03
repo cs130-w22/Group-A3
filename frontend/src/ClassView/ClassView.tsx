@@ -41,7 +41,7 @@ function ClassView() {
           </div>
         )}
         <Stack direction="horizontal" gap={3}>
-          <h1>My Assignments for {params.classID}</h1>
+          <h1>My Assignments</h1>
           <div className="ms-auto">
             <Button
               onClick={handleRemoveCookies}

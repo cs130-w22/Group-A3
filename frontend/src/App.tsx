@@ -34,7 +34,7 @@ function App() {
           <Route path="/create">
             <Route index element={<CreateAccount />} />
           </Route>
-          <Route path="/class:classID">
+          <Route path="/class/:classID">
             <Route index element={<ClassView />} />
           </Route>
           <Route path="/class/:classID/assignment/:assignmentID">
