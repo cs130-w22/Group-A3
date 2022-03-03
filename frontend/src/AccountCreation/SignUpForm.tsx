@@ -118,11 +118,12 @@ const SignUpForm = ({ mode }: { mode: "professor" | "student" }) => {
       })
       .then((j) => {
         setCookies("jwt", j?.token);
-        fetchClassInfo(j?.token);
         if (mode === "professor" && target.courseName) {
           handleClassCreation(j?.token, target.courseName.value);
+          fetchClassInfo(j?.token);
           setShow(true);
         } else if (mode === "student") {
+          fetchClassInfo(j?.token);
           setShow(true);
         }
       })
