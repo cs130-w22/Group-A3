@@ -103,6 +103,44 @@ Status Code | Semantic
 401 | Unauthorized
 500 | Server error
 
+### `GET /class/me`
+
+Get information about the currently logged on user's:
+* ID
+* Name
+* Professor status
+* Class membership
+* Current assignments
+
+#### Request Body
+
+This endpoint does not require a request body.
+
+#### Response Format
+
+```json
+{
+  "id": 1,
+  "username": "myname",
+  "professor": "true",
+  "classes": [
+    {
+      "id": 1,
+      "name": "CS 131"
+    }
+  ],
+  "assignments": [
+    {
+      "id": 1,
+      "class": 1,
+      "name": "Name of assignment",
+      "dueDate": 1646238619671,
+      "pointsPossible": 100.0
+    }
+  ]
+}
+```
+
 ### `POST /class`
 
 Creates a class in the database.
