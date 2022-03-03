@@ -18,11 +18,12 @@ import (
 )
 
 var (
-	connString  string
-	secretKey   string
-	port        string
-	maxJobs     uint
-	resetTables bool
+	connString       string
+	secretKey        string
+	port             string
+	maxJobs          uint
+	initializeTables bool
+	resetTables      bool
 )
 
 func main() {
@@ -31,6 +32,7 @@ func main() {
 	flag.StringVar(&port, "p", os.Getenv("PORT"), "`port` to serve the HTTP server on")
 	flag.StringVar(&secretKey, "k", "", "secret `key` to use in JWT minting")
 	flag.UintVar(&maxJobs, "j", 1, "Maximum number of concurrent test scripts running at a given time")
+	flag.BoolVar(&initializeTables, "I", false, "Initialize SQLite schema (if no prior database exists)")
 	flag.BoolVar(&resetTables, "D", false, "Reset SQLite database schema (DROP ALL TABLES)")
 	flag.Parse()
 
@@ -52,9 +54,9 @@ func main() {
 	}
 	defer db.Close()
 
-	if resetTables {
+	if resetTables || initializeTables {
 		e.Logger.Error("Migrating...")
-		if err := schemas.Migrate(db, true); err != nil {
+		if err := schemas.Migrate(db, resetTables); err != nil {
 			e.Logger.Error(err)
 			return
 		}
