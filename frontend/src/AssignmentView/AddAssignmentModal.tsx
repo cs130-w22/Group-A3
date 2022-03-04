@@ -38,7 +38,7 @@ function AddAssignmentModal() {
       }
     )
       .then((response) => {
-        if (response.status == 401) throw "Unauthorized";
+        if (response.status === 401) throw "Unauthorized";
         return response.json();
       })
       .catch((e) => {
