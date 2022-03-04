@@ -11,6 +11,8 @@ import AssignmentView from "./AssignmentView/AssignmentView";
 import ClassStatsView from "./ClassStatsView/ClassStatsView";
 import ClassListView from "./ClassListView/ClassListView";
 import Me from "./Me";
+import Class from "./Class";
+import Assignment from "./Assignment";
 
 const defaultUser = {
   user: {
@@ -29,6 +31,8 @@ function App() {
       <Router>
         <Routes>
           <Route path="/" element={cookies.jwt ? <Me /> : <Login />} />
+          <Route path="/class/:id" element={<Class />} />
+          <Route path="/class/:id/:assignmentId" element={<Assignment />} />
 
           <Route path="/create" element={<CreateAccount />} />
           <Route path="/class" element={<ClassView />} />

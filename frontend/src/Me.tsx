@@ -15,7 +15,8 @@ import { Link } from "react-router-dom";
 import JoinClassModal from "./Modal/JoinClassModal";
 import CreateClassModal from "./Modal/CreateClassModal";
 
-import { createClass, getMe, joinClass } from "./api";
+import { createClass, getMe, joinClass, UserInformation } from "./api";
+import AssignmentCard from "./Card/AssignmentCard";
 
 export default function Me() {
   const [cookies, setCookies] = useCookies(["jwt"]);
@@ -25,15 +26,7 @@ export default function Me() {
 
   const [showJoinClass, setShowJoinClass] = useState(false);
   const [showCreateClass, setShowCreateClass] = useState(false);
-  const [data, setData] = useState<{
-    professor?: boolean;
-    username?: string;
-    assignments?: Array<string>;
-    classes?: Array<{
-      id: number;
-      name: string;
-    }>;
-  }>({});
+  const [data, setData] = useState<UserInformation | null>(null);
   const [errors, setErrors] = useState<Array<Error>>([]);
 
   // Make a request on component mount to fetch user information.
@@ -50,6 +43,7 @@ export default function Me() {
   if (errors.length !== 0) {
     return (
       <Container>
+        <Header username={data?.username} removeCookies={removeCookies} />
         {errors.map((err, idx) => (
           <Alert key={idx} variant="warning">
             {String(err)}
@@ -122,11 +116,13 @@ export default function Me() {
         <h2>Upcoming Assignments</h2>
         <Stack direction="vertical" gap={3}>
           {data?.assignments?.map((k, idx) => (
-            <AssignmentCard key={idx} name={"hi"} />
+            <AssignmentCard
+              key={idx}
+              classId={String(k.class)}
+              name={k.name}
+              dueDate={k.dueDate}
+            />
           ))}
-          <AssignmentCard classId="CS 130" name="Homework 1" grade={50} />
-          <AssignmentCard classId="CS 130" name="Homework 2" grade={75} />
-          <AssignmentCard classId="CS 130" name="Homework 3" grade={100} />
         </Stack>
       </Stack>
     </Container>
@@ -142,7 +138,7 @@ function Header({
 }) {
   return (
     <Stack direction="horizontal">
-      <h2>Welcome, {username}</h2>
+      {username && <h2>Welcome, {username}</h2>}
       <div className="ms-auto">
         <Button
           onClick={removeCookies}
@@ -154,46 +150,6 @@ function Header({
         </Button>
       </div>
     </Stack>
-  );
-}
-
-function AssignmentCard({
-  id,
-  classId,
-  name,
-  dueDate,
-  grade,
-}: {
-  id?: number;
-  classId?: string;
-  name?: string;
-  dueDate?: Date;
-  grade?: number;
-}) {
-  return (
-    <Link
-      to={`/class/assignment/${id}`}
-      style={{ textDecoration: "none", color: "inherit" }}
-    >
-      <Card>
-        <Card.Body>
-          <Card.Title>
-            {classId} - {name}
-          </Card.Title>
-          <Card.Subtitle className="mb-2 text-muted">
-            {`Due: ${dueDate}`}
-          </Card.Subtitle>
-          <Container>
-            <Row>
-              <Col>Grade: </Col>
-              <Col xs={11}>
-                <ProgressBar now={grade} label={`${grade}%`} />
-              </Col>
-            </Row>
-          </Container>
-        </Card.Body>
-      </Card>
-    </Link>
   );
 }
 

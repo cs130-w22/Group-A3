@@ -23,6 +23,7 @@
   "rules": {
     "eqeqeq": "error",
     "yoda": "error",
+    "no-unused-vars": "off",
     "react/jsx-key": "error"
   }
 }

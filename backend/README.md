@@ -325,7 +325,6 @@ Key | Value
 :-|:-
 `name` | Name of the assignment (string)
 `dueDate` | Due date of the assignment in milliseconds since the epoch (integer)
-`points` | Maximum points possible for the assignment (floating point)
 `file` | Grading script to use with the assignment (blob)
 
 #### Response Format

@@ -23,7 +23,7 @@ func GetClass(cc echo.Context) error {
 	}
 
 	// Get the class' general information.
-	className := "my class"
+	className := ""
 	if err := c.Conn.QueryRowContext(c, `
 	SELECT name
 	FROM Courses
@@ -44,9 +44,15 @@ func GetClass(cc echo.Context) error {
 		c.Logger().Error(err)
 		return c.NoContent(http.StatusInternalServerError)
 	}
-	c.Logger().Error("end")
-	if err := scan.Rows(&assignments, rows); err != nil {
-		return c.NoContent(http.StatusInternalServerError)
+	for ok := rows.Next(); ok; ok = rows.Next() {
+		id, name, dueDate, points := 0, "", time.Time{}, float64(0)
+		rows.Scan(&id, &name, &dueDate, &points)
+		assignments = append(assignments, struct {
+			ID      int       "json:\"id\""
+			Name    string    "json:\"name\""
+			DueDate time.Time "json:\"dueDate\""
+			Points  float64   "json:\"points\""
+		}{id, name, dueDate, points})
 	}
 	rows.Close()
 

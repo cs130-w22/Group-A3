@@ -213,7 +213,7 @@ export interface ClassData {
  * @param onFailure Fired on failure.
  */
 export const getClass = authorized<{ classId: string }, ClassData>(
-  ({ classId }) => [`/${classId}/info`, null],
+  ({ classId }) => [`/class/${classId}/info`, null],
   200,
   true,
   "get"
@@ -232,7 +232,10 @@ export const getClass = authorized<{ classId: string }, ClassData>(
 export const createUser = unauthorized<
   { username: string; password: string; type: "student" | "professor" },
   { token: string }
->(() => ["/user", null], 201);
+>(
+  ({ username, password, type }) => ["/user", { username, password, type }],
+  201
+);
 
 /**
  * Log in as the given user, minting a new JWT for use in future
@@ -246,15 +249,15 @@ export const createUser = unauthorized<
 export const login = unauthorized<
   { username: string; password: string },
   { token: string }
->(() => ["/login", null]);
+>(({ username, password }) => ["/login", { username, password }]);
 
 export const createClass = authorized<{ name: string }, { id: string }>(
-  () => ["/class", null],
+  ({ name }) => ["/class", { name }],
   201
 );
 
 export const joinClass = authorized<{ inviteCode: string }, void>(
-  () => ["/class/join", null],
+  ({ inviteCode }) => ["/class/join", { inviteCode }],
   204
 );
 
@@ -290,10 +293,16 @@ const dropStudent = authorized<{ classId: string; studentId: string }, void>(
   ({ classId, studentId }) => [`/class/${classId}/drop`, { studentId }]
 );
 
-interface UserInformation {
+export interface UserInformation {
   professor?: boolean;
   username?: string;
-  assignments?: Array<string>;
+  assignments?: Array<{
+    id: number;
+    class: number;
+    name: string;
+    dueDate: Date;
+    pointsPossible: number;
+  }>;
   classes?: Array<{
     id: number;
     name: string;

@@ -2,9 +2,7 @@ package handler
 
 import (
 	"encoding/json"
-	"io"
 	"net/http"
-	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -19,13 +17,9 @@ import (
 func CreateAssignment(cc echo.Context) error {
 	c := cc.(*Context)
 
-	assignmentName, dueDateStr, pointsStr := c.FormValue("name"), c.FormValue("dueDate"), c.FormValue("points")
+	assignmentName, dueDateStr := c.FormValue("name"), c.FormValue("dueDate")
 	if strings.ContainsAny(assignmentName, "/.") {
 		return c.String(http.StatusBadRequest, "'/' and '.' are not allowed in assignment names")
-	}
-	points, err := strconv.ParseFloat(pointsStr, 64)
-	if err != nil {
-		return c.NoContent(http.StatusBadRequest)
 	}
 	dueDate, err := strconv.ParseInt(dueDateStr, 10, 64)
 	if err != nil {
@@ -33,36 +27,38 @@ func CreateAssignment(cc echo.Context) error {
 	}
 
 	// Create a new file for the assignment locally.
-	submittedFile, err := c.FormFile("file")
-	if err != nil {
-		return c.String(http.StatusBadRequest, err.Error())
-	}
-	file, err := submittedFile.Open()
-	if err != nil {
-		c.Logger().Error(file)
-		return c.NoContent(http.StatusBadRequest)
-	}
-	defer file.Close()
-	if err := os.MkdirAll("./assignments", 0644); err != nil {
-		c.Logger().Error(err)
-		return c.NoContent(http.StatusInternalServerError)
-	}
-	outFile, err := os.Create("assignments/" + assignmentName)
-	if err != nil {
-		c.Logger().Error(err)
-		return c.NoContent(http.StatusInternalServerError)
-	}
-	if _, err := io.Copy(outFile, file); err != nil {
-		c.Logger().Error(err)
-		return c.NoContent(http.StatusInternalServerError)
-	}
+	// submittedFile, err := c.FormFile("file")
+	// if err != nil {
+	// 	return c.String(http.StatusBadRequest, err.Error())
+	// }
+	// file, err := submittedFile.Open()
+	// if err != nil {
+	// 	c.Logger().Error(file)
+	// 	return c.NoContent(http.StatusBadRequest)
+	// }
+	// defer file.Close()
+	// if err := os.MkdirAll("./assignments", 0644); err != nil {
+	// 	c.Logger().Error(err)
+	// 	return c.NoContent(http.StatusInternalServerError)
+	// }
+	// outFile, err := os.Create("assignments/" + strings.ReplaceAll(assignmentName, " ", "-"))
+	// if err != nil {
+	// 	c.Logger().Error(err)
+	// 	return c.NoContent(http.StatusInternalServerError)
+	// }
+	// if _, err := io.Copy(outFile, file); err != nil {
+	// 	c.Logger().Error(err)
+	// 	return c.NoContent(http.StatusInternalServerError)
+	// }
+
+	// TODO: parse output of --summary option to get test case information.
 
 	assignmentId := 0
 	if err := c.Conn.QueryRowContext(c, `
 	INSERT INTO Assignments (class, name, due_date, points)
 	VALUES ($1, $2, $3, $4)
 	RETURNING id
-	`, c.Param("classId"), assignmentName, time.UnixMilli(dueDate).Format("2006-01-01 00:00:00"), points).Scan(&assignmentId); err != nil {
+	`, c.Param("classId"), assignmentName, time.UnixMilli(dueDate).Format("2006-01-01 00:00:00"), 100).Scan(&assignmentId); err != nil {
 		c.Logger().Error(err)
 		return c.NoContent(http.StatusInternalServerError)
 	}
