@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestParseOutput(t *testing.T) {
+func TestParseOutput2(t *testing.T) {
 	t.Run("Sanity", func(t *testing.T) {
 		results, err := parseOutput(strings.NewReader(""))
 		require.NoError(t, err)
