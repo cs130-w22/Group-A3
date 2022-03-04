@@ -125,7 +125,7 @@ func main() {
 	classApi.GET("/:classId/:assignmentId", handler.GetAssignment)
 	classApi.POST("/:classId/assignment", handler.CreateAssignment)
 	e.POST("/:classId/:assignmentId/script", Unimplemented)
-	e.POST("/:classId/:assignmentId/upload", Unimplemented)
+	classApi.POST("/:classId/:assignmentId/upload", handler.UploadSubmission)
 	classApi.POST("/:classId/invite", handler.CreateInvite)
 	e.POST("/class/:classId/join", Unimplemented)
 

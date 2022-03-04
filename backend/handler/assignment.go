@@ -75,10 +75,15 @@ func CreateAssignment(cc echo.Context) error {
 func UploadSubmission(cc echo.Context) error {
 	c := cc.(*Context)
 
-	submittedFile, _ := c.FormFile("file")
+	submittedFile, err := c.FormFile("file")
+	if err != nil {
+		return c.NoContent(http.StatusBadRequest)
+	}
 
-	file, _ := submittedFile.Open()
-	defer file.Close()
+	file, err := submittedFile.Open()
+	if err != nil {
+		return c.NoContent(http.StatusInternalServerError)
+	}
 
 	return c.JSON(http.StatusCreated, echo.Map{
 		"id": c.Runner.Add(grading.Job{

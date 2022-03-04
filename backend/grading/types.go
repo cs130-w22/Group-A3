@@ -6,7 +6,7 @@ import (
 )
 
 type Job struct {
-	File io.Reader
+	File io.ReadCloser
 
 	// Path to the script to run on the Job.
 	Script *exec.Cmd

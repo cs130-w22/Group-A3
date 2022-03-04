@@ -90,7 +90,7 @@ function UploadSubmissionModal() {
                 </Form.Group>
                 <Form.Group className="mb-3" controlId="formSubmissionFile">
                   <Form.Label>Submission Upload</Form.Label>
-                  <Form.Control type="file" name="submission" />
+                  <Form.Control type="file" name="file" />
                 </Form.Group>
                 <Stack direction="horizontal" gap={3}>
                   <Button variant="primary" type="submit">
