@@ -2,17 +2,17 @@ import React from "react";
 
 import Container from "react-bootstrap/Container";
 import Stack from "react-bootstrap/Stack";
-import Button from "react-bootstrap/Button";
-import { Form } from "react-bootstrap";
 import Card from "react-bootstrap/Card";
 import CardGroup from "react-bootstrap/CardGroup";
-import ProgressBar from "react-bootstrap/ProgressBar";
 import {
   buildStyles,
   CircularProgressbar,
   CircularProgressbarWithChildren,
 } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
+import { useState } from "react";
+import { useParams } from "react-router-dom";
+import { useCookies } from "react-cookie";
 
 class hint {
   name: string;
@@ -28,14 +28,61 @@ class hint {
 
 const hint1 = new hint("hint title", "hint body", 1);
 const hint2 = new hint("hint title 2", "hint body 2", 2);
-const hints = [hint1, hint2]; // take from database
+const default_hints = [hint1, hint2];
 
-const userGrade = 80; // check dynamically
-const classMedian = 75;
-const classMean = 60;
+interface Submission {
+  id: string;
+  date: string;
+  pointsEarned: number;
+}
+function calculateTotalScore(submissions: Submission[]) {
+  const totalScores: number[] = [];
+
+  submissions.forEach((j) => totalScores.push(j["pointsEarned"]));
+  return totalScores;
+}
+
+function median(numbers: number[]) {
+  const sorted = numbers.slice().sort((a, b) => a - b);
+  const middle = Math.floor(sorted.length / 2);
+
+  if (sorted.length % 2 === 0) {
+    return (sorted[middle - 1] + sorted[middle]) / 2;
+  }
+
+  return sorted[middle];
+}
 
 //Student view of the assignment
-function StudentAssignmentCard() {
+const StudentAssignmentView = () => {
+  const [userGrade, setUserGrade] = useState(23);
+  const [classMean, setClassMean] = useState(75);
+  const [classMedian, setClassMedian] = useState(92);
+  const [hints, setHints] = useState(default_hints);
+  const params = useParams();
+  const [cookies, setCookies] = useCookies(["jwt"]);
+
+  fetch(
+    "http://localhost:8080/class/${params.classId}/${params.assignmentId}",
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: cookies.jwt,
+      },
+    }
+  )
+    .then((resp) => {
+      if (resp.status === 200) return resp.json();
+    })
+    .then((resp) => {
+      const total = calculateTotalScore(resp.submissions);
+      // Mean and Median should be changed to work with assignment submissions for all class members
+      setClassMean(total.reduce((a, b) => a + b, 0) / total.length);
+      setClassMedian(median(total));
+      setUserGrade(total[total.length - 1]);
+    });
+
   return (
     <Container>
       <Stack
@@ -102,6 +149,6 @@ function StudentAssignmentCard() {
       </CardGroup>
     </Container>
   );
-}
+};
 
-export default StudentAssignmentCard;
+export default StudentAssignmentView;

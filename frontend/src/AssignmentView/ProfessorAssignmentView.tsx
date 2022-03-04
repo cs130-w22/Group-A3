@@ -2,21 +2,17 @@ import React from "react";
 
 import Container from "react-bootstrap/Container";
 import Stack from "react-bootstrap/Stack";
-import Button from "react-bootstrap/Button";
-import { Form } from "react-bootstrap";
 import Card from "react-bootstrap/Card";
 import CardGroup from "react-bootstrap/CardGroup";
-import ProgressBar from "react-bootstrap/ProgressBar";
 import {
   buildStyles,
   CircularProgressbar,
   CircularProgressbarWithChildren,
 } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
-
-const numSubmissions = 60; // percentage of submitted assignments
-const classMedian = 60; // change dynamically
-const classMean = 60;
+import { useState } from "react";
+import { useParams } from "react-router-dom";
+import { useCookies } from "react-cookie";
 
 class hint {
   name: string;
@@ -32,9 +28,59 @@ class hint {
 
 const hint1 = new hint("hint title", "hint body", 1);
 const hint2 = new hint("hint title 2", "hint body 2", 2);
-const hints = [hint1, hint2]; // get all hints from database
+const default_hints = [hint1, hint2];
 
-const AssignmentView = () => {
+interface Submission {
+  id: string;
+  date: string;
+  pointsEarned: number;
+}
+
+function calculateTotalScore(submissions: Submission[]) {
+  const totalScores: number[] = [];
+
+  submissions.forEach((j) => totalScores.push(j["pointsEarned"]));
+  return totalScores;
+}
+
+function median(numbers: number[]) {
+  const sorted = numbers.slice().sort((a, b) => a - b);
+  const middle = Math.floor(sorted.length / 2);
+  if (sorted.length % 2 === 0) {
+    return (sorted[middle - 1] + sorted[middle]) / 2;
+  }
+  return sorted[middle];
+}
+
+const ProfessorAssignmentView = () => {
+  const [classMean, setClassMean] = useState(23); // currently dummy values before testing with endpoint
+  const [classMedian, setClassMedian] = useState(93);
+  const [hints, setHints] = useState(default_hints);
+  const [submissionCount, setSubmissionCount] = useState(24);
+  const params = useParams();
+  const [cookies, setCookies] = useCookies(["jwt"]);
+
+  fetch(
+    "http://localhost:8080/class/${params.classId}/${params.assignmentId}",
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: cookies.jwt,
+      },
+    }
+  )
+    .then((resp) => {
+      if (resp.status === 200) return resp.json();
+    })
+    .then((resp) => {
+      const total = calculateTotalScore(resp.submissions);
+      // should be changed to work with assignment submissions for all class members
+      setClassMean(total.reduce((a, b) => a + b, 0) / total.length);
+      setClassMedian(median(total));
+      setSubmissionCount(total.length);
+    });
+
   return (
     <Container>
       <h2>Assignment Statistics: </h2>
@@ -46,7 +92,7 @@ const AssignmentView = () => {
       >
         <div className="row" style={{ width: 300, height: 300 }}>
           <CircularProgressbarWithChildren
-            value={numSubmissions}
+            value={submissionCount}
             styles={buildStyles({ pathColor: "#1273de", strokeLinecap: 1 })}
           >
             {/* Put any JSX content in here that you'd like. It'll be vertically and horizonally centered. */}
@@ -54,7 +100,7 @@ const AssignmentView = () => {
               <strong># of Submissions:</strong>
             </div>
             <div style={{ fontSize: 40, marginTop: -5, color: "#1273de" }}>
-              <strong>{numSubmissions}</strong>
+              <strong>{submissionCount}</strong>
             </div>
           </CircularProgressbarWithChildren>
         </div>
@@ -105,4 +151,4 @@ const AssignmentView = () => {
   );
 };
 
-export default AssignmentView;
+export default ProfessorAssignmentView;
