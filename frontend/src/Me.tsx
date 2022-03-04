@@ -15,9 +15,16 @@ import { Link } from "react-router-dom";
 import JoinClassModal from "./Modal/JoinClassModal";
 import CreateClassModal from "./Modal/CreateClassModal";
 
-import { createClass, getMe, joinClass, UserInformation } from "./api";
+import {
+  createClass,
+  createInvite,
+  getMe,
+  joinClass,
+  UserInformation,
+} from "./api";
 import AssignmentCard from "./Card/AssignmentCard";
 import CreateAssignmentModal from "./Modal/CreateAssignmentModal";
+import CreateInviteModal from "./Modal/CreateInviteModal";
 
 export default function Me() {
   const [cookies, setCookies] = useCookies(["jwt"]);
@@ -171,9 +178,14 @@ function ClassCard({
   const [cookies, setCookies] = useCookies(["jwt"]);
   const [errors, setErrors] = useState<Array<Error>>([]);
   const [showCreateAssignment, setShowCreateAssignment] = useState(false);
+  const [showCreateInvite, setShowCreateInvite] = useState(false);
 
   return (
     <>
+      <CreateInviteModal
+        show={showCreateInvite}
+        onHide={() => setShowCreateInvite(false)}
+      />
       <CreateAssignmentModal
         show={showCreateAssignment}
         onHide={() => setShowCreateAssignment(false)}
@@ -201,12 +213,20 @@ function ClassCard({
         <Card.Body>
           <Card.Title>{name}</Card.Title>
           {showCreate && (
-            <Button
-              variant="primary"
-              onClick={() => setShowCreateAssignment(true)}
-            >
-              Add assignment
-            </Button>
+            <Stack gap={3}>
+              <Button
+                variant="primary"
+                onClick={() => setShowCreateAssignment(true)}
+              >
+                Add assignment
+              </Button>
+              <Button
+                variant="primary"
+                onClick={() => setShowCreateInvite(true)}
+              >
+                Create invite
+              </Button>
+            </Stack>
           )}
         </Card.Body>
       </Card>
