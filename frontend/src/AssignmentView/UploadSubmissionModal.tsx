@@ -24,7 +24,6 @@ function UploadSubmissionModal() {
 
   const [show, setShow] = useState(false);
   const handleClose = () => setShow(false);
-  const handleShow = () => setShow(true);
 
   function handleSubmission(data: FormData) {
     return fetch(
@@ -65,7 +64,9 @@ function UploadSubmissionModal() {
         variant="primary"
         type="submit"
         style={{ borderRadius: 20 }}
-        onClick={handleShow}
+        onClick={() => {
+          setShow(true);
+        }}
       >
         Upload Assignment
       </Button>

@@ -24,7 +24,6 @@ function AddAssignmentModal() {
   const [gradingScriptFile, setGradingScriptFile] = useState("");
   const [dueDate, setDueDate] = useState("");
   const handleClose = () => setShow(false);
-  const handleShow = () => setShow(true);
 
   function handleGradingScript(data: FormData) {
     return fetch(
@@ -65,7 +64,9 @@ function AddAssignmentModal() {
         variant="primary"
         type="submit"
         style={{ borderRadius: 20 }}
-        onClick={handleShow}
+        onClick={() => {
+          setShow(true);
+        }}
       >
         Upload Grading Script
       </Button>
