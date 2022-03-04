@@ -82,7 +82,3 @@ func TestParseOutput(t *testing.T) {
 		assert.EqualError(t, err, terr.Error())
 	})
 }
-
-func TestGrade(t *testing.T) {
-
-}
