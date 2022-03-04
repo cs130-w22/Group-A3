@@ -307,7 +307,7 @@ No data is returned with this endpoint.
 
 Status Code | Semantic
 :-|:-
-204 | OK. User joined successfully or is already in class
+200 | OK. User joined successfully or is already in class
 400 | Bad request (see format)
 401 | Unauthorized
 500 | Server error

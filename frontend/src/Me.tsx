@@ -132,6 +132,7 @@ export default function Me() {
             <AssignmentCard
               key={idx}
               id={k.id}
+              className={data?.classes?.find((c) => c.id === k.class)?.name}
               name={k.name}
               dueDate={k.dueDate}
             />
@@ -171,7 +172,7 @@ function ClassCard({
   name,
   showCreate,
 }: {
-  id?: string;
+  id: string;
   name?: string;
   showCreate?: boolean;
 }) {
@@ -183,6 +184,7 @@ function ClassCard({
   return (
     <>
       <CreateInviteModal
+        classId={id}
         show={showCreateInvite}
         onHide={() => setShowCreateInvite(false)}
       />

@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/blockloop/scan"
+	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 )
 
@@ -133,35 +134,36 @@ func CreateClass(cc echo.Context) error {
 func CreateInvite(cc echo.Context) error {
 	c := cc.(*Context)
 
-	classId := c.Get("classId")
+	classId := c.Param("classId")
 	var body struct {
 		ValidUntil time.Time `json:"validUntil"`
 	}
 	if err := c.Bind(&body); err != nil || (body.ValidUntil == time.Time{}) || classId == "" {
+		c.Logger().Error(err)
 		return c.NoContent(http.StatusBadRequest)
 	}
 
 	// Confirm that the user is a professor and owns the class.
-	professor := false
+	professor := ""
 	if err := c.Conn.QueryRowContext(c, `
-	SELECT professor
-	FROM Accounts L
-	JOIN Courses R
-	ON L.id = R.owner
-	WHERE L.id = $1
-		AND L.professor = 'true'
-		AND R.id = $2
-	`, c.Claims.UserID, classId).Scan(&professor); err != nil || !professor {
+	SELECT status
+	FROM ClassMembers
+	WHERE user_id = $1
+		AND status = 'ta'
+		AND class_id = $2
+	`, c.Claims.UserID, classId).Scan(&professor); err != nil || professor != "ta" {
+		c.Logger().Error(err)
 		return c.NoContent(http.StatusUnauthorized)
 	}
 
 	inviteCode := ""
 	err := c.Conn.QueryRowContext(c, `
-	INSERT INTO Invites (invites_to, expires, created_by)
-	VALUES ($1, $2, $3)
+	INSERT INTO Invites (id, invites_to, expires, created_by, use_count)
+	VALUES ($1, $2, $3, $4, 0)
 	RETURNING id
-	`, classId, body.ValidUntil, c.Claims.UserID).Scan(&inviteCode)
+	`, uuid.NewString(), classId, body.ValidUntil, c.Claims.UserID).Scan(&inviteCode)
 	if err != nil {
+		c.Logger().Error(err)
 		return c.NoContent(http.StatusInternalServerError)
 	}
 
@@ -219,7 +221,13 @@ func DropStudent(cc echo.Context) error {
 //else: return error
 func EnrollStudent(cc echo.Context) error {
 	c := cc.(*Context)
-	inviteCode := c.Get("inviteCode")
+	var body struct {
+		InviteCode string `json:"inviteCode"`
+	}
+	if err := c.Bind(&body); err != nil {
+		c.Logger().Error(err)
+		return c.NoContent(http.StatusBadRequest)
+	}
 
 	classId := 0
 	if err := c.Conn.QueryRowContext(c, `
@@ -227,7 +235,7 @@ func EnrollStudent(cc echo.Context) error {
 	FROM Invites
 	WHERE id = $1
 	AND expires >= CURRENT_TIMESTAMP
-	`, inviteCode).Scan(&classId); err != nil {
+	`, body.InviteCode).Scan(&classId); err != nil {
 		return c.NoContent(http.StatusNotFound)
 	}
 

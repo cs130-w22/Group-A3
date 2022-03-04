@@ -11,13 +11,13 @@ import { Link } from "react-router-dom";
 
 export default function AssignmentCard({
   id,
-  classId,
+  className,
   name,
   dueDate,
   grade,
 }: {
   id?: number;
-  classId?: string;
+  className?: string;
   name?: string;
   dueDate?: Date;
   grade?: number;
@@ -30,7 +30,7 @@ export default function AssignmentCard({
       <Card>
         <Card.Body>
           <Card.Title>
-            {classId} - {name}
+            {className} - {name}
           </Card.Title>
           <Card.Subtitle className="mb-2 text-muted">
             Due: {dueDate}

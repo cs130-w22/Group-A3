@@ -12,7 +12,7 @@ import Modal from "react-bootstrap/Modal";
 import Spinner from "react-bootstrap/Spinner";
 
 import "./CreateAccount.css";
-import { createClass, createUser } from "../api";
+import { createClass, createUser, joinClass } from "../api";
 
 const SuccessModal = ({
   show,
@@ -110,53 +110,16 @@ const SignUpForm = ({ mode }: { mode: "professor" | "student" }) => {
             ({ id }) => setShow(true),
             (err) => setError(err.message)
           );
-        else if (mode === "student") setShow(true);
+        else if (mode === "student")
+          joinClass(
+            token,
+            { inviteCode: String(target?.courseCode?.value) },
+            () => setShow(true),
+            (err) => setError(err.message)
+          );
       },
       (err) => setError(err.message)
     );
-  }
-
-  function getCourseCode() {
-    if (courseCode !== "") {
-      return (
-        <Form.Label
-          style={{
-            textAlign: "center",
-            justifyContent: "center",
-            color: "black",
-            font: "Hammersmith One",
-            fontSize: 30,
-            fontWeight: "bolder",
-            marginRight: 30,
-          }}
-        >
-          {courseCode}
-        </Form.Label>
-      );
-    } else {
-      return (
-        <Spinner animation="border" variant="secondary" role="status">
-          <span className="visually-hidden">Loading...</span>
-        </Spinner>
-      );
-    }
-  }
-
-  function addCopyButton() {
-    if (courseCode !== "") {
-      return (
-        <Button
-          onClick={() => {
-            navigator.clipboard.writeText(courseCode);
-          }}
-          variant="outline-secondary"
-          type="button"
-          style={{ borderRadius: 100, marginTop: -10 }}
-        >
-          Copy
-        </Button>
-      );
-    }
   }
 
   return (

@@ -258,7 +258,7 @@ export const createClass = authorized<{ name: string }, { id: string }>(
 
 export const joinClass = authorized<{ inviteCode: string }, void>(
   ({ inviteCode }) => ["/class/join", { inviteCode }],
-  204
+  200
 );
 
 /**
