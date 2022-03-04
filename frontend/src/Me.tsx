@@ -15,7 +15,7 @@ import { Link } from "react-router-dom";
 import JoinClassModal from "./Modal/JoinClassModal";
 import CreateClassModal from "./Modal/CreateClassModal";
 
-import { createClass, joinClass } from "./api";
+import { createClass, getMe, joinClass } from "./api";
 
 export default function Me() {
   const [cookies, setCookies] = useCookies(["jwt"]);
@@ -38,25 +38,12 @@ export default function Me() {
 
   // Make a request on component mount to fetch user information.
   useEffect(() => {
-    fetch(`http://localhost:8080/class/me`, {
-      method: "get",
-      mode: "cors",
-      headers: {
-        Authorization: cookies.jwt,
-      },
-    })
-      .then((r) => {
-        if (r.status !== 200)
-          throw new Error(
-            `Failed to get user data: ${r.statusText}. Is the server running?`
-          );
-        return r.json();
-      })
-      .then((j) => {
-        setData(j);
-        console.log(j);
-      })
-      .catch((newErr) => setErrors((errors) => [newErr, ...errors]));
+    getMe(
+      cookies.jwt,
+      null,
+      (data) => setData(data),
+      (newErr) => setErrors((errors) => [newErr, ...errors])
+    );
   }, [cookies.jwt]);
 
   // Catch errors before render.

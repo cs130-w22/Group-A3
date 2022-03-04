@@ -49,6 +49,7 @@ export type AuthorizedEndpoint<P, R> = (
   onSuccess: (result: R) => void,
   onFailure: (error: Error) => void
 ) => void;
+
 export type UnauthorizedEndpoint<P, R> = (
   params: P,
   onSuccess: (result: R) => void,
@@ -56,7 +57,9 @@ export type UnauthorizedEndpoint<P, R> = (
 ) => void;
 
 /**
- * Create an endpoint function that partitions its input using `uriGenerator`.
+ * Create an authorized endpoint function that partitions its input using `uriGenerator`.
+ * The generated function will require passage of an authorization token.
+ *
  * All requests, by default, throw an error if the status code is not 200,
  * use a JSON body, and are of method POST.
  *
@@ -111,6 +114,18 @@ function authorized<T, R>(
   };
 }
 
+/**
+ * Create an endpoint function that partitions its input using `uriGenerator`.
+ * All requests, by default, throw an error if the status code is not 200,
+ * use a JSON body, and are of method POST.
+ *
+ * @param uriGenerator Generator function parsing the input type `T` into a URI against the backend (beginning with '/')
+ *                     and the object to send as the body of the request, if any.
+ * @param statusOk Range of status codes to accept the response.
+ * @param expectJSON Whether the function should expect a JSON body in response.
+ * @param method Method to use against the backend.
+ * @returns A new function.
+ */
 function unauthorized<T, R>(
   uriGenerator: (params: T) => [string, unknown],
   statusOk = 200,
@@ -273,4 +288,24 @@ export const createInvite = authorized<
  */
 const dropStudent = authorized<{ classId: string; studentId: string }, void>(
   ({ classId, studentId }) => [`/class/${classId}/drop`, { studentId }]
+);
+
+interface UserInformation {
+  professor?: boolean;
+  username?: string;
+  assignments?: Array<string>;
+  classes?: Array<{
+    id: number;
+    name: string;
+  }>;
+}
+
+/**
+ * Get information about a student.
+ */
+export const getMe = authorized<null, UserInformation>(
+  () => [`/class/me`, null],
+  200,
+  true,
+  "get"
 );
