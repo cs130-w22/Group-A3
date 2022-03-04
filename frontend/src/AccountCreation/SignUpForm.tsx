@@ -108,7 +108,6 @@ const SignUpForm = ({ mode }: { mode: "professor" | "student" }) => {
         username: target.uid.value,
         password: target.password.value,
         type: mode,
-        courseName: target?.courseName?.value,
       }),
     })
       .then((r) => {
