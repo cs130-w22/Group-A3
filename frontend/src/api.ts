@@ -55,7 +55,18 @@ export type UnauthorizedEndpoint<P, R> = (
   onFailure: (error: Error) => void
 ) => void;
 
-// TODO: make uriGenerator parition parameters into URI values and the corresponding body.
+/**
+ * Create an endpoint function that partitions its input using `uriGenerator`.
+ * All requests, by default, throw an error if the status code is not 200,
+ * use a JSON body, and are of method POST.
+ *
+ * @param uriGenerator Generator function parsing the input type `T` into a URI against the backend (beginning with '/')
+ *                     and the object to send as the body of the request, if any.
+ * @param statusOk Range of status codes to accept the response.
+ * @param expectJSON Whether the function should expect a JSON body in response.
+ * @param method Method to use against the backend.
+ * @returns A new function.
+ */
 function authorized<T, R>(
   uriGenerator: (params: T) => [string, unknown],
   statusOk = 200,
@@ -70,15 +81,27 @@ function authorized<T, R>(
   ) => {
     const [uri, body] = uriGenerator(params);
 
-    fetch(`${BACKEND_URL}${uri}`, {
+    const options: RequestInit = {
       method,
       mode: "cors",
       headers: {
         Authorization: token,
-        "Content-Type": "application/json",
       },
-      body: JSON.stringify(body),
-    })
+    };
+
+    if (body) {
+      options.headers = {
+        Authorization: token,
+        "Content-Type": "application/json",
+      };
+      options.body = JSON.stringify(body);
+    } else {
+      options.headers = {
+        Authorization: token,
+      };
+    }
+
+    fetch(`${BACKEND_URL}${uri}`, options)
       .then((r) => {
         if (r.status !== statusOk) throw new Error(r.statusText);
         if (expectJSON) return r.json();
@@ -100,15 +123,19 @@ function unauthorized<T, R>(
     onFailure: (error: Error) => void
   ) => {
     const [uri, body] = uriGenerator(params);
-
-    fetch(`${BACKEND_URL}${uri}`, {
+    const options: RequestInit = {
       method,
       mode: "cors",
-      headers: {
+    };
+
+    if (body) {
+      options.headers = {
         "Content-Type": "application/json",
-      },
-      body: JSON.stringify(body),
-    })
+      };
+      options.body = JSON.stringify(body);
+    }
+
+    fetch(`${BACKEND_URL}${uri}`, options)
       .then((r) => {
         if (r.status !== statusOk) throw new Error(r.statusText);
         if (expectJSON) return r.json();
@@ -142,7 +169,7 @@ export const getAssignment = authorized<
   { classId: string; assignmentId: string },
   AssignmentData
 >(
-  ({ classId, assignmentId }) => [`/${classId}/${assignmentId}`, {}],
+  ({ classId, assignmentId }) => [`/${classId}/${assignmentId}`, null],
   200,
   true,
   "get"
@@ -171,7 +198,7 @@ export interface ClassData {
  * @param onFailure Fired on failure.
  */
 export const getClass = authorized<{ classId: string }, ClassData>(
-  ({ classId }) => [`/${classId}/info`, {}],
+  ({ classId }) => [`/${classId}/info`, null],
   200,
   true,
   "get"
@@ -190,7 +217,7 @@ export const getClass = authorized<{ classId: string }, ClassData>(
 export const createUser = unauthorized<
   { username: string; password: string; type: "student" | "professor" },
   { token: string }
->(() => ["/user", {}], 201);
+>(() => ["/user", null], 201);
 
 /**
  * Log in as the given user, minting a new JWT for use in future
@@ -204,15 +231,15 @@ export const createUser = unauthorized<
 export const login = unauthorized<
   { username: string; password: string },
   { token: string }
->(() => ["/login", {}]);
+>(() => ["/login", null]);
 
 export const createClass = authorized<{ name: string }, { id: string }>(
-  () => ["/class", {}],
+  () => ["/class", null],
   201
 );
 
 export const joinClass = authorized<{ inviteCode: string }, void>(
-  () => ["/class/join", {}],
+  () => ["/class/join", null],
   204
 );
 
