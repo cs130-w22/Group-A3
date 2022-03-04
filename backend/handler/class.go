@@ -228,7 +228,7 @@ func EnrollStudent(cc echo.Context) error {
 
 	user_status := "student"
 	if professor {
-		user_status = "professor"
+		user_status = "ta"
 	}
 
 	err := c.Conn.QueryRowContext(c, `

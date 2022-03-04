@@ -127,7 +127,7 @@ func main() {
 	e.POST("/:classId/:assignmentId/script", Unimplemented)
 	e.POST("/:classId/:assignmentId/upload", Unimplemented)
 	classApi.POST("/:classId/invite", handler.CreateInvite)
-	e.POST("/class/:classId/join", Unimplemented)
+	classApi.POST("/:classId/join", handler.EnrollStudent)
 
 	// Websockets
 	e.GET("/live/:submissionId", handler.LiveResults)
