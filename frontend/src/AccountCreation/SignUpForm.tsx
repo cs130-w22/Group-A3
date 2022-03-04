@@ -48,10 +48,11 @@ const SignUpForm = ({ mode }: { mode: "professor" | "student" }) => {
 
   const [show, setShow] = useState(false);
   const { 1: setCookies } = useCookies(["jwt"]);
+  const [classID, setClassID] = useState("classID");
 
   function handleCloseModal() {
     setShow(false);
-    nav("/class");
+    nav("/class/" + classID);
   }
 
   //check if passwords match
@@ -117,9 +118,14 @@ const SignUpForm = ({ mode }: { mode: "professor" | "student" }) => {
       })
       .then((j) => {
         setCookies("jwt", j?.token);
-        if (mode === "professor" && target.courseName)
+        if (mode === "professor" && target.courseName) {
           handleClassCreation(j?.token, target.courseName.value);
-        else if (mode === "student") setShow(true);
+          fetchClassInfo(j?.token);
+          setShow(true);
+        } else if (mode === "student") {
+          fetchClassInfo(j?.token);
+          setShow(true);
+        }
       })
       .catch(setError);
   }
@@ -138,9 +144,36 @@ const SignUpForm = ({ mode }: { mode: "professor" | "student" }) => {
     })
       .then((res) => {
         if (res.status !== 201) throw new Error("Error in creating class");
-        setShow(true);
       })
       .catch(setError);
+  }
+
+  function fetchClassInfo(token: any) {
+    fetch("http://localhost:8080/class/me", {
+      method: "GET",
+      mode: "cors",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: String(token),
+      },
+    })
+      .then((response) => {
+        if (response.status === 401) throw new Error("Unauthorized");
+        return response.json();
+      })
+      .then((json) => {
+        if (json?.classes[0].id) {
+          setClassID(json?.classes[0].id);
+        }
+      })
+      .catch((e) => {
+        setError(
+          `Failed to get class info! Server responded with: ${String(e).replace(
+            "TypeError: ",
+            ""
+          )}`
+        );
+      });
   }
 
   function getCourseCode() {

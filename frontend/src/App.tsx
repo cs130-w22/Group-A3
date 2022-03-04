@@ -37,16 +37,16 @@ function App() {
           <Route path="/create">
             <Route index element={<CreateAccount />} />
           </Route>
-          <Route path="/class">
+          <Route path="/class/:classID">
             <Route index element={<ClassView />} />
           </Route>
-          <Route path="/class/assignment">
+          <Route path="/class/:classID/assignment/:assignmentID">
             <Route index element={<AssignmentView />} />
           </Route>
-          <Route path="/class/classstats">
+          <Route path="/class/:classID/classstats">
             <Route index element={<ClassStatsView />} />
           </Route>
-          <Route path="/class/classlist">
+          <Route path="/class/:classID/classlist">
             <Route index element={<ClassListView />} />
           </Route>
         </Routes>
