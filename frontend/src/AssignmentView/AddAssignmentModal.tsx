@@ -39,7 +39,7 @@ function AddAssignmentModal() {
       }
     )
       .then((response) => {
-        if (response.status === 401) throw new Error("Unauthorized");
+        if (response.status == 401) throw "Unauthorized";
         return response.json();
       })
       .catch((e) => {
@@ -54,12 +54,9 @@ function AddAssignmentModal() {
 
   async function submit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    console.log("hey");
     const data = new FormData(e.currentTarget);
     handleGradingScript(data);
-    // TODO: The API call to submit a file is still unimplemented. Will fix when implemented
-    //setError((err) => (err ? "" : `File type is not supported`));
-    //nav("/professor/class/");
+    nav("/professor/class/");
   }
 
   return (

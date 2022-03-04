@@ -56,9 +56,7 @@ function UploadSubmissionModal() {
     e.preventDefault();
     const data = new FormData(e.currentTarget);
     handleSubmission(data);
-    // TODO: The API call to submit a file is still unimplemented. Will fix when implemented
-    setError((err) => (err ? "" : `File type is not supported`));
-    //nav("/professor/class/");
+    nav("/professor/class/");
   }
 
   return (
