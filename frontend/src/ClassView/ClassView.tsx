@@ -1,5 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import { StudentAssignmentContext } from "../Context/StudentAssignmentContext";
+
 import { useCookies } from "react-cookie";
 import Container from "react-bootstrap/Container";
 import Stack from "react-bootstrap/Stack";
@@ -8,6 +10,7 @@ import Button from "react-bootstrap/Button";
 import StudentAssignmentCard from "./StudentAssignmentCard";
 import ProfessorAssignmentCard from "./ProfessorAssignmentCard";
 import AddAssignmentModal from "../AssignmentView/AddAssignmentModal";
+import { ProfessorAssignmentContext } from "../Context/ProfessorAssignmentContext";
 
 const Assignments = ["Assignment 1", "Assignment 2", "Assignment 3"]; // should be reading assignments from a database
 
@@ -15,6 +18,7 @@ const Assignments = ["Assignment 1", "Assignment 2", "Assignment 3"]; // should 
 function ClassView() {
   const nav = useNavigate();
   const mode: "student" | "faculty" = "student"; // should be taken from some app state / login info
+
   const [cookies, setCookies, removeCookies] = useCookies(["jwt"]);
   function handleRemoveCookies() {
     removeCookies("jwt");
