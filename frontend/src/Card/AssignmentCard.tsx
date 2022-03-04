@@ -24,7 +24,7 @@ export default function AssignmentCard({
 }) {
   return (
     <Link
-      to={`/class/${classId}/${id}`}
+      to={`/assignment/${id}`}
       style={{ textDecoration: "none", color: "inherit" }}
     >
       <Card>

@@ -17,6 +17,7 @@ import CreateClassModal from "./Modal/CreateClassModal";
 
 import { createClass, getMe, joinClass, UserInformation } from "./api";
 import AssignmentCard from "./Card/AssignmentCard";
+import CreateAssignmentModal from "./Modal/CreateAssignmentModal";
 
 export default function Me() {
   const [cookies, setCookies] = useCookies(["jwt"]);
@@ -95,7 +96,12 @@ export default function Me() {
         <h2>Classes</h2>
         <Stack direction="horizontal" gap={3}>
           {data?.classes?.map((k, idx) => (
-            <ClassCard key={idx} id={String(k.id)} name={k.name} />
+            <ClassCard
+              key={idx}
+              id={String(k.id)}
+              name={k.name}
+              showCreate={data?.professor}
+            />
           ))}
 
           {data?.professor ? (
@@ -118,7 +124,7 @@ export default function Me() {
           {data?.assignments?.map((k, idx) => (
             <AssignmentCard
               key={idx}
-              classId={String(k.class)}
+              id={k.id}
               name={k.name}
               dueDate={k.dueDate}
             />
@@ -153,18 +159,57 @@ function Header({
   );
 }
 
-function ClassCard({ id, name }: { id?: string; name?: string }) {
+function ClassCard({
+  id,
+  name,
+  showCreate,
+}: {
+  id?: string;
+  name?: string;
+  showCreate?: boolean;
+}) {
+  const [cookies, setCookies] = useCookies(["jwt"]);
+  const [errors, setErrors] = useState<Array<Error>>([]);
+  const [showCreateAssignment, setShowCreateAssignment] = useState(false);
+
   return (
-    <Link
-      to={`/class/${id}`}
-      style={{ textDecoration: "none", color: "inherit" }}
-    >
+    <>
+      <CreateAssignmentModal
+        show={showCreateAssignment}
+        onHide={() => setShowCreateAssignment(false)}
+        onSubmit={(data) => {
+          fetch(`http://localhost:8080/class/${id}/assignment`, {
+            method: "post",
+            mode: "cors",
+            headers: {
+              Authorization: cookies.jwt,
+            },
+            body: data,
+          })
+            .then((r) => {
+              if (r.status !== 201)
+                throw new Error("Failed to create assignment.");
+              return r.json();
+            })
+            .then((j) => {
+              setShowCreateAssignment(false);
+            })
+            .catch((err) => setErrors((errs) => [err, ...errs]));
+        }}
+      />
       <Card>
         <Card.Body>
           <Card.Title>{name}</Card.Title>
-          <Card.Subtitle>Extra information</Card.Subtitle>
+          {showCreate && (
+            <Button
+              variant="primary"
+              onClick={() => setShowCreateAssignment(true)}
+            >
+              Add assignment
+            </Button>
+          )}
         </Card.Body>
       </Card>
-    </Link>
+    </>
   );
 }

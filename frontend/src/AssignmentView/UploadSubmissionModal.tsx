@@ -8,13 +8,8 @@ import Stack from "react-bootstrap/Stack";
 import Modal from "react-bootstrap/Modal";
 import { useCookies } from "react-cookie";
 
-import { userContext } from "../Context/UserContext";
-import { StudentAssignmentContext } from "../Context/StudentAssignmentContext";
-
 // This view is a form for professors to add a assignment
 function UploadSubmissionModal() {
-  const studentAssignment = useContext(StudentAssignmentContext);
-  const user = useContext(userContext);
   const [cookies, setCookies] = useCookies(["jwt"]);
 
   const [error, setError] = useState("");

@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/blockloop/scan"
 	"github.com/labstack/echo/v4"
 	"golang.org/x/crypto/argon2"
 
@@ -181,9 +180,16 @@ func GetUser(cc echo.Context) error {
 		c.Logger().Error(err)
 		return c.NoContent(http.StatusInternalServerError)
 	}
-	if err := scan.Rows(&response.Assignments, rows); err != nil {
-		c.Logger().Error(err)
-		return c.NoContent(http.StatusInternalServerError)
+	for ok := rows.Next(); ok; ok = rows.Next() {
+		id, class, name, dueDate, points := 0, 0, "", time.Time{}, float64(0)
+		rows.Scan(&id, &class, &name, &dueDate, &points)
+		response.Assignments = append(response.Assignments, struct {
+			ID             int       "json:\"id\""
+			Class          int       "json:\"class\""
+			Name           string    "json:\"name\""
+			DueDate        time.Time "json:\"dueDate\""
+			PointsPossible float64   "json:\"pointsPossible\""
+		}{id, class, name, dueDate, points})
 	}
 
 	return c.JSON(http.StatusOK, &response)

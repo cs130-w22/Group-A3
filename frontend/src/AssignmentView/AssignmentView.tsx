@@ -6,7 +6,6 @@ import ProgressBar from "react-bootstrap/ProgressBar";
 import StudentAssignmentView from "./StudentAssignmentView";
 import ProfessorAssignmentView from "./ProfessorAssignmentView";
 import UploadSubmissionModal from "./UploadSubmissionModal";
-import AddAssignmentModal from "./AddAssignmentModal";
 
 function AssignmentView() {
   const mode: "student" | "faculty" = "student"; //needs to be taken from backend or state
@@ -17,7 +16,7 @@ function AssignmentView() {
       <Form.Group className="mb-3">
         <Form.Control type="file" />
       </Form.Group>
-      {mode === "student" ? <UploadSubmissionModal /> : <AddAssignmentModal />}
+      {mode === "student" && <UploadSubmissionModal />}
       <br />
       <br />
       {mode === "student" ? (
