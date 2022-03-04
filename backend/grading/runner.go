@@ -135,6 +135,7 @@ func Start(ctx context.Context, store *sql.DB) *Runner {
 // Channels are opened, fed objects from some other file.
 func Grade(id string, job Job, results chan<- Result) {
 	defer close(results)
+	defer job.File.Close()
 
 	// job.file will be hosted locally, somewhere.
 	// Not going to worry about it here.

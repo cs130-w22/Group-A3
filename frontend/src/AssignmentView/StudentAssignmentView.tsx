@@ -63,7 +63,7 @@ const StudentAssignmentView = () => {
   const [cookies, setCookies] = useCookies(["jwt"]);
 
   fetch(
-    "http://localhost:8080/class/1/1", //"http://localhost:8080/class/${params.classId}/${params.assignmentId}",
+    "http://localhost:8080/class/${params.classId}/${params.assignmentId}",
     {
       method: "GET",
       headers: {

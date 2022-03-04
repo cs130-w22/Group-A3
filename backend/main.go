@@ -9,6 +9,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"github.com/labstack/gommon/log"
 	_ "github.com/mattn/go-sqlite3"
 
 	"github.com/cs130-w22/Group-A3/backend/grading"
@@ -18,11 +19,12 @@ import (
 )
 
 var (
-	connString  string
-	secretKey   string
-	port        string
-	maxJobs     uint
-	resetTables bool
+	connString       string
+	secretKey        string
+	port             string
+	maxJobs          uint
+	initializeTables bool
+	resetTables      bool
 )
 
 func main() {
@@ -31,7 +33,8 @@ func main() {
 	flag.StringVar(&port, "p", os.Getenv("PORT"), "`port` to serve the HTTP server on")
 	flag.StringVar(&secretKey, "k", "", "secret `key` to use in JWT minting")
 	flag.UintVar(&maxJobs, "j", 1, "Maximum number of concurrent test scripts running at a given time")
-	flag.BoolVar(&resetTables, "D", false, "Reset SQLite database schema (DROP ALL TABLES)")
+	flag.BoolVar(&initializeTables, "I", false, "Initialize SQLite schema then exit (if no prior database exists)")
+	flag.BoolVar(&resetTables, "D", false, "Reset SQLite database schema then exit (DROP ALL TABLES)")
 	flag.Parse()
 
 	// Set the application's JWT secret key.
@@ -40,6 +43,7 @@ func main() {
 	// Configure the HTTP server.
 	e := echo.New()
 	e.HideBanner = true
+	e.Logger.SetLevel(log.INFO)
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 	e.Use(middleware.CORS())
@@ -52,12 +56,14 @@ func main() {
 	}
 	defer db.Close()
 
-	if resetTables {
-		e.Logger.Error("Migrating...")
-		if err := schemas.Migrate(db, true); err != nil {
+	if resetTables || initializeTables {
+		e.Logger.Info("Migrating...")
+		if err := schemas.Migrate(db, resetTables); err != nil {
 			e.Logger.Error(err)
 			return
 		}
+		e.Logger.Info("Done.")
+		return
 	}
 
 	// Create a work queue for grading scripts, then spawn a task runner
@@ -119,7 +125,7 @@ func main() {
 	classApi.GET("/:classId/:assignmentId", handler.GetAssignment)
 	classApi.POST("/:classId/assignment", handler.CreateAssignment)
 	e.POST("/:classId/:assignmentId/script", Unimplemented)
-	e.POST("/:classId/:assignmentId/upload", Unimplemented)
+	classApi.POST("/:classId/:assignmentId/upload", handler.UploadSubmission)
 	classApi.POST("/:classId/invite", handler.CreateInvite)
 	e.POST("/class/:classId/join", Unimplemented)
 

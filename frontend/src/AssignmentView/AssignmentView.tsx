@@ -1,12 +1,14 @@
-import React from "react";
+import React, { useState } from "react";
 import Button from "react-bootstrap/Button";
 import { Form } from "react-bootstrap";
 import Container from "react-bootstrap/Container";
 import StudentAssignmentView from "./StudentAssignmentView";
 import ProfessorAssignmentView from "./ProfessorAssignmentView";
-import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { useCookies } from "react-cookie";
+
+import UploadSubmissionModal from "./UploadSubmissionModal";
+import AddAssignmentModal from "./AddAssignmentModal";
 
 const AssignmentView = () => {
   const mode: "student" | "faculty" = "faculty";
@@ -15,7 +17,7 @@ const AssignmentView = () => {
   const params = useParams();
 
   fetch(
-    "http://localhost:8080/class/1/1", //"http://localhost:8080/class/${params.classId}/${params.assignmentId}", will change
+    "http://localhost:8080/class/${params.classId}/${params.assignmentId}",
     {
       method: "GET",
       headers: {
@@ -37,15 +39,7 @@ const AssignmentView = () => {
       <Form.Group className="mb-3">
         <Form.Control type="file" />
       </Form.Group>
-      {mode === "faculty" ? (
-        <Button variant="primary" type="submit" style={{ borderRadius: 20 }}>
-          Upload Grading Script
-        </Button>
-      ) : (
-        <Button variant="primary" type="submit" style={{ borderRadius: 20 }}>
-          Upload Assignment
-        </Button>
-      )}
+      {mode === "faculty" ? <UploadSubmissionModal /> : <AddAssignmentModal />}
       <br />
       <br />
       {mode === "faculty" ? (

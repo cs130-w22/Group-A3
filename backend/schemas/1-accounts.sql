@@ -48,7 +48,7 @@ CREATE TABLE Courses (
 
 -- Table of entries, where each entry corresponds to the permissions of a
 -- user (uid) over a given class (class_id).
-CREATE TABLE ClassMembers (
+CREATE TABLE IF NOT EXISTS ClassMembers (
   -- ID of the associated class member.
   user_id INT NOT NULL,
 

@@ -14,12 +14,15 @@ import { useCookies } from "react-cookie";
 const defaultUser = {
   user: {
     mode: "student",
-    class: {},
+    class: {
+      id: "",
+    },
   },
 };
 
 function App() {
   const [cookies, setCookies] = useCookies(["jwt"]);
+
   return (
     <userContext.Provider value={defaultUser}>
       <Router>
