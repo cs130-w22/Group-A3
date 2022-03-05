@@ -23,6 +23,7 @@ func parseOutput(stdout io.Reader) ([]Result, error) {
 	for stdoutLines.Scan() {
 		hidden := false
 		testName := ""
+		foundScore := false
 		resultScore := float64(0)
 		testIdStr := stdoutLines.Text()
 		testId, err := strconv.Atoi(testIdStr)
@@ -62,13 +63,14 @@ func parseOutput(stdout io.Reader) ([]Result, error) {
 				if err != nil {
 					return nil, err
 				}
+				foundScore = true
 				resultScore = weight * score
 			default:
 				msgLines = append(msgLines, text)
 			}
 		}
 
-		if resultScore == -1 {
+		if !foundScore {
 			return nil, errors.New("no SCORE reported for test case " + testIdStr)
 		}
 
