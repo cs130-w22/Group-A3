@@ -35,7 +35,7 @@ export default function Results() {
     <Container>
       <Stack gap={3}>
         <h1>Submission Summary</h1>
-        <Alert variant={readyState === ReadyState.OPEN ? "success" : "error"}>
+        <Alert variant={readyState === ReadyState.OPEN ? "success" : "warning"}>
           Connection status: {connectionStatus}
         </Alert>
         <h2>Metrics</h2>

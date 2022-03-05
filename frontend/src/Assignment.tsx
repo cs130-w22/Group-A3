@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 
 import Container from "react-bootstrap/Container";
 import Stack from "react-bootstrap/Stack";
-import { ListGroup, ListGroupItem } from "react-bootstrap";
+import { ListGroup, ListGroupItem, Table } from "react-bootstrap";
 import {
   buildStyles,
   CircularProgressbarWithChildren,
@@ -13,22 +13,7 @@ import "react-circular-progressbar/dist/styles.css";
 import { AssignmentData, getAssignment } from "./api";
 import UploadSubmissionModal from "./Modal/UploadSubmissionModal";
 import Score from "./Display/Score";
-
-class hint {
-  name: string;
-  text: string;
-  id: number;
-
-  constructor(name: string, text: string, id: number) {
-    this.name = name;
-    this.text = text;
-    this.id = id;
-  }
-}
-
-const hint1 = new hint("hint title", "hint body", 1);
-const hint2 = new hint("hint title 2", "hint body 2", 2);
-const hints = [hint1, hint2]; // take from database
+import Header from "./Display/Header";
 
 export default function Assignment() {
   const [cookies, setCookies] = useCookies(["jwt"]);
@@ -53,6 +38,13 @@ export default function Assignment() {
 
   return (
     <Container>
+      <Header
+        removeCookies={() => {
+          setCookies("jwt", "");
+          navigate("/");
+        }}
+      />
+
       <UploadSubmissionModal
         classId={String(params?.classId)}
         assignmentId={String(params?.assignmentId)}
@@ -66,20 +58,33 @@ export default function Assignment() {
         <Stack direction="horizontal" gap={3}>
           <Score metricName="Median" metricValue={300} percentFull={80} />
         </Stack>
+
         <h2>Submissions</h2>
-        <ListGroup>
-          <ListGroupItem onClick={() => setShowUploadSubmissionModal(true)}>
-            ➕ Add a submission
-          </ListGroupItem>
-          {data?.submissions?.map((k, idx) => (
-            <ListGroupItem
-              key={idx}
-              onClick={() => navigate(`/results/${k.id}`)}
-            >
-              {k.date} - {k.pointsEarned}
-            </ListGroupItem>
-          ))}
-        </ListGroup>
+
+        <Table>
+          <thead>
+            <tr>
+              {data?.professor && <th>UID</th>}
+              <th>Submitted On</th>
+              <th>Score Received</th>
+            </tr>
+          </thead>
+          <tbody>
+            {!data?.professor && (
+              <tr onClick={() => setShowUploadSubmissionModal(true)}>
+                <td>➕ Add a submission</td>
+                <td></td>
+              </tr>
+            )}
+            {data?.submissions?.map((k, idx) => (
+              <tr key={idx} onClick={() => navigate(`/results/${k.id}`)}>
+                {data?.professor && <td>{k.owner}</td>}
+                <td>{k.date}</td>
+                <td>{k.pointsEarned}</td>
+              </tr>
+            ))}
+          </tbody>
+        </Table>
       </Stack>
     </Container>
   );

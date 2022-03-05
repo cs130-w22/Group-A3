@@ -15,7 +15,7 @@ import (
 )
 
 // Time to refresh results, in milliseconds.
-const REFRESH_MILLIS = 500
+const REFRESH_MILLIS = 1000
 
 // Multi-threaded job runner.
 type Runner struct {
@@ -126,6 +126,8 @@ func Start(ctx context.Context, store *sql.DB) *Runner {
 						fmt.Println(err)
 					}
 				}
+
+				// TODO: writeback final results.
 			}(jobAndID)
 		}
 	}()

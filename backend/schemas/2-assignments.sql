@@ -33,7 +33,7 @@ CREATE TABLE Submissions (
   assignment INT NOT NULL,
 
   -- UID of submitting user.
-  owner VARCHAR(255) NOT NULL,
+  owner INTEGER NOT NULL,
 
   -- When the assignment was submitted.
   submitted_on DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,

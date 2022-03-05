@@ -166,9 +166,13 @@ export interface AssignmentData {
   points: number;
   submissions: Array<{
     id: string;
+    owner: string;
     date: Date;
     pointsEarned: number;
   }>;
+
+  // If the user is a professor.
+  professor: boolean;
 }
 
 /**

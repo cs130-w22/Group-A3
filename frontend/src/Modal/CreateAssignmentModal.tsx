@@ -40,8 +40,11 @@ const CreateAssignmentModal = ({
           <Form.Control type="date" name="dueDate" required />
         </Form.Group>
         <Form.Group controlId="formGradingScript">
-          <Form.Label>Path to grading script on device</Form.Label>
+          <Form.Label>Path to grading script</Form.Label>
           <Form.Control type="text" name="path" required />
+          <Form.Text className="text-muted">
+            Ensure script is executable by the server user.
+          </Form.Text>
         </Form.Group>
       </Modal.Body>
       <Modal.Footer>

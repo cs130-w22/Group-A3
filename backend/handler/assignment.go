@@ -110,31 +110,36 @@ func GetAssignment(cc echo.Context) error {
 
 	// Collect submission information.
 	var submissions []struct {
-		ID           string    `json:"id"`
-		Date         time.Time `json:"date"`
-		PointsEarned float64   `json:"pointsEarned"`
+		ID            string    `json:"id"`
+		OwnerUsername string    `json:"owner"`
+		Date          time.Time `json:"date"`
+		PointsEarned  float64   `json:"pointsEarned"`
 	}
 	rows, err := c.Conn.QueryContext(c, `
-	SELECT id, submitted_on, points_earned
-	FROM Submissions
-	WHERE assignment = $1
-		AND owner = $2`,
-		assignmentId, c.Claims.UserID)
+	SELECT R.id AS id, username, submitted_on, points_earned
+	FROM Accounts L
+	JOIN Submissions R
+		ON L.id = R.owner
+	WHERE R.assignment = $1
+		AND (L.id = $2 OR $3)`,
+		assignmentId, c.Claims.UserID, c.IsProfessor())
 	if err != nil {
 		return c.NoContent(http.StatusInternalServerError)
 	}
 	for ok := rows.Next(); ok; ok = rows.Next() {
-		id, date, points := "", time.Time{}, float64(0)
-		rows.Scan(&id, &date, &points)
+		id, owner, date, points := "", "", time.Time{}, float64(0)
+		rows.Scan(&id, &owner, &date, &points)
 		submissions = append(submissions, struct {
-			ID           string    "json:\"id\""
-			Date         time.Time "json:\"date\""
-			PointsEarned float64   "json:\"pointsEarned\""
-		}{id, date, points})
+			ID            string    "json:\"id\""
+			OwnerUsername string    "json:\"owner\""
+			Date          time.Time "json:\"date\""
+			PointsEarned  float64   "json:\"pointsEarned\""
+		}{id, owner, date, points})
 	}
 	rows.Close()
 
 	return c.JSON(http.StatusOK, echo.Map{
+		"professor":   c.IsProfessor(),
 		"name":        assignment.Name,
 		"dueDate":     assignment.DueDate,
 		"points":      assignment.Points,
