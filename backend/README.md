@@ -10,7 +10,7 @@ You will need:
 
 ```sh
 # make sure you're in the backend directory
-make
+go build --tags=sqlite_foreign_keys
 ./backend
 ```
 
@@ -169,7 +169,8 @@ Status Code | Semantic
 500 | Server error
 
 ### `GET /class/<class_id>/<assignment_id>`
-Get the unique assignment ID for a given user
+
+Get assignment information for a given user.
 
 ### Response Format 
 
@@ -307,7 +308,7 @@ No data is returned with this endpoint.
 
 Status Code | Semantic
 :-|:-
-204 | OK. User joined successfully or is already in class
+200 | OK. User joined successfully or is already in class
 400 | Bad request (see format)
 401 | Unauthorized
 500 | Server error
@@ -325,7 +326,6 @@ Key | Value
 :-|:-
 `name` | Name of the assignment (string)
 `dueDate` | Due date of the assignment in milliseconds since the epoch (integer)
-`points` | Maximum points possible for the assignment (floating point)
 `file` | Grading script to use with the assignment (blob)
 
 #### Response Format

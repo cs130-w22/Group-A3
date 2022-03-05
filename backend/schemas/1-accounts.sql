@@ -6,7 +6,7 @@
 
 
 -- All accounts in the system.
-CREATE TABLE Accounts (
+CREATE TABLE IF NOT EXISTS Accounts (
   -- Generated ID for internal use only.
   id INTEGER PRIMARY KEY AUTOINCREMENT,
 
@@ -26,7 +26,7 @@ CREATE TABLE Accounts (
   deleted TIMESTAMP DEFAULT NULL
 );
 
-CREATE TABLE Courses (
+CREATE TABLE IF NOT EXISTS Courses (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
 
   -- Name of the class, presented to users.
@@ -65,7 +65,7 @@ CREATE TABLE IF NOT EXISTS ClassMembers (
 
 
 -- Valid invite codes to classes.
-CREATE TABLE Invites (
+CREATE TABLE IF NOT EXISTS Invites (
   -- ID of the invite (code that is used on user side).
   id TEXT NOT NULL,
 

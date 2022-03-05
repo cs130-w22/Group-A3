@@ -24,7 +24,7 @@ export function uploadSubmission(
   classId: string,
   assignmentId: string,
   formData: FormData,
-  onSuccess: (liveID: string) => void,
+  onSuccess: ({ id }: { id: string }) => void,
   onFailure: (message: string) => void
 ) {
   fetch(`${BACKEND_URL}/class/${classId}/${assignmentId}/upload`, {
@@ -37,7 +37,7 @@ export function uploadSubmission(
   })
     .then((r) => {
       if (r.status !== 201) throw new Error(`Failed to upload: ${r.status}`);
-      return r.text();
+      return r.json();
     })
     .then(onSuccess)
     .catch(onFailure);
@@ -166,9 +166,13 @@ export interface AssignmentData {
   points: number;
   submissions: Array<{
     id: string;
+    owner: string;
     date: Date;
     pointsEarned: number;
   }>;
+
+  // If the user is a professor.
+  professor: boolean;
 }
 
 /**
@@ -184,7 +188,7 @@ export const getAssignment = authorized<
   { classId: string; assignmentId: string },
   AssignmentData
 >(
-  ({ classId, assignmentId }) => [`/${classId}/${assignmentId}`, null],
+  ({ classId, assignmentId }) => [`/class/${classId}/${assignmentId}`, null],
   200,
   true,
   "get"
@@ -213,7 +217,7 @@ export interface ClassData {
  * @param onFailure Fired on failure.
  */
 export const getClass = authorized<{ classId: string }, ClassData>(
-  ({ classId }) => [`/${classId}/info`, null],
+  ({ classId }) => [`/class/${classId}/info`, null],
   200,
   true,
   "get"
@@ -232,7 +236,10 @@ export const getClass = authorized<{ classId: string }, ClassData>(
 export const createUser = unauthorized<
   { username: string; password: string; type: "student" | "professor" },
   { token: string }
->(() => ["/user", null], 201);
+>(
+  ({ username, password, type }) => ["/user", { username, password, type }],
+  201
+);
 
 /**
  * Log in as the given user, minting a new JWT for use in future
@@ -246,16 +253,16 @@ export const createUser = unauthorized<
 export const login = unauthorized<
   { username: string; password: string },
   { token: string }
->(() => ["/login", null]);
+>(({ username, password }) => ["/login", { username, password }]);
 
 export const createClass = authorized<{ name: string }, { id: string }>(
-  () => ["/class", null],
+  ({ name }) => ["/class", { name }],
   201
 );
 
 export const joinClass = authorized<{ inviteCode: string }, void>(
-  () => ["/class/join", null],
-  204
+  ({ inviteCode }) => ["/class/join", { inviteCode }],
+  200
 );
 
 /**
@@ -290,10 +297,16 @@ const dropStudent = authorized<{ classId: string; studentId: string }, void>(
   ({ classId, studentId }) => [`/class/${classId}/drop`, { studentId }]
 );
 
-interface UserInformation {
+export interface UserInformation {
   professor?: boolean;
   username?: string;
-  assignments?: Array<string>;
+  assignments?: Array<{
+    id: number;
+    class: number;
+    name: string;
+    dueDate: Date;
+    pointsPossible: number;
+  }>;
   classes?: Array<{
     id: number;
     name: string;

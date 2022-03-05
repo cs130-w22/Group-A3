@@ -55,10 +55,6 @@ function Login() {
     nav("/create");
   };
 
-  const forgotPassword = () => {
-    nav("/forgot");
-  };
-
   return (
     <Container>
       <Stack direction="vertical" gap={3}>
@@ -101,17 +97,6 @@ function Login() {
               </Button>
             </Row>
             <Stack direction="horizontal" gap={3}>
-              <div className="me-auto">
-                <Button
-                  onClick={forgotPassword}
-                  variant="secondary"
-                  size="lg"
-                  type="button"
-                  style={{ borderRadius: 20 }}
-                >
-                  Forgot Password
-                </Button>
-              </div>
               <div className="ms-auto">
                 <Button
                   onClick={createAccount}

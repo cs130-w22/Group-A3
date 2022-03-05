@@ -5,6 +5,7 @@ import Stack from "react-bootstrap/Stack";
 import { Button } from "react-bootstrap";
 import "./CreateAccount.css";
 import SignUpForm from "./SignUpForm";
+import { useCookies } from "react-cookie";
 
 enum Mode {
   CHOOSING = 0,
@@ -13,6 +14,7 @@ enum Mode {
 }
 
 const CreateAccount = () => {
+  const [cookies, setCookies] = useCookies(["jwt"]);
   const [mode, setMode] = useState(Mode.CHOOSING);
   const nav = useNavigate();
 
@@ -81,7 +83,10 @@ const CreateAccount = () => {
         )}
         <Button
           variant="outline-primary"
-          onClick={() => nav("/")}
+          onClick={() => {
+            setCookies("jwt", "");
+            nav("/");
+          }}
           style={{
             marginBottom: "1rem",
             borderRadius: 100,

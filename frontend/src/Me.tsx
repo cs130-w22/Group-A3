@@ -15,7 +15,17 @@ import { Link } from "react-router-dom";
 import JoinClassModal from "./Modal/JoinClassModal";
 import CreateClassModal from "./Modal/CreateClassModal";
 
-import { createClass, getMe, joinClass } from "./api";
+import {
+  createClass,
+  createInvite,
+  getMe,
+  joinClass,
+  UserInformation,
+} from "./api";
+import AssignmentCard from "./Card/AssignmentCard";
+import CreateAssignmentModal from "./Modal/CreateAssignmentModal";
+import CreateInviteModal from "./Modal/CreateInviteModal";
+import Header from "./Display/Header";
 
 export default function Me() {
   const [cookies, setCookies] = useCookies(["jwt"]);
@@ -25,15 +35,7 @@ export default function Me() {
 
   const [showJoinClass, setShowJoinClass] = useState(false);
   const [showCreateClass, setShowCreateClass] = useState(false);
-  const [data, setData] = useState<{
-    professor?: boolean;
-    username?: string;
-    assignments?: Array<string>;
-    classes?: Array<{
-      id: number;
-      name: string;
-    }>;
-  }>({});
+  const [data, setData] = useState<UserInformation | null>(null);
   const [errors, setErrors] = useState<Array<Error>>([]);
 
   // Make a request on component mount to fetch user information.
@@ -50,6 +52,7 @@ export default function Me() {
   if (errors.length !== 0) {
     return (
       <Container>
+        <Header removeCookies={() => setCookies("jwt", "")} />
         {errors.map((err, idx) => (
           <Alert key={idx} variant="warning">
             {String(err)}
@@ -71,8 +74,10 @@ export default function Me() {
   return (
     <Container>
       <Stack direction="vertical" gap={3}>
-        <Header username={data?.username} removeCookies={removeCookies} />
-
+        <Header
+          removeCookies={() => setCookies("jwt", "")}
+          username={data?.username}
+        />
         <JoinClassModal
           show={showJoinClass}
           onHide={() => setShowJoinClass(false)}
@@ -101,7 +106,12 @@ export default function Me() {
         <h2>Classes</h2>
         <Stack direction="horizontal" gap={3}>
           {data?.classes?.map((k, idx) => (
-            <ClassCard key={idx} id={String(k.id)} name={k.name} />
+            <ClassCard
+              key={idx}
+              id={String(k.id)}
+              name={k.name}
+              showCreate={data?.professor}
+            />
           ))}
 
           {data?.professor ? (
@@ -121,94 +131,99 @@ export default function Me() {
 
         <h2>Upcoming Assignments</h2>
         <Stack direction="vertical" gap={3}>
-          {data?.assignments?.map((k, idx) => (
-            <AssignmentCard key={idx} name={"hi"} />
-          ))}
-          <AssignmentCard classId="CS 130" name="Homework 1" grade={50} />
-          <AssignmentCard classId="CS 130" name="Homework 2" grade={75} />
-          <AssignmentCard classId="CS 130" name="Homework 3" grade={100} />
+          {data?.assignments?.map((k, idx) => {
+            const associatedClass = data?.classes?.find(
+              (c) => c.id === k.class
+            );
+            return (
+              <AssignmentCard
+                key={idx}
+                id={k.id}
+                classId={associatedClass?.id}
+                className={associatedClass?.name}
+                name={k.name}
+                dueDate={k.dueDate}
+              />
+            );
+          })}
         </Stack>
       </Stack>
     </Container>
   );
 }
 
-function Header({
-  removeCookies,
-  username,
-}: {
-  removeCookies: () => void;
-  username?: string;
-}) {
-  return (
-    <Stack direction="horizontal">
-      <h2>Welcome, {username}</h2>
-      <div className="ms-auto">
-        <Button
-          onClick={removeCookies}
-          variant="primary"
-          size="lg"
-          type="button"
-        >
-          Log Out
-        </Button>
-      </div>
-    </Stack>
-  );
-}
-
-function AssignmentCard({
+function ClassCard({
   id,
-  classId,
   name,
-  dueDate,
-  grade,
+  showCreate,
+  showFilter,
 }: {
-  id?: number;
-  classId?: string;
+  id: string;
   name?: string;
-  dueDate?: Date;
-  grade?: number;
+  showCreate?: boolean;
+  showFilter?: boolean;
 }) {
-  return (
-    <Link
-      to={`/class/assignment/${id}`}
-      style={{ textDecoration: "none", color: "inherit" }}
-    >
-      <Card>
-        <Card.Body>
-          <Card.Title>
-            {classId} - {name}
-          </Card.Title>
-          <Card.Subtitle className="mb-2 text-muted">
-            {`Due: ${dueDate}`}
-          </Card.Subtitle>
-          <Container>
-            <Row>
-              <Col>Grade: </Col>
-              <Col xs={11}>
-                <ProgressBar now={grade} label={`${grade}%`} />
-              </Col>
-            </Row>
-          </Container>
-        </Card.Body>
-      </Card>
-    </Link>
-  );
-}
+  const [cookies, setCookies] = useCookies(["jwt"]);
+  const [errors, setErrors] = useState<Array<Error>>([]);
+  const [showCreateAssignment, setShowCreateAssignment] = useState(false);
+  const [showCreateInvite, setShowCreateInvite] = useState(false);
 
-function ClassCard({ id, name }: { id?: string; name?: string }) {
   return (
-    <Link
-      to={`/class/${id}`}
-      style={{ textDecoration: "none", color: "inherit" }}
-    >
+    <>
+      <CreateInviteModal
+        classId={id}
+        show={showCreateInvite}
+        onHide={() => setShowCreateInvite(false)}
+      />
+      <CreateAssignmentModal
+        show={showCreateAssignment}
+        onHide={() => setShowCreateAssignment(false)}
+        onSubmit={(data) => {
+          fetch(`http://localhost:8080/class/${id}/assignment`, {
+            method: "post",
+            mode: "cors",
+            headers: {
+              Authorization: cookies.jwt,
+            },
+            body: data,
+          })
+            .then((r) => {
+              if (r.status !== 201)
+                throw new Error("Failed to create assignment.");
+              return r.json();
+            })
+            .then((j) => {
+              setShowCreateAssignment(false);
+            })
+            .catch((err) => setErrors((errs) => [err, ...errs]));
+        }}
+      />
       <Card>
-        <Card.Body>
+        <Card.Header>
           <Card.Title>{name}</Card.Title>
-          <Card.Subtitle>Extra information</Card.Subtitle>
+        </Card.Header>
+        <Card.Body>
+          <Stack gap={3}>
+            {showFilter && <Button variant="primary">Filter</Button>}
+            {showCreate && (
+              <>
+                <Button
+                  variant="primary"
+                  onClick={() => setShowCreateAssignment(true)}
+                >
+                  Add assignment
+                </Button>
+                <Button
+                  variant="primary"
+                  onClick={() => setShowCreateInvite(true)}
+                >
+                  Create invite
+                </Button>
+              </>
+            )}
+          </Stack>
         </Card.Body>
       </Card>
-    </Link>
+    </>
   );
 }

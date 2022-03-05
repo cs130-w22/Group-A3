@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/blockloop/scan"
 	"github.com/labstack/echo/v4"
 	"golang.org/x/crypto/argon2"
 
@@ -149,7 +148,7 @@ func GetUser(cc echo.Context) error {
 
 	// Get all class information.
 	rows, err := c.Conn.QueryContext(c, `
-	SELECT class_id, name
+	SELECT L.class_id AS id, R.name AS name
 	FROM ClassMembers L
 	JOIN Courses R
 	ON L.class_id = R.id
@@ -159,9 +158,16 @@ func GetUser(cc echo.Context) error {
 		c.Logger().Error(err)
 		return c.NoContent(http.StatusInternalServerError)
 	}
-	if err := scan.Rows(&response.Classes, rows); err != nil {
-		c.Logger().Error(err)
-		return c.NoContent(http.StatusInternalServerError)
+	for ok := rows.Next(); ok; ok = rows.Next() {
+		id := 0
+		name := ""
+		if err := rows.Scan(&id, &name); err != nil {
+			c.Logger().Error(err)
+		}
+		response.Classes = append(response.Classes, struct {
+			ID   int    "json:\"id\""
+			Name string "json:\"name\""
+		}{id, name})
 	}
 
 	// Get all assignment information for classes the student is in.
@@ -176,9 +182,18 @@ func GetUser(cc echo.Context) error {
 		c.Logger().Error(err)
 		return c.NoContent(http.StatusInternalServerError)
 	}
-	if err := scan.Rows(&response.Assignments, rows); err != nil {
-		c.Logger().Error(err)
-		return c.NoContent(http.StatusInternalServerError)
+	for ok := rows.Next(); ok; ok = rows.Next() {
+		id, class, name, dueDate, points := 0, 0, "", time.Time{}, float64(0)
+		if err := rows.Scan(&id, &class, &name, &dueDate, &points); err != nil {
+			c.Logger().Error(err)
+		}
+		response.Assignments = append(response.Assignments, struct {
+			ID             int       "json:\"id\""
+			Class          int       "json:\"class\""
+			Name           string    "json:\"name\""
+			DueDate        time.Time "json:\"dueDate\""
+			PointsPossible float64   "json:\"pointsPossible\""
+		}{id, class, name, dueDate, points})
 	}
 
 	return c.JSON(http.StatusOK, &response)

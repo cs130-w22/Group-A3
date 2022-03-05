@@ -1,6 +1,5 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { StudentAssignmentContext } from "../Context/StudentAssignmentContext";
 
 import { useCookies } from "react-cookie";
 import Container from "react-bootstrap/Container";
@@ -9,8 +8,6 @@ import Button from "react-bootstrap/Button";
 
 import StudentAssignmentCard from "./StudentAssignmentCard";
 import ProfessorAssignmentCard from "./ProfessorAssignmentCard";
-import AddAssignmentModal from "../AssignmentView/AddAssignmentModal";
-import { ProfessorAssignmentContext } from "../Context/ProfessorAssignmentContext";
 
 const Assignments = ["Assignment 1", "Assignment 2", "Assignment 3"]; // should be reading assignments from a database
 
@@ -63,7 +60,6 @@ function ClassView() {
             <ProfessorAssignmentCard name={x} />
           )
         )}
-        {mode === "student" ? null : <AddAssignmentModal />}
       </Stack>
     </Container>
   );

@@ -12,6 +12,7 @@ import Modal from "react-bootstrap/Modal";
 import Spinner from "react-bootstrap/Spinner";
 
 import "./CreateAccount.css";
+import { createClass, createUser, joinClass } from "../api";
 
 const SuccessModal = ({
   show,
@@ -51,12 +52,11 @@ const SignUpForm = ({ mode }: { mode: "professor" | "student" }) => {
 
   function handleCloseModal() {
     setShow(false);
-    nav("/class");
+    nav("/");
   }
 
   //check if passwords match
   function validateForm(
-    name: string,
     uid: string,
     password: string,
     confirm_password: string
@@ -78,7 +78,6 @@ const SignUpForm = ({ mode }: { mode: "professor" | "student" }) => {
     e.preventDefault();
 
     const target = e.currentTarget as typeof e.currentTarget & {
-      name: { value: string };
       uid: { value: string };
       courseCode?: { value: string };
       courseName?: { value: string };
@@ -89,7 +88,6 @@ const SignUpForm = ({ mode }: { mode: "professor" | "student" }) => {
     // truly the worst timeline
     if (
       !validateForm(
-        target.name.value,
         target.uid.value,
         target.password.value,
         target.confirmPassword.value
@@ -97,92 +95,31 @@ const SignUpForm = ({ mode }: { mode: "professor" | "student" }) => {
     )
       return;
 
-    fetch("http://localhost:8080/user", {
-      method: "POST",
-      mode: "cors",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        name: target.name.value,
+    createUser(
+      {
         username: target.uid.value,
         password: target.password.value,
         type: mode,
-      }),
-    })
-      .then((r) => {
-        if (r.status !== 201) throw new Error("Error in signing up!");
-        return r.json();
-      })
-      .then((j) => {
-        setCookies("jwt", j?.token);
-        if (mode === "professor" && target.courseName)
-          handleClassCreation(j?.token, target.courseName.value);
-        else if (mode === "student") setShow(true);
-      })
-      .catch(setError);
-  }
-
-  function handleClassCreation(authToken: string, courseName: string) {
-    fetch("http://localhost:8080/class", {
-      method: "POST",
-      mode: "cors",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: authToken,
       },
-      body: JSON.stringify({
-        name: courseName,
-      }),
-    })
-      .then((res) => {
-        if (res.status !== 201) throw new Error("Error in creating class");
-        setShow(true);
-      })
-      .catch(setError);
-  }
-
-  function getCourseCode() {
-    if (courseCode !== "") {
-      return (
-        <Form.Label
-          style={{
-            textAlign: "center",
-            justifyContent: "center",
-            color: "black",
-            font: "Hammersmith One",
-            fontSize: 30,
-            fontWeight: "bolder",
-            marginRight: 30,
-          }}
-        >
-          {courseCode}
-        </Form.Label>
-      );
-    } else {
-      return (
-        <Spinner animation="border" variant="secondary" role="status">
-          <span className="visually-hidden">Loading...</span>
-        </Spinner>
-      );
-    }
-  }
-
-  function addCopyButton() {
-    if (courseCode !== "") {
-      return (
-        <Button
-          onClick={() => {
-            navigator.clipboard.writeText(courseCode);
-          }}
-          variant="outline-secondary"
-          type="button"
-          style={{ borderRadius: 100, marginTop: -10 }}
-        >
-          Copy
-        </Button>
-      );
-    }
+      ({ token }) => {
+        setCookies("jwt", token);
+        if (mode === "professor" && target.courseName)
+          createClass(
+            token,
+            { name: target.courseName.value },
+            ({ id }) => setShow(true),
+            (err) => setError(err.message)
+          );
+        else if (mode === "student")
+          joinClass(
+            token,
+            { inviteCode: String(target?.courseCode?.value) },
+            () => setShow(true),
+            (err) => setError(err.message)
+          );
+      },
+      (err) => setError(err.message)
+    );
   }
 
   return (
@@ -194,17 +131,6 @@ const SignUpForm = ({ mode }: { mode: "professor" | "student" }) => {
         )}
         <br />
         <Form onSubmit={handleCreation}>
-          {mode === "professor" && (
-            <Stack direction="horizontal" className="signUpFormText">
-              <Form.Group className="mb-3" controlId="formCourseCode">
-                <Form.Label>Your Course Code:</Form.Label>
-                <br />
-                {getCourseCode()}
-                {addCopyButton()}
-              </Form.Group>
-            </Stack>
-          )}
-
           {mode === "student" && (
             <Form.Group className="mb-3" controlId="formCourseCode">
               <Form.Label className="signUpFormText">Course Code</Form.Label>
@@ -218,30 +144,6 @@ const SignUpForm = ({ mode }: { mode: "professor" | "student" }) => {
             </Form.Group>
           )}
 
-          <Form.Group className="mb-3" controlId="formCourseCode">
-            <Form.Label className="signUpFormText">
-              First and Last Name
-            </Form.Label>
-            <Form.Control
-              required
-              className="signUpForm"
-              type="text"
-              name="name"
-              placeholder="Joe Bruin"
-            />
-          </Form.Group>
-
-          <Form.Group className="mb-3" controlId="formCourseCode">
-            <Form.Label className="signUpFormText">UID</Form.Label>
-            <Form.Control
-              required
-              className="signUpForm"
-              type="text"
-              name="uid"
-              placeholder="---------"
-            />
-          </Form.Group>
-
           {mode === "professor" && (
             <Form.Group className="mb-3" controlId="formCourseName">
               <Form.Label className="signUpFormText">Course Name</Form.Label>
@@ -250,9 +152,21 @@ const SignUpForm = ({ mode }: { mode: "professor" | "student" }) => {
                 className="signUpForm"
                 type="text"
                 name="courseName"
+                placeholder="CS 31"
               />
             </Form.Group>
           )}
+
+          <Form.Group className="mb-3" controlId="formCourseCode">
+            <Form.Label className="signUpFormText">UID</Form.Label>
+            <Form.Control
+              required
+              className="signUpForm"
+              type="text"
+              name="uid"
+              placeholder="JoeBruin2"
+            />
+          </Form.Group>
 
           <Form.Group className="mb-3" controlId="formPassword">
             <Form.Label className="signUpFormText">Password</Form.Label>

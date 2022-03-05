@@ -1,24 +1,21 @@
 package grading
 
 import (
-	"archive/tar"
-	"compress/gzip"
 	"context"
 	"database/sql"
 	"fmt"
 	"io"
 	"os"
+	"os/exec"
 	"path"
-	"strings"
 	"sync"
 	"time"
 
-	"github.com/blockloop/scan"
 	"github.com/google/uuid"
 )
 
 // Time to refresh results, in milliseconds.
-const REFRESH_MILLIS = 500
+const REFRESH_MILLIS = 1000
 
 // Multi-threaded job runner.
 type Runner struct {
@@ -69,10 +66,14 @@ func (r *Runner) Results(ctx context.Context, jobId string) <-chan Result {
 			}
 
 			var results []Result
-			if err := scan.Rows(&results, rows); err != nil {
-				fmt.Println(err)
-				close(output)
-				return
+			for ok := rows.Next(); ok; ok = rows.Next() {
+				var result Result
+				if err := rows.Scan(&result.Hidden, &result.TestID, &result.TestName, &result.Score, &result.Msg); err != nil {
+					fmt.Println(err)
+					close(output)
+					return
+				}
+				results = append(results, result)
 			}
 			for _, result := range results {
 				output <- result
@@ -125,6 +126,20 @@ func Start(ctx context.Context, store *sql.DB) *Runner {
 						fmt.Println(err)
 					}
 				}
+
+				// Writeback final results.
+				if _, err := conn.ExecContext(ctx, `
+				UPDATE Submissions
+				SET points_earned = L.new_points
+				FROM (
+						SELECT SUM(score) AS new_points
+						FROM Results
+						WHERE submission_id = $1
+				) L
+				WHERE id = $1
+				`, jobAndID.id); err != nil {
+					fmt.Println(err)
+				}
 			}(jobAndID)
 		}
 	}()
@@ -137,38 +152,23 @@ func Grade(id string, job Job, results chan<- Result) {
 	defer close(results)
 	defer job.File.Close()
 
-	// job.file will be hosted locally, somewhere.
-	// Not going to worry about it here.
-	zr, err := gzip.NewReader(job.File)
+	// Create a temporary directory for running submissions.
+	dir, err := os.MkdirTemp(os.TempDir(), "gradebetter-*")
 	if err != nil {
-		return
+		fmt.Println(err)
 	}
-	defer zr.Close()
-	tr := tar.NewReader(zr)
-
-	// Stick to bigmoney pattern for creating the temp assignment directory.
-	dirPfx := "./run"
-	dir := path.Join(dirPfx, dirPfx+"-"+strings.ReplaceAll(id, "-", ""))
-	if err := os.MkdirAll(dir, 0640); err != nil {
-		panic(err)
-	}
+	fmt.Println("Using directory ", dir)
 	defer os.RemoveAll(dir)
-
-	for header, err := tr.Next(); err == nil; header, err = tr.Next() {
-		tmpFile, err := os.Create(path.Join(dir, header.Name))
-		if err != nil {
-			fmt.Println(err)
-		}
-		if err := os.Chmod(tmpFile.Name(), 0640); err != nil {
-			fmt.Println(err)
-		}
-		if _, err := io.Copy(tmpFile, tr); err != nil {
-			fmt.Println(err)
-		}
+	studentWorkFilePath := path.Join(dir, "work.tar.gz")
+	tmpFile, _ := os.Create(studentWorkFilePath)
+	defer tmpFile.Close()
+	if _, err := io.Copy(tmpFile, job.File); err != nil {
+		fmt.Println(err)
+		return
 	}
 
 	// Execute grading script driver.
-	cmd := job.Script
+	cmd := exec.Command(job.Script, studentWorkFilePath)
 	output, err := cmd.StdoutPipe()
 	if err != nil {
 		fmt.Println(err)
