@@ -54,10 +54,6 @@ export default function Assignment() {
 
       <Stack direction="vertical" gap={3}>
         <h1>{data?.name}</h1>
-        <h2>Metrics</h2>
-        <Stack direction="horizontal" gap={3}>
-          <Score metricName="Median" metricValue={300} percentFull={80} />
-        </Stack>
 
         <h2>Submissions</h2>
 

@@ -127,7 +127,19 @@ func Start(ctx context.Context, store *sql.DB) *Runner {
 					}
 				}
 
-				// TODO: writeback final results.
+				// Writeback final results.
+				if _, err := conn.ExecContext(ctx, `
+				UPDATE Submissions
+				SET points_earned = L.new_points
+				FROM (
+						SELECT SUM(score) AS new_points
+						FROM Results
+						WHERE submission_id = $1
+				) L
+				WHERE id = $1
+				`, jobAndID.id); err != nil {
+					fmt.Println(err)
+				}
 			}(jobAndID)
 		}
 	}()

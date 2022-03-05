@@ -38,11 +38,6 @@ export default function Results() {
         <Alert variant={readyState === ReadyState.OPEN ? "success" : "warning"}>
           Connection status: {connectionStatus}
         </Alert>
-        <h2>Metrics</h2>
-        <Stack direction="horizontal" gap={3}>
-          <Score metricName="Best Score" metricValue={50} percentFull={50} />
-          <Score metricName="Worst Score" metricValue={50} percentFull={50} />
-        </Stack>
 
         <h2>Public Test Cases</h2>
         <Table>
