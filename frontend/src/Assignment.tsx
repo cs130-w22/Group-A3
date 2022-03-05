@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 
 import Container from "react-bootstrap/Container";
 import Stack from "react-bootstrap/Stack";
-import { ListGroup, ListGroupItem, Table } from "react-bootstrap";
+import Table from "react-bootstrap/Table";
 import {
   buildStyles,
   CircularProgressbarWithChildren,
@@ -12,7 +12,6 @@ import { useCookies } from "react-cookie";
 import "react-circular-progressbar/dist/styles.css";
 import { AssignmentData, getAssignment } from "./api";
 import UploadSubmissionModal from "./Modal/UploadSubmissionModal";
-import Score from "./Display/Score";
 import Header from "./Display/Header";
 
 export default function Assignment() {

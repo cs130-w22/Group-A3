@@ -43,6 +43,33 @@ export function uploadSubmission(
     .catch(onFailure);
 }
 
+/**
+ * Create a new assignment.
+ */
+export function createAssignment(
+  token: string,
+  { classId, data }: { classId: string; data: FormData },
+  onSuccess: ({ id }: { id: string }) => void,
+  onFailure: (error: Error) => void
+) {
+  fetch(`http://localhost:8080/class/${classId}/assignment`, {
+    method: "post",
+    mode: "cors",
+    headers: {
+      Authorization: token,
+    },
+    body: data,
+  })
+    .then((r) => {
+      if (r.status !== 201) throw new Error("Failed to create assignment.");
+      return r.json();
+    })
+    .then((j) => {
+      onSuccess(j);
+    })
+    .catch(onFailure);
+}
+
 export type AuthorizedEndpoint<P, R> = (
   token: string,
   params: P,
@@ -304,7 +331,7 @@ export interface UserInformation {
     id: number;
     class: number;
     name: string;
-    dueDate: Date;
+    dueDate: string;
     pointsPossible: number;
   }>;
   classes?: Array<{

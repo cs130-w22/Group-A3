@@ -10,6 +10,7 @@ default: host
 package: host
 	tar czf host.tar.gz -C dist/ .
 
+.PHONY: host
 host: frontend backend
 
 .PHONY: frontend

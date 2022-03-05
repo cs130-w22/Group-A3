@@ -48,6 +48,7 @@ func main() {
 
 	e.Static("/", "build")
 	e.File("/", "build/index.html")
+	e.File("/*.html", "build/index.html")
 
 	// Set up our database.
 	db, err := sql.Open("sqlite3", fmt.Sprintf("file:%s?cache=shared&mode=rwc", databaseFile))
