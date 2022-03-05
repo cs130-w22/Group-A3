@@ -18,6 +18,9 @@ CREATE TABLE Assignments (
 
   -- Points possible for the assignment.
   points DOUBLE PRECISION,
+
+  -- Path to the grading script.
+  script_path TEXT NOT NULL,
   
   FOREIGN KEY (class) REFERENCES Courses (id)
 );
@@ -39,14 +42,14 @@ CREATE TABLE Submissions (
   points_earned DOUBLE PRECISION,
 
   PRIMARY KEY (id),
-  FOREIGN KEY (owner) REFERENCES Accounts (username),
+  FOREIGN KEY (owner) REFERENCES Accounts (id),
   FOREIGN KEY (assignment) REFERENCES Assignments (id)
 );
 
 -- Detailed table of results for each test case.
 CREATE TABLE Results (
   -- Associated submission.
-  submission_id uuid NOT NULL,
+  submission_id TEXT NOT NULL,
 
   -- ID of the test case.
   test_id INT NOT NULL,

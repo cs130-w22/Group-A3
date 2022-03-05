@@ -169,7 +169,8 @@ Status Code | Semantic
 500 | Server error
 
 ### `GET /class/<class_id>/<assignment_id>`
-Get the unique assignment ID for a given user
+
+Get assignment information for a given user.
 
 ### Response Format 
 

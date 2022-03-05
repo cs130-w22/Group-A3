@@ -24,7 +24,7 @@ export function uploadSubmission(
   classId: string,
   assignmentId: string,
   formData: FormData,
-  onSuccess: (liveID: string) => void,
+  onSuccess: ({ id }: { id: string }) => void,
   onFailure: (message: string) => void
 ) {
   fetch(`${BACKEND_URL}/class/${classId}/${assignmentId}/upload`, {
@@ -37,7 +37,7 @@ export function uploadSubmission(
   })
     .then((r) => {
       if (r.status !== 201) throw new Error(`Failed to upload: ${r.status}`);
-      return r.text();
+      return r.json();
     })
     .then(onSuccess)
     .catch(onFailure);
@@ -184,7 +184,7 @@ export const getAssignment = authorized<
   { classId: string; assignmentId: string },
   AssignmentData
 >(
-  ({ classId, assignmentId }) => [`/${classId}/${assignmentId}`, null],
+  ({ classId, assignmentId }) => [`/class/${classId}/${assignmentId}`, null],
   200,
   true,
   "get"

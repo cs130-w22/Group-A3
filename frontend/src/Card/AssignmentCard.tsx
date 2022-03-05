@@ -11,12 +11,14 @@ import { Link } from "react-router-dom";
 
 export default function AssignmentCard({
   id,
+  classId,
   className,
   name,
   dueDate,
   grade,
 }: {
   id?: number;
+  classId?: number;
   className?: string;
   name?: string;
   dueDate?: Date;
@@ -24,7 +26,7 @@ export default function AssignmentCard({
 }) {
   return (
     <Link
-      to={`/assignment/${id}`}
+      to={`/${classId}/${id}`}
       style={{ textDecoration: "none", color: "inherit" }}
     >
       <Card>

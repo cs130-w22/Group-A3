@@ -25,6 +25,7 @@ import {
 import AssignmentCard from "./Card/AssignmentCard";
 import CreateAssignmentModal from "./Modal/CreateAssignmentModal";
 import CreateInviteModal from "./Modal/CreateInviteModal";
+import Header from "./Display/Header";
 
 export default function Me() {
   const [cookies, setCookies] = useCookies(["jwt"]);
@@ -51,7 +52,7 @@ export default function Me() {
   if (errors.length !== 0) {
     return (
       <Container>
-        <Header username={data?.username} removeCookies={removeCookies} />
+        <Header removeCookies={() => setCookies("jwt", "")} />
         {errors.map((err, idx) => (
           <Alert key={idx} variant="warning">
             {String(err)}
@@ -73,8 +74,10 @@ export default function Me() {
   return (
     <Container>
       <Stack direction="vertical" gap={3}>
-        <Header username={data?.username} removeCookies={removeCookies} />
-
+        <Header
+          removeCookies={() => setCookies("jwt", "")}
+          username={data?.username}
+        />
         <JoinClassModal
           show={showJoinClass}
           onHide={() => setShowJoinClass(false)}
@@ -128,42 +131,24 @@ export default function Me() {
 
         <h2>Upcoming Assignments</h2>
         <Stack direction="vertical" gap={3}>
-          {data?.assignments?.map((k, idx) => (
-            <AssignmentCard
-              key={idx}
-              id={k.id}
-              className={data?.classes?.find((c) => c.id === k.class)?.name}
-              name={k.name}
-              dueDate={k.dueDate}
-            />
-          ))}
+          {data?.assignments?.map((k, idx) => {
+            const associatedClass = data?.classes?.find(
+              (c) => c.id === k.class
+            );
+            return (
+              <AssignmentCard
+                key={idx}
+                id={k.id}
+                classId={associatedClass?.id}
+                className={associatedClass?.name}
+                name={k.name}
+                dueDate={k.dueDate}
+              />
+            );
+          })}
         </Stack>
       </Stack>
     </Container>
-  );
-}
-
-function Header({
-  removeCookies,
-  username,
-}: {
-  removeCookies: () => void;
-  username?: string;
-}) {
-  return (
-    <Stack direction="horizontal">
-      {username && <h2>Welcome, {username}</h2>}
-      <div className="ms-auto">
-        <Button
-          onClick={removeCookies}
-          variant="primary"
-          size="lg"
-          type="button"
-        >
-          Log Out
-        </Button>
-      </div>
-    </Stack>
   );
 }
 
@@ -171,10 +156,12 @@ function ClassCard({
   id,
   name,
   showCreate,
+  showFilter,
 }: {
   id: string;
   name?: string;
   showCreate?: boolean;
+  showFilter?: boolean;
 }) {
   const [cookies, setCookies] = useCookies(["jwt"]);
   const [errors, setErrors] = useState<Array<Error>>([]);
@@ -212,24 +199,29 @@ function ClassCard({
         }}
       />
       <Card>
-        <Card.Body>
+        <Card.Header>
           <Card.Title>{name}</Card.Title>
-          {showCreate && (
-            <Stack gap={3}>
-              <Button
-                variant="primary"
-                onClick={() => setShowCreateAssignment(true)}
-              >
-                Add assignment
-              </Button>
-              <Button
-                variant="primary"
-                onClick={() => setShowCreateInvite(true)}
-              >
-                Create invite
-              </Button>
-            </Stack>
-          )}
+        </Card.Header>
+        <Card.Body>
+          <Stack gap={3}>
+            {showFilter && <Button variant="primary">Filter</Button>}
+            {showCreate && (
+              <>
+                <Button
+                  variant="primary"
+                  onClick={() => setShowCreateAssignment(true)}
+                >
+                  Add assignment
+                </Button>
+                <Button
+                  variant="primary"
+                  onClick={() => setShowCreateInvite(true)}
+                >
+                  Create invite
+                </Button>
+              </>
+            )}
+          </Stack>
         </Card.Body>
       </Card>
     </>

@@ -32,16 +32,16 @@ const CreateAssignmentModal = ({
     >
       <Modal.Body>
         <Form.Group controlId="formName">
-          <Form.Label>Assignment Name</Form.Label>
+          <Form.Label>Assignment name</Form.Label>
           <Form.Control type="text" name="name" required />
         </Form.Group>
         <Form.Group controlId="formDueDate">
-          <Form.Label>Due Date</Form.Label>
+          <Form.Label>Due date</Form.Label>
           <Form.Control type="date" name="dueDate" required />
         </Form.Group>
         <Form.Group controlId="formGradingScript">
-          <Form.Label>Grading Script</Form.Label>
-          <Form.Control type="file" name="file" required />
+          <Form.Label>Path to grading script on device</Form.Label>
+          <Form.Control type="text" name="path" required />
         </Form.Group>
       </Modal.Body>
       <Modal.Footer>

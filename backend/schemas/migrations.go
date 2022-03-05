@@ -2,6 +2,7 @@ package schemas
 
 import (
 	_ "embed"
+	"fmt"
 
 	"database/sql"
 )
@@ -24,6 +25,7 @@ func Migrate(db *sql.DB, resetSchemas bool) error {
 	}
 
 	for _, query := range queries {
+		fmt.Printf("Executing %s", query)
 		if _, err := db.Exec(query); err != nil {
 			return err
 		}

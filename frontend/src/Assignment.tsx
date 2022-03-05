@@ -1,18 +1,18 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 
 import Container from "react-bootstrap/Container";
 import Stack from "react-bootstrap/Stack";
-import Button from "react-bootstrap/Button";
-import { Form } from "react-bootstrap";
-import Card from "react-bootstrap/Card";
-import CardGroup from "react-bootstrap/CardGroup";
-import ProgressBar from "react-bootstrap/ProgressBar";
+import { ListGroup, ListGroupItem } from "react-bootstrap";
 import {
   buildStyles,
-  CircularProgressbar,
   CircularProgressbarWithChildren,
 } from "react-circular-progressbar";
+import { useNavigate, useParams } from "react-router-dom";
+import { useCookies } from "react-cookie";
 import "react-circular-progressbar/dist/styles.css";
+import { AssignmentData, getAssignment } from "./api";
+import UploadSubmissionModal from "./Modal/UploadSubmissionModal";
+import Score from "./Display/Score";
 
 class hint {
   name: string;
@@ -30,78 +30,82 @@ const hint1 = new hint("hint title", "hint body", 1);
 const hint2 = new hint("hint title 2", "hint body 2", 2);
 const hints = [hint1, hint2]; // take from database
 
-const userGrade = 80; // check dynamically
-const classMedian = 75;
-const classMean = 60;
+export default function Assignment() {
+  const [cookies, setCookies] = useCookies(["jwt"]);
+  const params = useParams();
+  const navigate = useNavigate();
 
-//Student view of the assignment
-function StudentAssignmentCard() {
+  const [showUploadSubmissionModal, setShowUploadSubmissionModal] =
+    useState(false);
+  const [data, setData] = useState<AssignmentData | null>(null);
+
+  useEffect(() => {
+    getAssignment(
+      cookies.jwt,
+      {
+        classId: String(params?.classId),
+        assignmentId: String(params?.assignmentId),
+      },
+      (data) => setData(data),
+      (err) => console.error(err)
+    );
+  }, [cookies, params]);
+
   return (
     <Container>
-      <Stack
-        direction="horizontal"
-        gap={3}
-        style={{ justifyContent: "center" }}
-      >
-        <div className="row" style={{ width: 300, height: 300 }}>
-          <CircularProgressbarWithChildren
-            value={userGrade}
-            styles={buildStyles({ pathColor: "#1273de", strokeLinecap: 1 })}
-          >
-            {/* Put any JSX content in here that you'd like. It'll be vertically and horizonally centered. */}
-            <div style={{ fontSize: 20, marginTop: -5, color: "#808080" }}>
-              <strong>Your Score:</strong>
-            </div>
-            <div style={{ fontSize: 40, marginTop: -5, color: "#1273de" }}>
-              <strong>{userGrade}%</strong>
-            </div>
-          </CircularProgressbarWithChildren>
-        </div>
-        <br />
-        <div className="row" style={{ width: 300, height: 300 }}>
-          <CircularProgressbarWithChildren
-            value={classMedian}
-            styles={buildStyles({ pathColor: "#1273de", strokeLinecap: 1 })}
-          >
-            {/* Put any JSX content in here that you'd like. It'll be vertically and horizonally centered. */}
-            <div style={{ fontSize: 20, marginTop: -5, color: "#808080" }}>
-              <strong>Class Median:</strong>
-            </div>
-            <div style={{ fontSize: 40, marginTop: -5, color: "#1273de" }}>
-              <strong>{classMedian}%</strong>
-            </div>
-          </CircularProgressbarWithChildren>
-        </div>
-        <br />
-        <div className="row" style={{ width: 300, height: 300 }}>
-          <CircularProgressbarWithChildren
-            value={classMean}
-            styles={buildStyles({ pathColor: "#1273de", strokeLinecap: 1 })}
-          >
-            {/* Put any JSX content in here that you'd like. It'll be vertically and horizonally centered. */}
-            <div style={{ fontSize: 20, marginTop: -5, color: "#808080" }}>
-              <strong>Class Mean:</strong>
-            </div>
-            <div style={{ fontSize: 40, marginTop: -5, color: "#1273de" }}>
-              <strong>{classMean}%</strong>
-            </div>
-          </CircularProgressbarWithChildren>
-        </div>
+      <UploadSubmissionModal
+        classId={String(params?.classId)}
+        assignmentId={String(params?.assignmentId)}
+        show={showUploadSubmissionModal}
+        handleClose={() => setShowUploadSubmissionModal(false)}
+      />
+
+      <Stack direction="vertical" gap={3}>
+        <h1>{data?.name}</h1>
+        <h2>Metrics</h2>
+        <Stack direction="horizontal" gap={3}>
+          <Score metricName="Median" metricValue={300} percentFull={80} />
+        </Stack>
+        <h2>Submissions</h2>
+        <ListGroup>
+          <ListGroupItem onClick={() => setShowUploadSubmissionModal(true)}>
+            ➕ Add a submission
+          </ListGroupItem>
+          {data?.submissions?.map((k, idx) => (
+            <ListGroupItem
+              key={idx}
+              onClick={() => navigate(`/results/${k.id}`)}
+            >
+              {k.date} - {k.pointsEarned}
+            </ListGroupItem>
+          ))}
+        </ListGroup>
       </Stack>
-      <br />
-      <h2>Test Cases</h2>
-      <CardGroup>
-        {hints.map((hint) => (
-          <Card key={hint.id}>
-            <Card.Body>
-              <Card.Title>{hint.name}</Card.Title>
-              <Card.Text>{hint.text}</Card.Text>
-            </Card.Body>
-          </Card>
-        ))}
-      </CardGroup>
     </Container>
   );
 }
 
-export default StudentAssignmentCard;
+function ScoreWheel({
+  metricName,
+  metricValue,
+  percentFull,
+}: {
+  metricName: string;
+  metricValue: number;
+  percentFull: number;
+}) {
+  return (
+    <CircularProgressbarWithChildren
+      value={percentFull}
+      styles={buildStyles({ pathColor: "#1273de", strokeLinecap: 1 })}
+    >
+      {/* Put any JSX content in here that you'd like. It'll be vertically and horizonally centered. */}
+      <div style={{ fontSize: 20, marginTop: -5, color: "#808080" }}>
+        <strong>{metricName}:</strong>
+      </div>
+      <div style={{ fontSize: 40, marginTop: -5, color: "#1273de" }}>
+        <strong>{percentFull}%</strong>
+      </div>
+    </CircularProgressbarWithChildren>
+  );
+}
