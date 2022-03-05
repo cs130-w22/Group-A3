@@ -4,8 +4,8 @@ import (
 	"context"
 	"database/sql"
 	"flag"
+	"fmt"
 	"net/http"
-	"os"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -19,7 +19,7 @@ import (
 )
 
 var (
-	connString       string
+	databaseFile     string
 	secretKey        string
 	port             string
 	maxJobs          uint
@@ -29,9 +29,9 @@ var (
 
 func main() {
 	// Sensible default values for parameters.
-	flag.StringVar(&connString, "c", "file:test.db?cache=shared&mode=rwc", "sqlite `connection string`")
-	flag.StringVar(&port, "p", os.Getenv("PORT"), "`port` to serve the HTTP server on")
-	flag.StringVar(&secretKey, "k", "", "secret `key` to use in JWT minting")
+	flag.StringVar(&databaseFile, "c", "gradebetter.db", "sqlite database `filename`")
+	flag.StringVar(&port, "p", "8080", "`port` to serve the HTTP server on")
+	flag.StringVar(&secretKey, "k", "gradebetter", "secret `key` to use in JWT minting")
 	flag.UintVar(&maxJobs, "j", 1, "Maximum number of concurrent test scripts running at a given time")
 	flag.BoolVar(&initializeTables, "I", false, "Initialize SQLite schema then exit (if no prior database exists)")
 	flag.BoolVar(&resetTables, "D", false, "Reset SQLite database schema then exit (DROP ALL TABLES)")
@@ -48,21 +48,24 @@ func main() {
 	e.Use(middleware.Recover())
 	e.Use(middleware.CORS())
 
+	e.Static("/", "build")
+	e.File("/", "build/index.html")
+
 	// Set up our database.
-	db, err := sql.Open("sqlite3", connString)
+	db, err := sql.Open("sqlite3", fmt.Sprintf("file:%s?cache=shared&mode=rwc", databaseFile))
 	if err != nil {
 		e.Logger.Error(err)
 		return
 	}
 	defer db.Close()
 
-	if resetTables || initializeTables {
-		e.Logger.Info("Migrating...")
-		if err := schemas.Migrate(db, resetTables); err != nil {
-			e.Logger.Error(err)
-			return
-		}
-		e.Logger.Info("Done.")
+	e.Logger.Info("Initializing tables...")
+	if err := schemas.Migrate(db, resetTables); err != nil {
+		e.Logger.Error(err)
+		return
+	}
+	e.Logger.Info("Done.")
+	if resetTables {
 		return
 	}
 
@@ -92,11 +95,6 @@ func main() {
 		}
 	})
 
-	// Smoke test.
-	e.GET("/", func(c echo.Context) error {
-		return c.String(http.StatusOK, "It works.")
-	})
-
 	// Login or create a user.
 	e.POST("/login", handler.LoginUser)
 	e.POST("/user", handler.CreateUser)
@@ -124,7 +122,6 @@ func main() {
 	classApi.GET("/:classId/info", handler.GetClass)
 	classApi.GET("/:classId/:assignmentId", handler.GetAssignment)
 	classApi.POST("/:classId/assignment", handler.CreateAssignment)
-	e.POST("/:classId/:assignmentId/script", Unimplemented)
 	classApi.POST("/:classId/:assignmentId/upload", handler.UploadSubmission)
 	classApi.POST("/:classId/invite", handler.CreateInvite)
 	classApi.POST("/join", handler.EnrollStudent)
@@ -134,9 +131,4 @@ func main() {
 
 	// Start serving the backend on port 8080.
 	e.Logger.Fatal(e.Start(":" + port))
-}
-
-// This endpoint hasn't been implemented yet!
-func Unimplemented(c echo.Context) error {
-	return nil
 }

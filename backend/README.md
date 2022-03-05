@@ -10,7 +10,7 @@ You will need:
 
 ```sh
 # make sure you're in the backend directory
-make
+go build --tags=sqlite_foreign_keys
 ./backend
 ```
 

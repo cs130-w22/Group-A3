@@ -4,7 +4,7 @@
 -- Schemas for all class assignments and submissions.
 --
 
-CREATE TABLE Assignments (
+CREATE TABLE IF NOT EXISTS Assignments (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
 
   -- Owning class
@@ -25,7 +25,7 @@ CREATE TABLE Assignments (
   FOREIGN KEY (class) REFERENCES Courses (id)
 );
 
-CREATE TABLE Submissions (
+CREATE TABLE IF NOT EXISTS Submissions (
   -- Unique submission ID
   id TEXT NOT NULL,
 
@@ -47,7 +47,7 @@ CREATE TABLE Submissions (
 );
 
 -- Detailed table of results for each test case.
-CREATE TABLE Results (
+CREATE TABLE IF NOT EXISTS Results (
   -- Associated submission.
   submission_id TEXT NOT NULL,
 
