@@ -19,12 +19,11 @@ import (
 )
 
 var (
-	databaseFile     string
-	secretKey        string
-	port             string
-	maxJobs          uint
-	initializeTables bool
-	resetTables      bool
+	databaseFile string
+	secretKey    string
+	port         string
+	maxJobs      uint
+	resetTables  bool
 )
 
 func main() {
@@ -33,7 +32,6 @@ func main() {
 	flag.StringVar(&port, "p", "8080", "`port` to serve the HTTP server on")
 	flag.StringVar(&secretKey, "k", "gradebetter", "secret `key` to use in JWT minting")
 	flag.UintVar(&maxJobs, "j", 1, "Maximum number of concurrent test scripts running at a given time")
-	flag.BoolVar(&initializeTables, "I", false, "Initialize SQLite schema then exit (if no prior database exists)")
 	flag.BoolVar(&resetTables, "D", false, "Reset SQLite database schema then exit (DROP ALL TABLES)")
 	flag.Parse()
 

@@ -1,6 +1,6 @@
 # Gradebetter
 
-[![Release](https://img.shields.io/github/v/release/cs130-w21/template?label=release)](https://github.com/cs130-w21/template/releases/latest)
+[![Release](https://img.shields.io/github/v/release/cs130-w22/Group-A3?label=release)](https://github.com/cs130-w22/Group-A3/releases/latest)
 
 Gradebetter is a minimalistic grading server for individual classes and small organizations.
 It provides the following components in a single package:
@@ -16,13 +16,32 @@ It provides the following components in a single package:
 
 The project levers the following technologies:
 * [echo](https://echo.labstack.com/), for its HTTP server
-* []
+* [React](https://reactjs.org/)
+* [sqlite](https://sqlite.org/index.html), for its embedded database
 
-## Setup
+## Running From Binary
 
 1. Download the latest release of the project for your architecture from the [releases](https://github.com/cs130-w22/Group-A3/releases) tab.
 2. Once downloaded, unpack the server to the directory you would like to serve from.
 3. Run `./gradebetter` and visit `localhost:8080`!
+
+## Building + Running From Source
+
+You will require:
+* [Go](https://go.dev/)
+* [Node](https://nodejs.org/en/)
+* [Yarn](https://yarnpkg.com/)
+* [Make](https://www.gnu.org/software/make/)
+
+Afterwards, building is straightforward.
+
+```sh
+git clone https://github.com/cs130-w22/Group-A3.git gradebetter
+cd gradebetter
+make
+cd dist
+./gradebetter
+```
 
 ## Grading Scripts
 
@@ -82,13 +101,8 @@ fi
 We can create an assignment with this grading script at an arbitary directory
 `/home/gradebetter/grade_report.sh`. After ensuring that it is executable by
 our Gradebetter user or the user the program is running under, we can use it
-in our Gradebetter interface.
-
-![]()
-
-Then, we can upload some arbitrary submission to it:
-
-![]()
+in our Gradebetter interface. Then, we can upload some arbitrary submission
+to it.
 
 ## Configuration
 
@@ -114,3 +128,33 @@ This project follows [semantic versioning](https://semver.org/), specifically th
 2.0.0 spec. When the project receives a major version change, there will be
 breaking changes. Backwards compatability will be provided in a best-effort in the
 form of migratory scripts or utilities.
+
+***
+
+## Appendix: Diagrams
+
+```mermaid
+sequenceDiagram
+  actor User
+  User->>Handler: Upload work
+  activate Handler
+  Handler->>Runner: Run a job
+  activate Runner
+  Handler-->>User: OK
+  deactivate Handler
+  User->>Handler: Get live results
+  activate Handler
+  Handler->>Runner: Subscribe to job
+  loop for each test case
+    Runner-->>Handler: Result
+    Handler-->>User: Test case info
+  end
+  Runner->>DB: Writeback all results
+  activate DB
+  DB-->>Runner: Complete
+  deactivate DB
+  Runner-->>Handler: Final score
+  deactivate Runner
+  Handler-->>User: Terminate connection
+  deactivate Handler
+```
