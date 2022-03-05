@@ -47,7 +47,9 @@ func GetClass(cc echo.Context) error {
 	}
 	for ok := rows.Next(); ok; ok = rows.Next() {
 		id, name, dueDate, points := 0, "", time.Time{}, float64(0)
-		rows.Scan(&id, &name, &dueDate, &points)
+		if err := rows.Scan(&id, &name, &dueDate, &points); err != nil {
+			c.Logger().Error(err)
+		}
 		assignments = append(assignments, struct {
 			ID      int       "json:\"id\""
 			Name    string    "json:\"name\""

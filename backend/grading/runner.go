@@ -161,8 +161,11 @@ func Grade(id string, job Job, results chan<- Result) {
 	defer os.RemoveAll(dir)
 	studentWorkFilePath := path.Join(dir, "work.tar.gz")
 	tmpFile, _ := os.Create(studentWorkFilePath)
-	io.Copy(tmpFile, job.File)
 	defer tmpFile.Close()
+	if _, err := io.Copy(tmpFile, job.File); err != nil {
+		fmt.Println(err)
+		return
+	}
 
 	// Execute grading script driver.
 	cmd := exec.Command(job.Script, studentWorkFilePath)

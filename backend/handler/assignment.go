@@ -128,7 +128,9 @@ func GetAssignment(cc echo.Context) error {
 	}
 	for ok := rows.Next(); ok; ok = rows.Next() {
 		id, owner, date, points := "", "", time.Time{}, float64(0)
-		rows.Scan(&id, &owner, &date, &points)
+		if err := rows.Scan(&id, &owner, &date, &points); err != nil {
+			c.Logger().Error(err)
+		}
 		submissions = append(submissions, struct {
 			ID            string    "json:\"id\""
 			OwnerUsername string    "json:\"owner\""

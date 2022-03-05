@@ -161,7 +161,9 @@ func GetUser(cc echo.Context) error {
 	for ok := rows.Next(); ok; ok = rows.Next() {
 		id := 0
 		name := ""
-		rows.Scan(&id, &name)
+		if err := rows.Scan(&id, &name); err != nil {
+			c.Logger().Error(err)
+		}
 		response.Classes = append(response.Classes, struct {
 			ID   int    "json:\"id\""
 			Name string "json:\"name\""
@@ -182,7 +184,9 @@ func GetUser(cc echo.Context) error {
 	}
 	for ok := rows.Next(); ok; ok = rows.Next() {
 		id, class, name, dueDate, points := 0, 0, "", time.Time{}, float64(0)
-		rows.Scan(&id, &class, &name, &dueDate, &points)
+		if err := rows.Scan(&id, &class, &name, &dueDate, &points); err != nil {
+			c.Logger().Error(err)
+		}
 		response.Assignments = append(response.Assignments, struct {
 			ID             int       "json:\"id\""
 			Class          int       "json:\"class\""
