@@ -316,3 +316,41 @@ func EnrollStudent(cc echo.Context) error {
 		"classId": classId,
 	})
 }
+
+//SORRY I know this endpoint is super buggy it usually takes me a few days to work on it
+func GetClassStatistics(cc echo.Context) error {
+	c := cc.(*Context)
+	var body struct {
+		classId string `json:"classId"`
+	}
+	if err := c.Bind(&body); err != nil {
+		c.Logger().Error(err)
+		return c.NoContent(http.StatusBadRequest)
+	}
+
+	// Verify if user is enrolled in the class
+	// get scores of assigments from class
+	// calcualte mean, median, std etc
+
+	status := 0
+	if err := c.Conn.QueryRowContext(c, `
+    SELECT status
+    FROM ClassMembers
+    WHERE user_id = $1
+        AND class_id = $2
+    `, c.Claims.UserID, body.classId).Scan(&status); err != nil {
+		c.Logger().Error(err)
+		return c.NoContent(http.StatusUnauthorized)
+	}
+
+	err := c.Conn.QueryRowContext(c, `
+    SELECT AVG(score), MIN(score), MAX(score), STDDEV(score)
+    FROM Submissions
+    WHERE assignment IN (SELECT id FROM Assignments WHERE class = classId)
+    GROUP BY assignment
+    `, body.classId)
+	if err != nil {
+		return c.NoContent(http.StatusInternalServerError)
+	}
+	return c.JSON()
+}
