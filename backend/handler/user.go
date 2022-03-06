@@ -36,6 +36,15 @@ func generateHashSalt(password string) (hash string, salt string) {
 }
 
 // Log in an user to the backend, returning a JWT token.
+//@Summary Log in an user to the backend, returning a JWT token.
+//@Description Log in an user to the backend, returning a JWT token.
+//@Tags Users
+//@Accept json
+//@Param json request body containing username and password, example request body {"username": "Smallberg", "password": "MYSECRETPASSWORD DONT TELL ANYONE LOL}
+//@Success 200 {OK}
+//@Produce JWT token, { "token": "SomeLongStringOfBase64" }
+//Failure 400 {bad request}, 401 {Unauthorized}, 500 {server error}
+//Router POST /login
 func LoginUser(cc echo.Context) error {
 	c := cc.(*Context)
 	var body struct {
@@ -77,6 +86,16 @@ func LoginUser(cc echo.Context) error {
 	})
 }
 
+//@Summary Create a user in the backend, assuming the user is not already created, returning a JWT token.
+//@Description Create a user in the backend, assuming the user is not already created, returning a JWT token.
+//@Tags Users
+//@Accept json
+//@Param json request body containing type, username and password
+//@Param request body {Type: "professor", "username": "Smallberg", "password": "MYSECRETPASSWORD DONT TELL ANYONE LOL}
+//@Success 200 {OK}
+//@Produce JWT token, { "token": "SomeLongStringOfBase64" }
+//Failure 400 {bad request}, 401 {Unauthorized}, 500 {server error}
+//Router POST /CreateUser
 func CreateUser(cc echo.Context) error {
 	c := cc.(*Context)
 	var body struct {
@@ -113,6 +132,16 @@ func CreateUser(cc echo.Context) error {
 		"token": token,
 	})
 }
+
+//@Summary Get information about a currently logged in user,including ID, name, professor status, class membership, and current assignments
+//@Description Get information about a currently logged in user,including ID, name, professor status, class membership, and current assignments
+//@Tags Users (Professors and Tas)
+//@Accept json
+//@Param none, no request body
+//@Success 200 {OK}
+//@Produce http.StatusOK and json response format, {"id": 1,"username": "myname","professor": "true","classes": [{"id": 1,"name": "CS 131"}],"assignments": [{"id": 1,"class": 1,"name": "Name of assignment","dueDate": 1646238619671,"pointsPossible": 100.0}]}
+//Failure 400 {bad request}, 401 {Unauthorized}, 500 {server error}
+//Router GET /class/me
 
 // Get all relevant information about the logged-in user.
 func GetUser(cc echo.Context) error {

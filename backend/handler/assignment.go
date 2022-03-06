@@ -10,7 +10,15 @@ import (
 	"golang.org/x/net/websocket"
 )
 
-// Create a new assignment.
+//@Summary Create a new assignment.
+//@Description Create a new assignment
+//@Tags Users (Professors, TAs)
+//@Accept json
+//@Param name body string true "{"name": "My cool class"}"
+//@Success 201 {created}
+//@Produce json { "id": "new_class_id"}
+//Failure 400 {bad request}, 401 {Unauthorized}, 500 {server error}
+//Router POST /class
 func CreateAssignment(cc echo.Context) error {
 	c := cc.(*Context)
 
@@ -36,6 +44,15 @@ func CreateAssignment(cc echo.Context) error {
 	})
 }
 
+//@Summary Upload a submission.
+//@Description Upload a submission
+//@Tags Users (Students)
+//@Accept json
+//@Param assignment ID, request body <input type="file" name="file">
+//@Success 204 {OK. Assignment has been uploaded successfully.}
+//@Produce none
+//Failure 400 {bad request}, 401 {Unauthorized}, 500 {server error}
+//Router POST //<class_id>/<assignment_id>/upload
 func UploadSubmission(cc echo.Context) error {
 	c := cc.(*Context)
 
@@ -83,6 +100,15 @@ func UploadSubmission(cc echo.Context) error {
 
 // Get information about an assignment.
 // Requires two path parameters: classId and assignmentId.
+//@Summary Get information about an assignment, such as name, DueDate, and how many points its worth
+//@Description Get information about an assignment.
+//@Tags Users
+//@Accept json
+//@Param assignment ID, class ID
+//@Success 200 {OK}
+//@Produce Json, Response Format: {"name": "Cool assigment one", "dueDate": "1647205512354","points": 100.0,"submissions": [{"date": "1643663222161", "pointsEarned": 100.0}]}
+//Failure 400 {bad request}, 401 {Unauthorized}, 500 {server error}
+//Router GET /class/<class_id>/<assignment_id>
 func GetAssignment(cc echo.Context) error {
 	c := cc.(*Context)
 
@@ -150,6 +176,15 @@ func GetAssignment(cc echo.Context) error {
 }
 
 // Get a live feed of results for the given submission ID.
+//@Summary Get a live feed of results for the given submission ID.
+//@Description Get a live feed of results for the given submission ID.
+//@Tags Users
+//@Accept json
+//@Param submission ID
+//@Success 200 {OK}
+//@Produce Json, Response Format: { "hidden": bool,"testId": 0,"testName": "name","score": 100.0,"msg": "Error message or further information."}If the hidden field is set to true, the msg and testName fields will be empty.
+//Failure 400 {bad request}, 401 {Unauthorized}, 500 {server error}
+//Router GET /live/<assignment_id>
 func LiveResults(cc echo.Context) error {
 	c := cc.(*Context)
 

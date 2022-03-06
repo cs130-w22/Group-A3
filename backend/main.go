@@ -1,5 +1,8 @@
 package main
 
+// @title GradeBetter API documentation
+// @version 1.0.0// @host localhost:3000
+// @BasePath /user
 import (
 	"context"
 	"database/sql"

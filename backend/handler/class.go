@@ -13,6 +13,16 @@ import (
 // Get listing of all information, assignments, etc. for a class.
 // Requires one path parameter: classId. User must be authorized for
 // this request.
+
+//@Summary Get listing of all information, assignments, etc. for a class.
+//@Description Get listing of all information, assignments, etc. for a class.
+//@Tags Users (Professors and Ta's)
+//@Accept json
+//@Param class ID
+//@Success 200 {OK}
+//@Produce Json, Response Format: {"name": "My cool class","ownerName": "Prof. Eggert","assignments": [{"id": "SomeID","name": "Homework 1","dueDate": "1643663222161","points": 100.0}],"members": [{"id": 2,"username": "Svetly"},{"id": 2,"username": "Preetha"},{"id": 2,"username": "Leo"}]
+//Failure 400 {bad request}, 401 {Unauthorized}, 500 {server error}
+//Router GET /class/<class_id>/info
 func GetClass(cc echo.Context) error {
 	c := cc.(*Context)
 
@@ -88,6 +98,15 @@ func GetClass(cc echo.Context) error {
 }
 
 // Create a class in the backend.
+//@Summary Create a class in the database
+//@Description Create a class in the database
+//@Tags Users (Professors and Ta's)
+//@Accept json
+//@Param Name string request body : {"name": "My cool class"}
+//@Success 201 {CREATED}
+//@Produce Json, Response Format: { "id": "new_class_id"}
+//Failure 400 {bad request}, 401 {Unauthorized}, 500 {server error}
+//Router POST /class
 func CreateClass(cc echo.Context) error {
 	c := cc.(*Context)
 
@@ -133,6 +152,15 @@ func CreateClass(cc echo.Context) error {
 }
 
 // Create an invite to a given class. Expects a path parameter classId.
+//@Summary Create an invite to a given class.
+//@Description Create an invite to a given class.
+//@Tags Users (Professors and Ta's)
+//@Accept json
+//@Param class ID, example request body, { "validUntil": "UNIX UTC TIMESTAMP" }
+//@Success 201 {CREATED}
+//@Produce Json, Response Format: {"inviteCode": "my-new-invite-code"}
+//Failure 400 {bad request}, 401 {Unauthorized}, 500 {server error}
+//Router POST /class/<class_id>/invite
 func CreateInvite(cc echo.Context) error {
 	c := cc.(*Context)
 
@@ -175,6 +203,15 @@ func CreateInvite(cc echo.Context) error {
 }
 
 // Drop a student from the class, or drop the own user.
+//@Summary Drop the student with ID id from your class with ID class_id. Any student can drop themselves from a class, and a professor can drop anyone from a class except themselves.
+//@Description Drop a student from the class, or drop the own user.
+//@Tags Users
+//@Accept json
+//@Param class ID, OPTIONAL  request body, {"id": "ID"}  IF AN EMPTY BODY IS SUPPLIED, THE ENDPOINT WILL ATTEMPT TO DROP THE USER REPRESENTED IN THE AUTHORIZATION TOKEN FROM THE CLASS
+//@Success 200 {OK}
+//@Produce none
+//Failure 400 {bad request}, 401 {Unauthorized}, 500 {server error}
+//Router POST /class/<class_id>/drop
 func DropStudent(cc echo.Context) error {
 	c := cc.(*Context)
 
@@ -221,6 +258,16 @@ func DropStudent(cc echo.Context) error {
 // step2 : check if invite code exists and not expired
 // step3 : if yes,retrieve class code associated to invite code and insert user to class
 //else: return error
+
+//@Summary Join the logged-in user to the class associated with the given. If the user is already in the class, then nothing happens.
+//@Description Join the logged-in user to the class associated with the given. If the user is already in the class, then nothing happens.
+//@Tags Users
+//@Accept json
+//@Param invite code, example request body, {"inviteCode": "my-new-invite-code"}
+//@Success 200 {OK. User joined successfully or is already in class}
+//@Produce none
+//Failure 400 {bad request}, 401 {Unauthorized}, 500 {server error}
+//Router POST /class/join
 func EnrollStudent(cc echo.Context) error {
 	c := cc.(*Context)
 	var body struct {
