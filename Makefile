@@ -18,7 +18,7 @@ frontend:
 	yarn; \
 	BUILD_PATH='../$(DIST_DIR)/build' yarn build
 
-.PHONY: host
+.PHONY: backend
 backend:
 	cd backend; \
 	go build -o ../$(DIST_DIR)/gradebetter --tags $(GO_TAGS)
