@@ -14,3 +14,18 @@ jobs:
     - name: Formatting
       working-directory: ./frontend
       run: yarn run prettier -c src
+
+name: Frontend CI
+on: [push]
+jobs:
+  build:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install modules
+        working-directory: ./frontend
+        run: yarn
+      - name: Test
+        working-directory: ./frontend
+        run: yarn test
