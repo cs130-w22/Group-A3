@@ -1,7 +1,8 @@
 name: Frontend QA
 on: [push]
 jobs:
-  build:
+  fmt:
+    name: Lint
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
