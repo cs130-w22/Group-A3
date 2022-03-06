@@ -1,4 +1,4 @@
-name: golangci-lint
+name: Backend QA
 on:
   push:
     branches:
@@ -17,10 +17,6 @@ jobs:
         with:
           version: latest
           working-directory: backend
-
-name: Backend Tests
-on: [push]
-jobs:
   test:
     name: test
     runs-on: ubuntu-latest
