@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 # $1 is the temp directory for the file.
 cd $1
 echo "1"
