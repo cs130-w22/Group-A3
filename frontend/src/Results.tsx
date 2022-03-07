@@ -28,7 +28,7 @@ export default function Results() {
   }[readyState];
 
   useEffect(() => {
-    if (lastMessage) setResults([JSON.parse(lastMessage?.data)]);
+    if (lastMessage) setResults(JSON.parse(lastMessage?.data));
   }, [lastMessage, setResults]);
 
   return (

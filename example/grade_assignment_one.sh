@@ -10,17 +10,20 @@ cd $1
 if [ ! -e work.tar.gz ]; then
   echo "0"
   echo "NAME Work submitted"
-  echo "User failed to submit work"
+  echo "User failed to submit work. $(ls)"
   echo "SCORE 0.0 0\n"
   exit 0
 fi
 
-tar xf work.tar.gz
+tar -xf work.tar.gz
 
 echo "1"
 echo "NAME Submission exists"
 echo "Your submission exists!"
 echo "SCORE 0.0 0\n"
+
+# Pretending to do work...
+sleep 3
 
 echo "2"
 echo "NAME Contains main.go"

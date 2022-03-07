@@ -17,6 +17,7 @@ func CreateAssignment(cc echo.Context) error {
 	assignmentName, dueDateStr, path := c.FormValue("name"), c.FormValue("dueDate"), c.FormValue("path")
 	dueDate, err := strconv.ParseInt(dueDateStr, 10, 64)
 	if err != nil {
+		c.Logger().Error(err)
 		return c.NoContent(http.StatusBadRequest)
 	}
 
@@ -163,6 +164,7 @@ func LiveResults(cc echo.Context) error {
 		for result := range c.Runner.Results(c, submissionId) {
 			if err := websocket.JSON.Send(ws, result); err != nil {
 				c.Logger().Error(err)
+				return
 			}
 		}
 	}).ServeHTTP(c.Response(), c.Request())

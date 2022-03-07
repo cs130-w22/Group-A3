@@ -20,8 +20,17 @@ echo "----"
 # Create a class
 echo "Creating CS 31..."
 CLASS_ID="$(curl -sd '{ "name": "CS 31" }' -H 'Content-Type: application/json' -H "Authorization: $PROFESSOR_TOKEN" localhost:8080/class | jq -r '.id')"
+echo "Class ID is $CLASS_ID"
 echo "Done."
+
+# Join the student to the class.
+INVITE_ID="$(curl -sd '{ "validUntil": "2022-04-10T00:00:00.000Z" }' -H 'Content-Type: application/json' -H "Authorization: $PROFESSOR_TOKEN" localhost:8080/class/$CLASS_ID/invite | jq -r '.inviteCode')"
+echo "Invite ID is $INVITE_ID"
+curl -sd "{ \"inviteCode\": \"$INVITE_ID\" }" -H 'Content-Type: application/json' -H "Authorization: $STUDENT_TOKEN" localhost:8080/class/join
+echo "Student joined"
 
 # Create a new assignment pointing at our grading harness.
 SCRIPT_PATH="$(pwd)/grade_assignment_one.sh"
-ASSIGNMENT_ID="$(curl -sF "name=Assignment One" -F "dueDate=1649210038" -F "path=$SCRIPT_PATH" -H 'Content-Type: application/json' -H "Authorization: $PROFESSOR_TOKEN" localhost:8080/class/$CLASS_ID/assignment | jq -r '.id')"
+echo "Script path is $SCRIPT_PATH"
+ASSIGNMENT_ID="$(curl -sF name=Assignment\ One -F dueDate=1649210038 -F path=$SCRIPT_PATH -H "Authorization: $PROFESSOR_TOKEN" "localhost:8080/class/$CLASS_ID/assignment" | jq -r '.id')"
+echo "Assignment ID is $ASSIGNMENT_ID"
