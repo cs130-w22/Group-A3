@@ -39,7 +39,6 @@ function ClassListView() {
     }
   }, []);
 
-  //const studentId = "1";
   function handleDropStudent(id: string) {
     if (classId && id) {
       dropStudent(
