@@ -82,7 +82,7 @@ func (r *Runner) Results(ctx context.Context, jobId string) <-chan []Result {
 			}
 			if nRows == lastRows {
 				lastEqual++
-				if lastEqual > (REFRESH_MILLIS/1000)*20 {
+				if lastEqual > 20 {
 					close(output)
 					return
 				}
