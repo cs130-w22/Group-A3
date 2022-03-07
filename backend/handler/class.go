@@ -269,3 +269,51 @@ func EnrollStudent(cc echo.Context) error {
 		"classId": classId,
 	})
 }
+
+func GetClassStatistics(cc echo.Context) error {
+	c := cc.(*Context)
+	var body struct {
+		classId string `json:"classId"`
+	}
+	if err := c.Bind(&body); err != nil {
+		c.Logger().Error(err)
+		return c.NoContent(http.StatusBadRequest)
+	}
+
+	// Verify if user is enrolled in the class
+	// get scores of assigments from class
+	// calcualte mean, median, std etc
+
+	status := 0
+	if err := c.Conn.QueryRowContext(c, `
+	SELECT status
+	FROM ClassMembers
+	WHERE user_id = $1
+	AND class_id = $2
+	`, c.Claims.UserID, body.classId).Scan(&status); err != nil {
+		c.Logger().Error(err)
+		return c.NoContent(http.StatusUnauthorized)
+	}
+
+	mean := 0
+	min := 0
+	max := 0
+	stddev := 0
+	err := c.Conn.QueryRowContext(c, `
+	SELECT AVG(score), MIN(score), MAX(score), STDDEV(score)
+	FROM Submissions
+	WHERE assignment IN (SELECT id FROM Assignments WHERE class = $1)
+	GROUP BY assignment
+	`, body.classId).Scan(&mean, &min, &max, &stddev)
+	if err != nil {
+		return c.NoContent(http.StatusInternalServerError)
+	}
+
+	return c.JSON(http.StatusOK, echo.Map{
+		"class_id": body.classId,
+		"mean":     mean,
+		"min":      min,
+		"max":      max,
+		"stddev":   stddev,
+	})
+}
