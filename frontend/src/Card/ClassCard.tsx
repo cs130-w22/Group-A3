@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useCookies } from "react-cookie";
+import { useNavigate } from "react-router-dom";
 
 import Card from "react-bootstrap/Card";
 import Stack from "react-bootstrap/Stack";
@@ -8,6 +9,8 @@ import Button from "react-bootstrap/Button";
 import { createAssignment } from "../api";
 import CreateAssignmentModal from "../Modal/CreateAssignmentModal";
 import CreateInviteModal from "../Modal/CreateInviteModal";
+
+import { dropStudent } from "../api";
 
 export default function ClassCard({
   id,
@@ -26,6 +29,18 @@ export default function ClassCard({
   const [errors, setErrors] = useState<Array<Error>>([]);
   const [showCreateAssignment, setShowCreateAssignment] = useState(false);
   const [showCreateInvite, setShowCreateInvite] = useState(false);
+  const nav = useNavigate();
+  const navToClassList = () => {
+    nav(`/${id}/classlist`);
+  };
+  const dropHandler = (classId: string) => {
+    dropStudent(
+      cookies.jwt,
+      { classId, studentId: "" },
+      () => true,
+      () => true
+    );
+  };
 
   return (
     <>
@@ -69,6 +84,16 @@ export default function ClassCard({
                   onClick={() => setShowCreateInvite(true)}
                 >
                   Create invite
+                </Button>
+                <Button variant="primary" onClick={() => navToClassList()}>
+                  View Class Stats
+                </Button>
+              </>
+            )}
+            {!showCreate && (
+              <>
+                <Button variant="primary" onClick={() => dropHandler(id)}>
+                  Drop This Class
                 </Button>
               </>
             )}

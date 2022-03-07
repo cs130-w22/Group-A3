@@ -320,9 +320,10 @@ export const createInvite = authorized<
  * @param onSuccess Fired on successful request.
  * @param onFailure Fired on failed request.
  */
-const dropStudent = authorized<{ classId: string; studentId: string }, void>(
-  ({ classId, studentId }) => [`/class/${classId}/drop`, { studentId }]
-);
+export const dropStudent = authorized<
+  { classId: string; studentId: string },
+  void
+>(({ classId, studentId }) => [`/class/${classId}/drop`, { studentId }]);
 
 export interface UserInformation {
   professor?: boolean;
