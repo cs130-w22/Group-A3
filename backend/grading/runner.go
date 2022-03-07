@@ -15,7 +15,7 @@ import (
 )
 
 // Time to refresh results, in milliseconds.
-const REFRESH_MILLIS = 1000
+const REFRESH_MILLIS = 500
 
 // Multi-threaded job runner.
 type Runner struct {
@@ -82,12 +82,12 @@ func (r *Runner) Results(ctx context.Context, jobId string) <-chan []Result {
 			}
 			if nRows == lastRows {
 				lastEqual++
-				if lastEqual > 3 {
+				if lastEqual > (REFRESH_MILLIS/1000)*20 {
 					close(output)
 					return
 				}
 			} else {
-				lastRows = 0
+				lastRows = nRows
 			}
 
 			output <- results

@@ -34,3 +34,12 @@ SCRIPT_PATH="$(pwd)/grade_assignment_one.sh"
 echo "Script path is $SCRIPT_PATH"
 ASSIGNMENT_ID="$(curl -sF name=Assignment\ One -F dueDate=1649210038 -F path=$SCRIPT_PATH -H "Authorization: $PROFESSOR_TOKEN" "localhost:8080/class/$CLASS_ID/assignment" | jq -r '.id')"
 echo "Assignment ID is $ASSIGNMENT_ID"
+
+# Upload our source as the student.
+SOURCE_PATH="$(pwd)/main.go"
+echo "Bundling source..."
+tar -czf test.tar.gz main.go
+echo "Uploading"
+curl -sF file=@test.tar.gz -H "Authorization: $STUDENT_TOKEN" localhost:8080/class/$CLASS_ID/$ASSIGNMENT_ID/upload
+echo "Done"
+rm test.tar.gz
