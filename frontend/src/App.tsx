@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import { useCookies } from "react-cookie";
 
 import Login from "./Login";
-import CreateAccount from "./AccountCreation/CreateAccount";
+import CreateAccount from "./CreateAccount/CreateAccount";
 import ClassView from "./ClassView/ClassView";
 import Me from "./Me";
 import Assignment from "./Assignment";
