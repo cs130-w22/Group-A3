@@ -11,7 +11,6 @@ import Alert from "react-bootstrap/Alert";
 
 import { dropStudent, getClass } from "../api";
 
-// Student view of the assignment
 function ClassListView() {
   const params = useParams();
   const arr: { id: number; username: string }[] = [];
