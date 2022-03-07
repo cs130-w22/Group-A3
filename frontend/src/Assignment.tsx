@@ -13,9 +13,11 @@ import "react-circular-progressbar/dist/styles.css";
 import { AssignmentData, getAssignment } from "./api";
 import UploadSubmissionModal from "./Modal/UploadSubmissionModal";
 import Header from "./Display/Header";
+import { Button } from "react-bootstrap";
 
 export default function Assignment() {
   const [cookies, setCookies] = useCookies(["jwt"]);
+  const [blob, setBlob] = useState<string | null>(null);
   const params = useParams();
   const navigate = useNavigate();
 
@@ -34,6 +36,16 @@ export default function Assignment() {
       (err) => console.error(err)
     );
   }, [cookies, params]);
+
+  useEffect(() => {
+    const dataBlob = new Blob([JSON.stringify(data?.submissions)], {
+      type: "application/json",
+    });
+    setBlob(URL.createObjectURL(dataBlob));
+    return () => {
+      blob && URL.revokeObjectURL(blob);
+    };
+  }, [blob, data]);
 
   return (
     <Container>
@@ -54,8 +66,6 @@ export default function Assignment() {
       <Stack direction="vertical" gap={3}>
         <h1>{data?.name}</h1>
 
-        <h2>Submissions</h2>
-
         <Table>
           <thead>
             <tr>
@@ -65,9 +75,23 @@ export default function Assignment() {
             </tr>
           </thead>
           <tbody>
-            {!data?.professor && (
+            {!data?.professor ? (
               <tr onClick={() => setShowUploadSubmissionModal(true)}>
                 <td>➕ Add a submission</td>
+                <td></td>
+                <td></td>
+              </tr>
+            ) : (
+              <tr onClick={() => console.log("download")}>
+                <td>
+                  <a
+                    href={blob ? blob : ""}
+                    download={`${data.name}-${new Date()}.json`}
+                  >
+                    <Button>Export to JSON</Button>
+                  </a>
+                </td>
+                <td></td>
                 <td></td>
               </tr>
             )}
