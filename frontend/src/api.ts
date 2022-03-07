@@ -211,6 +211,7 @@ export interface AssignmentData {
  * @param onSuccess Fired on success.
  * @param onFailure Fired on failure.
  */
+
 export const getAssignment = authorized<
   { classId: string; assignmentId: string },
   AssignmentData
@@ -320,9 +321,10 @@ export const createInvite = authorized<
  * @param onSuccess Fired on successful request.
  * @param onFailure Fired on failed request.
  */
-const dropStudent = authorized<{ classId: string; studentId: string }, void>(
-  ({ classId, studentId }) => [`/class/${classId}/drop`, { studentId }]
-);
+export const dropStudent = authorized<
+  { classId: string; studentId: string },
+  void
+>(({ classId, studentId }) => [`/class/${classId}/drop`, { id: studentId }]);
 
 export interface UserInformation {
   professor?: boolean;
