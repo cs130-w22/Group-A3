@@ -8,6 +8,7 @@ import Stack from "react-bootstrap/Stack";
 import Row from "react-bootstrap/Row";
 
 import { useCookies } from "react-cookie";
+import { login } from "./api";
 function Login() {
   const [error, setError] = useState("");
   const { 1: setCookies } = useCookies(["jwt"]);
@@ -22,33 +23,20 @@ function Login() {
       password: { value: string };
     };
 
-    fetch("http://localhost:8080/login", {
-      method: "POST",
-      mode: "cors",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        username: target.username.value,
-        password: target.password.value,
-      }),
-    })
-      .then((response) => {
-        if (response.status === 401) throw new Error("Unauthorized");
-        return response.json();
-      })
-      .then((json) => {
-        setCookies("jwt", json?.token);
+    login(
+      { username: target.username.value, password: target.password.value },
+      ({ token }) => {
+        setCookies("jwt", token);
         nav("/");
-      })
-      .catch((e) => {
+      },
+      (e) =>
         setError(
           `Failed uploading! Server responded with: ${String(e).replace(
             "TypeError: ",
             ""
           )}`
-        );
-      });
+        )
+    );
   }
 
   const createAccount = () => {

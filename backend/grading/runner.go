@@ -41,8 +41,11 @@ func (r *Runner) Add(job Job) string {
 
 // Get a receive-only channel of results for a given job. If the job has
 // terminated, will return an already-closed channel of Results.
-func (r *Runner) Results(ctx context.Context, jobId string) <-chan Result {
-	output := make(chan Result, 5)
+func (r *Runner) Results(ctx context.Context, jobId string) <-chan []Result {
+	output := make(chan []Result, 5)
+	lastRows := 0
+	lastEqual := 0
+
 	go func() {
 		conn, _ := r.store.Conn(ctx)
 		ticker := time.NewTicker(REFRESH_MILLIS * time.Millisecond)
@@ -65,6 +68,7 @@ func (r *Runner) Results(ctx context.Context, jobId string) <-chan Result {
 				return
 			}
 
+			nRows := 0
 			var results []Result
 			for ok := rows.Next(); ok; ok = rows.Next() {
 				var result Result
@@ -74,10 +78,19 @@ func (r *Runner) Results(ctx context.Context, jobId string) <-chan Result {
 					return
 				}
 				results = append(results, result)
+				nRows++
 			}
-			for _, result := range results {
-				output <- result
+			if nRows == lastRows {
+				lastEqual++
+				if lastEqual > 3 {
+					close(output)
+					return
+				}
+			} else {
+				lastRows = 0
 			}
+
+			output <- results
 		}
 	}()
 	return output
@@ -168,7 +181,7 @@ func Grade(id string, job Job, results chan<- Result) {
 	}
 
 	// Execute grading script driver.
-	cmd := exec.Command(job.Script, studentWorkFilePath)
+	cmd := exec.Command(job.Script, dir)
 	output, err := cmd.StdoutPipe()
 	if err != nil {
 		fmt.Println(err)
@@ -185,7 +198,7 @@ func Grade(id string, job Job, results chan<- Result) {
 		fmt.Println(err)
 		return
 	}
-	for _, result := range parsed {
+	for result := range parsed {
 		results <- result
 	}
 	if err := cmd.Wait(); err != nil {

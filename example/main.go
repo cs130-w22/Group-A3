@@ -1,10 +1,12 @@
 package main
 
+// Example of a submission to our class!
+
 import (
-    "fmt"
-    "strings"
-	"strconv"
+	"fmt"
 	"os"
+	"strconv"
+	"strings"
 )
 
 func main() {
@@ -31,4 +33,4 @@ func main() {
 	if text[4:] == "" {
 		fmt.Println("3 Empty")
 	}
-} 
+}

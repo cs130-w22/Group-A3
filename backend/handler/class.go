@@ -141,7 +141,7 @@ func CreateInvite(cc echo.Context) error {
 		ValidUntil time.Time `json:"validUntil"`
 	}
 	if err := c.Bind(&body); err != nil || (body.ValidUntil == time.Time{}) || classId == "" {
-		c.Logger().Error(err)
+		c.Logger().Error(err, body.ValidUntil, classId)
 		return c.NoContent(http.StatusBadRequest)
 	}
 

@@ -2,22 +2,18 @@ import React, { useEffect, useState } from "react";
 import { useCookies } from "react-cookie";
 
 import Container from "react-bootstrap/Container";
-import Col from "react-bootstrap/Col";
-import Row from "react-bootstrap/Row";
 import Card from "react-bootstrap/Card";
-import ProgressBar from "react-bootstrap/ProgressBar";
 import Stack from "react-bootstrap/Stack";
 import Alert from "react-bootstrap/Alert";
 import Spinner from "react-bootstrap/Spinner";
 import Button from "react-bootstrap/Button";
 
-import { Link } from "react-router-dom";
 import JoinClassModal from "./Modal/JoinClassModal";
 import CreateClassModal from "./Modal/CreateClassModal";
 
 import {
+  createAssignment,
   createClass,
-  createInvite,
   getMe,
   joinClass,
   UserInformation,
@@ -26,12 +22,13 @@ import AssignmentCard from "./Card/AssignmentCard";
 import CreateAssignmentModal from "./Modal/CreateAssignmentModal";
 import CreateInviteModal from "./Modal/CreateInviteModal";
 import Header from "./Display/Header";
+import ClassCard from "./Card/ClassCard";
 
 export default function Me() {
   const [cookies, setCookies] = useCookies(["jwt"]);
-  const removeCookies = () => {
-    setCookies("jwt", "");
-  };
+
+  // Toggle to reload the `Me` data
+  const [reloadMe, setReloadMe] = useState(false);
 
   const [showJoinClass, setShowJoinClass] = useState(false);
   const [showCreateClass, setShowCreateClass] = useState(false);
@@ -46,7 +43,7 @@ export default function Me() {
       (data) => setData(data),
       (newErr) => setErrors((errors) => [newErr, ...errors])
     );
-  }, [cookies.jwt]);
+  }, [cookies.jwt, reloadMe]);
 
   // Catch errors before render.
   if (errors.length !== 0) {
@@ -111,22 +108,26 @@ export default function Me() {
               id={String(k.id)}
               name={k.name}
               showCreate={data?.professor}
+              onCreation={() => setReloadMe(!reloadMe)}
             />
           ))}
 
-          {data?.professor ? (
-            <Card onClick={() => setShowCreateClass(true)}>
-              <Card.Body>
-                <Card.Title>Create a class</Card.Title>
-              </Card.Body>
-            </Card>
-          ) : (
-            <Card onClick={() => setShowJoinClass(true)}>
-              <Card.Body>
-                <Card.Title>Join a class</Card.Title>
-              </Card.Body>
-            </Card>
-          )}
+          <Card>
+            <Card.Header>
+              <Card.Title>...</Card.Title>
+            </Card.Header>
+            <Card.Body>
+              <Button
+                onClick={() =>
+                  data?.professor
+                    ? setShowCreateClass(true)
+                    : setShowJoinClass(true)
+                }
+              >
+                {data?.professor ? "Create a class" : "Join a class"}
+              </Button>
+            </Card.Body>
+          </Card>
         </Stack>
 
         <h2>Upcoming Assignments</h2>
@@ -143,87 +144,12 @@ export default function Me() {
                 className={associatedClass?.name}
                 name={k.name}
                 dueDate={k.dueDate}
+                pointsPossible={k.pointsPossible}
               />
             );
           })}
         </Stack>
       </Stack>
     </Container>
-  );
-}
-
-function ClassCard({
-  id,
-  name,
-  showCreate,
-  showFilter,
-}: {
-  id: string;
-  name?: string;
-  showCreate?: boolean;
-  showFilter?: boolean;
-}) {
-  const [cookies, setCookies] = useCookies(["jwt"]);
-  const [errors, setErrors] = useState<Array<Error>>([]);
-  const [showCreateAssignment, setShowCreateAssignment] = useState(false);
-  const [showCreateInvite, setShowCreateInvite] = useState(false);
-
-  return (
-    <>
-      <CreateInviteModal
-        classId={id}
-        show={showCreateInvite}
-        onHide={() => setShowCreateInvite(false)}
-      />
-      <CreateAssignmentModal
-        show={showCreateAssignment}
-        onHide={() => setShowCreateAssignment(false)}
-        onSubmit={(data) => {
-          fetch(`http://localhost:8080/class/${id}/assignment`, {
-            method: "post",
-            mode: "cors",
-            headers: {
-              Authorization: cookies.jwt,
-            },
-            body: data,
-          })
-            .then((r) => {
-              if (r.status !== 201)
-                throw new Error("Failed to create assignment.");
-              return r.json();
-            })
-            .then((j) => {
-              setShowCreateAssignment(false);
-            })
-            .catch((err) => setErrors((errs) => [err, ...errs]));
-        }}
-      />
-      <Card>
-        <Card.Header>
-          <Card.Title>{name}</Card.Title>
-        </Card.Header>
-        <Card.Body>
-          <Stack gap={3}>
-            {showFilter && <Button variant="primary">Filter</Button>}
-            {showCreate && (
-              <>
-                <Button
-                  variant="primary"
-                  onClick={() => setShowCreateAssignment(true)}
-                >
-                  Add assignment
-                </Button>
-                <Button
-                  variant="primary"
-                  onClick={() => setShowCreateInvite(true)}
-                >
-                  Create invite
-                </Button>
-              </>
-            )}
-          </Stack>
-        </Card.Body>
-      </Card>
-    </>
   );
 }

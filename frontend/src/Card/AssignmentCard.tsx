@@ -15,36 +15,41 @@ export default function AssignmentCard({
   className,
   name,
   dueDate,
-  grade,
+  pointsPossible,
 }: {
   id?: number;
   classId?: number;
   className?: string;
   name?: string;
-  dueDate?: Date;
-  grade?: number;
+  dueDate?: string;
+  pointsPossible?: number;
 }) {
+  console.log(dueDate);
   return (
     <Link
       to={`/${classId}/${id}`}
       style={{ textDecoration: "none", color: "inherit" }}
     >
       <Card>
-        <Card.Body>
+        <Card.Header>
           <Card.Title>
             {className} - {name}
           </Card.Title>
-          <Card.Subtitle className="mb-2 text-muted">
-            Due: {dueDate}
-          </Card.Subtitle>
-          <Container>
-            <Row>
-              <Col>Grade: </Col>
-              <Col xs={11}>
-                <ProgressBar now={grade} label={`${grade}%`} />
-              </Col>
-            </Row>
-          </Container>
+        </Card.Header>
+        <Card.Body>
+          <Card.Text>
+            Due:{" "}
+            {dueDate &&
+              new Date(Date.parse(dueDate)).toLocaleString("en-US", {
+                year: "numeric",
+                weekday: "long",
+                day: "2-digit",
+                month: "2-digit",
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
+          </Card.Text>
+          <Card.Text>Points possible: {pointsPossible}</Card.Text>
         </Card.Body>
       </Card>
     </Link>
