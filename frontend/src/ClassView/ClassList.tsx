@@ -30,6 +30,7 @@ function ClassListView() {
         (res) => {
           console.log(res);
           setStudents(res.members);
+          console.log(students);
         },
         () => {
           setError("can't find class");
@@ -39,11 +40,11 @@ function ClassListView() {
   }, []);
 
   //const studentId = "1";
-  function handleDropStudent(studentId: string) {
-    if (classId && studentId) {
+  function handleDropStudent(id: string) {
+    if (classId && id) {
       dropStudent(
         cookies.jwt,
-        { classId, studentId },
+        { classId, id },
         () => {
           setError("Dropped student!");
         },
@@ -71,7 +72,7 @@ function ClassListView() {
         </thead>
         <tbody>
           {students.map((x, id) => (
-            <tr key={id}>
+            <tr key={x.username}>
               <td>{x.username}</td>
               <td>
                 <>
@@ -80,7 +81,7 @@ function ClassListView() {
                   </Button>
                   <Modal show={show} onHide={handleClose}>
                     <Modal.Body>
-                      Are you sure you want to drop {x.username}?
+                      Are you sure you want to drop {x.id}?
                     </Modal.Body>
                     <Modal.Footer>
                       <Button variant="secondary" onClick={handleClose}>
@@ -89,7 +90,7 @@ function ClassListView() {
                       <Button
                         variant="primary"
                         onClick={() => {
-                          handleDropStudent(id + "");
+                          handleDropStudent(x.id + "");
                         }}
                       >
                         Drop Student
