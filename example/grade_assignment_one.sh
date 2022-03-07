@@ -1,8 +1,25 @@
 #!/bin/sh
+#
 # $1 is the temp directory for the file.
+#
+
+# unpack user work
 cd $1
+
+# if the user submitted no work, then fail.
+if [ ! -e work.tar.gz ]; then
+  echo "0"
+  echo "NAME Work submitted"
+  echo "User failed to submit work"
+  echo "SCORE 0.0 0\n"
+  exit 0
+fi
+
+tar xf work.tar.gz
+
 echo "1"
 echo "NAME Submission exists"
+echo "Your submission exists!"
 echo "SCORE 0.0 0\n"
 
 echo "2"
