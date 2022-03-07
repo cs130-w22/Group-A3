@@ -36,7 +36,7 @@ export default function ClassCard({
   const dropHandler = (classId: string) => {
     dropStudent(
       cookies.jwt,
-      { classId, id: "" },
+      { classId, studentId: "" },
       () => true,
       () => true
     );

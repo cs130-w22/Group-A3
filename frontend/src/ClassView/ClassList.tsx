@@ -38,11 +38,11 @@ function ClassListView() {
     }
   }, []);
 
-  function handleDropStudent(id: string) {
-    if (classId && id) {
+  function handleDropStudent(studentId: string) {
+    if (classId && studentId) {
       dropStudent(
         cookies.jwt,
-        { classId, id },
+        { classId, studentId },
         () => {
           setError("Dropped student!");
         },
