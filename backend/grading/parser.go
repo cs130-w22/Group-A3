@@ -2,7 +2,6 @@ package grading
 
 import (
 	"bufio"
-	"errors"
 	"io"
 	"strconv"
 	"strings"
@@ -12,7 +11,7 @@ func parseOutput(stdout io.Reader) (<-chan Result, error) {
 	stdoutLines := bufio.NewScanner(stdout)
 	results := make(chan Result, 5)
 
-	go func() error {
+	go func() {
 
 		// Each test case should be of the format:
 		// ### 		(Test ID)
@@ -31,7 +30,7 @@ func parseOutput(stdout io.Reader) (<-chan Result, error) {
 			testId, err := strconv.Atoi(testIdStr)
 			if err != nil {
 				// testId not a valid number!
-				return err
+				return
 			}
 
 			msgLines := make([]string, 0)
@@ -55,15 +54,15 @@ func parseOutput(stdout io.Reader) (<-chan Result, error) {
 				case "SCORE":
 					if len(textSplit) != 3 {
 						// Should be [SCORE NUM NUM]
-						return errors.New("wrong number of arguments after SCORE")
+						return
 					}
 					weight, err := strconv.ParseFloat(textSplit[1], 64)
 					if err != nil {
-						return err
+						return
 					}
 					score, err := strconv.ParseFloat(textSplit[2], 64)
 					if err != nil {
-						return err
+						return
 					}
 					foundScore = true
 					resultScore = weight * score
@@ -73,7 +72,7 @@ func parseOutput(stdout io.Reader) (<-chan Result, error) {
 			}
 
 			if !foundScore {
-				return errors.New("no SCORE reported for test case " + testIdStr)
+				return
 			}
 
 			results <- Result{
@@ -85,7 +84,6 @@ func parseOutput(stdout io.Reader) (<-chan Result, error) {
 			}
 		}
 		close(results)
-		return nil
 	}()
 	return results, nil
 }
