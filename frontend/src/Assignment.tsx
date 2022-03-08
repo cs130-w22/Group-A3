@@ -79,10 +79,9 @@ export default function Assignment() {
               <tr onClick={() => setShowUploadSubmissionModal(true)}>
                 <td>➕ Add a submission</td>
                 <td></td>
-                <td></td>
               </tr>
             ) : (
-              <tr onClick={() => console.log("download")}>
+              <tr>
                 <td>
                   <a
                     href={blob ? blob : ""}
@@ -98,7 +97,16 @@ export default function Assignment() {
             {data?.submissions?.map((k, idx) => (
               <tr key={idx} onClick={() => navigate(`/results/${k.id}`)}>
                 {data?.professor && <td>{k.owner}</td>}
-                <td>{k.date}</td>
+                <td>
+                  {new Date(Date.parse(k.date)).toLocaleString("en-us", {
+                    year: "numeric",
+                    weekday: "long",
+                    day: "2-digit",
+                    month: "2-digit",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </td>
                 <td>{k.pointsEarned}</td>
               </tr>
             ))}

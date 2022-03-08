@@ -194,7 +194,7 @@ export interface AssignmentData {
   submissions: Array<{
     id: string;
     owner: string;
-    date: Date;
+    date: string;
     pointsEarned: number;
   }>;
 
