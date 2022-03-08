@@ -82,6 +82,11 @@ func TestGetUser(t *testing.T) {
 
 	assert.NoError(t, GetUser(c))
 	assert.Equal(t, rec.Code, http.StatusOK)
+	assert.Equal(
+		t, 
+		rec.Body.String(),
+		`{"id":1,"username":"VideoKojima","professor":true,"classes":null,"assignments":null}` + "\n",
+	)
 }
 
 func TestCreateClass(t *testing.T) {
@@ -106,7 +111,12 @@ func TestCreateClass(t *testing.T) {
 	///////////////////////////
 
 	assert.NoError(t, CreateClass(c))
-	assert.Equal(t, rec.Code, http.StatusCreated)	
+	assert.Equal(t, rec.Code, http.StatusCreated)
+	assert.Equal(
+			t, 
+			rec.Body.String(),
+			`{"id":1}` + "\n",
+		)
 }
 
 func TestCleanup(t *testing.T) {
