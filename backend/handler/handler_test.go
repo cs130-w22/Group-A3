@@ -8,6 +8,7 @@ import (
 	"github.com/labstack/echo/v4"
 
 	"strings"
+	"fmt"
 
 	"encoding/json"
 
@@ -47,7 +48,11 @@ func TestCreateUser(t *testing.T) {
 
 	// Set up our database.
 	db, _ = sql.Open("sqlite3", "file:handlertest.db?cache=shared&mode=rwc")
-	schemas.Migrate(db, false)
+	serr := schemas.Migrate(db, false)
+	if serr != nil {
+		fmt.Println(serr)
+		return
+	}
 
 	// Attach a database connection.
 	conn, _ := db.Conn(c)
@@ -63,7 +68,11 @@ func TestGetUser(t *testing.T) {
 	// Extract token from CreateUser() call and pass to GetUser():
 	e := echo.New()
 	var token Token
-	json.Unmarshal([]byte(tokenString), &token)
+	uerr := json.Unmarshal([]byte(tokenString), &token)
+	if uerr != nil {
+		fmt.Println(uerr)
+		return
+	}
 
 	req := httptest.NewRequest(http.MethodGet,"/",nil)
 	rec := httptest.NewRecorder()
@@ -96,7 +105,11 @@ func TestCreateClass(t *testing.T) {
 	rec := httptest.NewRecorder()
 
 	var token Token
-	json.Unmarshal([]byte(tokenString), &token)	
+	uerr := json.Unmarshal([]byte(tokenString), &token)	
+	if uerr != nil {
+		fmt.Println(uerr)
+		return
+	}
 
 	////// SETUP CONTEXT //////
 	cc := e.NewContext(req, rec)
