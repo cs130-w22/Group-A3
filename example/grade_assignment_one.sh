@@ -38,7 +38,7 @@ else
 fi
 
 # Pretending to do more work...
-sleep 5
+sleep 1
 
 OUTPUT_1="[1  Doxa  ston  Theo  gia  ola  ta  pragmata]"
 OUTPUT_2_WORKED="2 Definition worked"
@@ -54,6 +54,8 @@ else
   echo "Failure: Wrong array"
   echo "SCORE 0.2 0\n"
 fi
+
+sleep 1
 
 echo "4"
 echo "HIDDEN"
@@ -75,6 +77,8 @@ else
   echo "Failure: Incorrect msg"
   echo "SCORE 0.2 0\n"
 fi
+
+sleep 1
 
 echo "6"
 echo "NAME Empty substring"
